@@ -38,8 +38,10 @@
     <header class="header">
         <div class="header-content">
             <div class="logo">
-                <i class="fas fa-mosque"></i>
-                <h1>قرية حرارة</h1>
+                <a href="#" class="logo-link" onclick="navigateToPage('home'); return false;">
+                    <i class="fas fa-mosque"></i>
+                    <h1>قرية حرارة</h1>
+                </a>
             </div>
             <div class="header-actions">
                 <button id="refreshBtn" class="btn-icon" title="تحديث">
@@ -146,12 +148,15 @@
         <div class="footer-content">
             <p>&copy; 2024 قرية حرارة - جميع الحقوق محفوظة</p>
             <div class="footer-links">
-                <a href="#" id="adminLink">لوحة التحكم</a>
-                <a href="#" id="shopOwnerLink">أصحاب المحلات</a>
+                <a href="#" onclick="navigateToPage('admin'); return false;">لوحة التحكم</a>
+                <a href="#" onclick="navigateToPage('shop-owner'); return false;">أصحاب المحلات</a>
             </div>
         </div>
     </footer>
 
+    <!-- API Configuration -->
+    <script src="api-config.js"></script>
+    
     <!-- JavaScript -->
     <script src="script.js"></script>
 </body>

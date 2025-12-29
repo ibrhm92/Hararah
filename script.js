@@ -3,9 +3,9 @@ let currentPage = 'home';
 let userData = {};
 let appData = {};
 
-// Configuration
+// Update CONFIG to use API_CONFIG
 const CONFIG = {
-    GOOGLE_SCRIPTS_URL: 'YOUR_GOOGLE_SCRIPTS_URL_HERE',
+    ...API_CONFIG,
     CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
     OFFLINE_MODE: true
 };
@@ -19,16 +19,10 @@ const elements = {
     latestNewsList: document.getElementById('latestNewsList'),
     menuBtn: document.getElementById('menuBtn'),
     closeNav: document.getElementById('closeNav'),
-    refreshBtn: document.getElementById('refreshBtn'),
-    adminLink: document.getElementById('adminLink'),
-    shopOwnerLink: document.getElementById('shopOwnerLink')
+    refreshBtn: document.getElementById('refreshBtn')
 };
 
 // Initialize App
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-});
-
 async function initializeApp() {
     try {
         // Load cached data
@@ -60,7 +54,7 @@ async function initializeApp() {
     }
 }
 
-// Navigation
+// Initialize navigation
 function initializeNavigation() {
     // Menu toggle
     elements.menuBtn.addEventListener('click', () => {
@@ -80,17 +74,6 @@ function initializeNavigation() {
             elements.mainNav.classList.remove('active');
         });
     });
-    
-    // Admin and shop owner links
-    elements.adminLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        navigateToPage('admin');
-    });
-    
-    elements.shopOwnerLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        navigateToPage('shop-owner');
-    });
 }
 
 // Quick Actions
@@ -106,6 +89,9 @@ function initializeQuickActions() {
 // Page Navigation
 function navigateToPage(page) {
     currentPage = page;
+    
+    // Close navigation if open
+    elements.mainNav.classList.remove('active');
     
     // Hide all pages
     document.querySelectorAll('.page').forEach(p => {
@@ -178,6 +164,7 @@ async function loadPage(page) {
     } catch (error) {
         console.error('Error loading page:', error);
         showError('حدث خطأ أثناء تحميل الصفحة');
+        elements.pageContent.innerHTML = '<div class="alert alert-danger">حدث خطأ أثناء تحميل الصفحة</div>';
     } finally {
         hideLoading();
     }
@@ -460,7 +447,25 @@ async function loadAddServicePage() {
 async function loadAdminPage() {
     // Check if user is admin
     if (!isAdmin()) {
-        return '<div class="alert alert-danger">غير مصرح لك بالوصول إلى هذه الصفحة</div>';
+        return `
+            <div class="page-header">
+                <h2><i class="fas fa-cog"></i> لوحة تحكم الإدارة</h2>
+            </div>
+            <div class="login-section">
+                <h3>تسجيل دخول الإدارة</h3>
+                <form id="adminLoginForm">
+                    <div class="form-group">
+                        <label>اسم المستخدم:</label>
+                        <input type="text" id="adminUsername" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>كلمة المرور:</label>
+                        <input type="password" id="adminPassword" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">تسجيل الدخول</button>
+                </form>
+            </div>
+        `;
     }
     
     return `
@@ -551,9 +556,8 @@ async function getData(type) {
             return cached;
         }
         
-        // Fetch from Google Sheets
-        const response = await fetch(`${CONFIG.GOOGLE_SCRIPTS_URL}?action=get&type=${type}`);
-        const data = await response.json();
+        // Fetch from API using apiClient
+        const data = await apiClient[`get${type.charAt(0).toUpperCase() + type.slice(1)}`]();
         
         // Cache the data
         setCache(type, data);
@@ -569,33 +573,23 @@ async function getData(type) {
 
 async function saveData(type, data) {
     try {
-        const response = await fetch(CONFIG.GOOGLE_SCRIPTS_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'save',
-                type: type,
-                data: data
-            })
-        });
+        // Save using apiClient
+        const methodName = `save${type.charAt(0).toUpperCase() + type.slice(1).slice(0, -1)}`;
+        const result = await apiClient[methodName](data);
         
-        const result = await response.json();
-        
-        if (result.success) {
+        if (result) {
             // Clear cache
             clearCache(type);
             showSuccess('تم حفظ البيانات بنجاح');
             return true;
         } else {
-            showError(result.message || 'حدث خطأ أثناء حفظ البيانات');
+            showError('حدث خطأ أثناء حفظ البيانات');
             return false;
         }
         
     } catch (error) {
         console.error('Error saving data:', error);
-        showError('حدث خطأ أثناء حفظ البيانات');
+        showError(handleApiError(error) || 'حدث خطأ أثناء حفظ البيانات');
         return false;
     }
 }
@@ -690,8 +684,8 @@ function callPhone(phone) {
 }
 
 function isAdmin() {
-    // Simple admin check - in production, use proper authentication
-    return localStorage.getItem('isAdmin') === 'true';
+    // Check if user is logged in as admin
+    return localStorage.getItem('adminLoggedIn') === 'true';
 }
 
 function initializePageScripts(page) {
@@ -709,6 +703,37 @@ function initializePageScripts(page) {
         case 'shop-owner':
             initializeShopOwnerPage();
             break;
+        case 'admin':
+            initializeAdminPage();
+            break;
+    }
+}
+
+function initializeAdminPage() {
+    const loginForm = document.getElementById('adminLoginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleAdminLogin);
+    }
+}
+
+async function handleAdminLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('adminUsername').value;
+    const password = document.getElementById('adminPassword').value;
+    
+    try {
+        // Simple authentication (in production, use proper authentication)
+        if (username === 'admin' && password === 'admin123') {
+            localStorage.setItem('adminLoggedIn', 'true');
+            showSuccess('تم تسجيل الدخول بنجاح');
+            navigateToPage('admin');
+        } else {
+            showError('اسم المستخدم أو كلمة المرور غير صحيحة');
+        }
+    } catch (error) {
+        console.error('Error during admin login:', error);
+        showError('حدث خطأ أثناء تسجيل الدخول');
     }
 }
 
@@ -866,6 +891,7 @@ async function loadInitialData() {
         
     } catch (error) {
         console.error('Error loading initial data:', error);
+        elements.latestNewsList.innerHTML = '<p>حدث خطأ أثناء تحميل الأخبار</p>';
     }
 }
 
@@ -905,4 +931,9 @@ window.addEventListener('online', () => {
 
 window.addEventListener('offline', () => {
     showError('انقطع الاتصال بالإنترنت - يعمل التطبيق في وضع عدم الاتصال');
+});
+
+// Initialize app when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
 });
