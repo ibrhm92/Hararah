@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة أصحاب المحلات - قرية حرارة</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .shop-owner-dashboard {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .shop-header {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 2rem auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-section {
+            display: none;
+        }
+        
+        .dashboard-section.active {
+            display: block;
+        }
+        
+        .shop-info-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .offers-section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .offer-card {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .offer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .offer-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .offer-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #27ae60;
+            display: block;
+            margin-top: 0.5rem;
+        }
+        
+        .form-section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .welcome-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="shop-owner-dashboard">
+        <div class="shop-header">
+            <h1><i class="fas fa-store"></i> لوحة أصحاب المحلات</h1>
+            <p>قرية حرارة - خدمات القرية الذكية</p>
+        </div>
+        
+        <!-- Login Section -->
+        <div id="loginSection" class="login-form">
+            <h2>تسجيل الدخول لأصحاب المحلات</h2>
+            <p>قم بتسجيل الدخول لإدارة عرضك ومعلومات محلك</p>
+            <form id="shopOwnerLoginForm">
+                <div class="form-group">
+                    <label>رقم الهاتف:</label>
+                    <input type="tel" id="ownerPhone" class="form-control" placeholder="01xxxxxxxxx" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور:</label>
+                    <input type="password" id="ownerPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success btn-block">تسجيل الدخول</button>
+                <p class="mt-3 text-center">
+                    <a href="#" onclick="showRegisterForm()">ليس لديك حساب؟ سجل الآن</a>
+                </p>
+            </form>
+        </div>
+        
+        <!-- Register Section -->
+        <div id="registerSection" class="login-form d-none">
+            <h2>تسجيل جديد</h2>
+            <p>سجل معلومات محلك للانضمام إلى المنصة</p>
+            <form id="shopOwnerRegisterForm">
+                <div class="form-group">
+                    <label>اسم المحل:</label>
+                    <input type="text" id="shopName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>نوع المحل:</label>
+                    <select id="shopType" class="form-control" required>
+                        <option value="">اختر النوع</option>
+                        <option value="بقالة">بقالة</option>
+                        <option value="صيدلية">صيدلية</option>
+                        <option value="مخبز">مخبز</option>
+                        <option value="أعلاف">أعلاف</option>
+                        <option value="أدوات زراعية">أدوات زراعية</option>
+                        <option value="حلاق">حلاق</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف:</label>
+                    <input type="tel" id="registerPhone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>مواعيد العمل:</label>
+                    <input type="text" id="shopHours" class="form-control" placeholder="مثال: 8 صباحاً - 10 مساءً" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور:</label>
+                    <input type="password" id="registerPassword" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>تأكيد كلمة المرور:</label>
+                    <input type="password" id="confirmPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success btn-block">تسجيل</button>
+                <p class="mt-3 text-center">
+                    <a href="#" onclick="showLoginForm()">لديك حساب بالفعل؟ تسجيل الدخول</a>
+                </p>
+            </form>
+        </div>
+        
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="dashboard-section">
+            <div class="welcome-message">
+                <h3>مرحباً بك في لوحة التحكم</h3>
+                <p>يمكنك إدارة معلومات محلك وعروضك من هنا</p>
+            </div>
+            
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3><i class="fas fa-tags"></i> إجمالي العروض</h3>
+                    <span class="stat-number" id="totalOffers">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-check-circle"></i> العروض المقبولة</h3>
+                    <span class="stat-number" id="approvedOffers">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-clock"></i> العروض المعلقة</h3>
+                    <span class="stat-number" id="pendingOffers">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-eye"></i> المشاهدات</h3>
+                    <span class="stat-number" id="totalViews">0</span>
+                </div>
+            </div>
+            
+            <!-- Shop Information -->
+            <div class="shop-info-card">
+                <h3><i class="fas fa-store"></i> معلومات المحل</h3>
+                <div id="shopInfoContent">
+                    <!-- Shop info will be loaded here -->
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="editShopInfo()">
+                        <i class="fas fa-edit"></i> تعديل المعلومات
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Offers Management -->
+            <div class="offers-section">
+                <h3><i class="fas fa-tags"></i> إدارة العروض</h3>
+                <button class="btn btn-success" onclick="showAddOfferForm()">
+                    <i class="fas fa-plus"></i> إضافة عرض جديد
+                </button>
+                <div id="offersList" class="mt-3">
+                    <!-- Offers will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="form-section">
+                <h3><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="showAddOfferForm()">
+                        <i class="fas fa-plus"></i> إضافة عرض
+                    </button>
+                    <button class="btn btn-info" onclick="viewAnalytics()">
+                        <i class="fas fa-chart-bar"></i> عرض الإحصائيات
+                    </button>
+                    <button class="btn btn-warning" onclick="editShopInfo()">
+                        <i class="fas fa-edit"></i> تعديل المحل
+                    </button>
+                    <button class="btn btn-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Offer Modal -->
+    <div id="offerModal" class="modal d-none">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="offerModalTitle">إضافة عرض جديد</h3>
+                <button onclick="closeOfferModal()">&times;</button>
+            </div>
+            <form id="offerForm">
+                <div class="form-group">
+                    <label>وصف العرض:</label>
+                    <textarea id="offerDescription" class="form-control" rows="3" required 
+                              placeholder="صف عرضك بالتفصيل..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>نسبة الخصم (%):</label>
+                    <input type="number" id="offerDiscount" class="form-control" 
+                           min="1" max="100" required placeholder="مثال: 20">
+                </div>
+                <div class="form-group">
+                    <label>مدة العرض:</label>
+                    <input type="text" id="offerDuration" class="form-control" required 
+                           placeholder="مثال: حتى نهاية الأسبوع">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف للتواصل:</label>
+                    <input type="tel" id="offerPhone" class="form-control" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">إرسال العرض للموافقة</button>
+                    <button type="button" onclick="closeOfferModal()" class="btn btn-outline">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Shop Info Modal -->
+    <div id="shopInfoModal" class="modal d-none">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تعديل معلومات المحل</h3>
+                <button onclick="closeShopInfoModal()">&times;</button>
+            </div>
+            <form id="shopInfoForm">
+                <div class="form-group">
+                    <label>اسم المحل:</label>
+                    <input type="text" id="editShopName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>نوع المحل:</label>
+                    <select id="editShopType" class="form-control" required>
+                        <option value="بقالة">بقالة</option>
+                        <option value="صيدلية">صيدلية</option>
+                        <option value="مخبز">مخبز</option>
+                        <option value="أعلاف">أعلاف</option>
+                        <option value="أدوات زراعية">أدوات زراعية</option>
+                        <option value="حلاق">حلاق</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف:</label>
+                    <input type="tel" id="editShopPhone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>مواعيد العمل:</label>
+                    <input type="text" id="editShopHours" class="form-control" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    <button type="button" onclick="closeShopInfoModal()" class="btn btn-outline">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="../script.js"></script>
+    <script>
+        // Shop Owner specific JavaScript
+        let currentShopOwner = null;
+        let editingOffer = null;
+        
+        // Initialize shop owner page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkShopOwnerAuth();
+        });
+        
+        // Check shop owner authentication
+        function checkShopOwnerAuth() {
+            const loggedInOwner = localStorage.getItem('shopOwnerLoggedIn');
+            if (loggedInOwner) {
+                currentShopOwner = JSON.parse(loggedInOwner);
+                showDashboard();
+            } else {
+                showLoginForm();
+            }
+        }
+        
+        // Show login form
+        function showLoginForm() {
+            document.getElementById('loginSection').classList.remove('d-none');
+            document.getElementById('registerSection').classList.add('d-none');
+            document.getElementById('dashboardSection').classList.remove('active');
+        }
+        
+        // Show register form
+        function showRegisterForm() {
+            document.getElementById('loginSection').classList.add('d-none');
+            document.getElementById('registerSection').classList.remove('d-none');
+            document.getElementById('dashboardSection').classList.remove('active');
+        }
+        
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginSection').classList.add('d-none');
+            document.getElementById('registerSection').classList.add('d-none');
+            document.getElementById('dashboardSection').classList.add('active');
+            loadDashboardData();
+        }
+        
+        // Handle login
+        document.getElementById('shopOwnerLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('ownerPhone').value;
+            const password = document.getElementById('ownerPassword').value;
+            
+            try {
+                // Get shops data
+                const shops = await getData('shops');
+                const shop = shops.find(s => s.phone === phone && s.password === password);
+                
+                if (shop) {
+                    currentShopOwner = shop;
+                    localStorage.setItem('shopOwnerLoggedIn', JSON.stringify(shop));
+                    showDashboard();
+                    showSuccess('تم تسجيل الدخول بنجاح');
+                } else {
+                    showError('رقم الهاتف أو كلمة المرور غير صحيحة');
+                }
+                
+            } catch (error) {
+                console.error('Error during login:', error);
+                showError('حدث خطأ أثناء تسجيل الدخول');
+            }
+        });
+        
+        // Handle registration
+        document.getElementById('shopOwnerRegisterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const shopName = document.getElementById('shopName').value;
+            const shopType = document.getElementById('shopType').value;
+            const phone = document.getElementById('registerPhone').value;
+            const shopHours = document.getElementById('shopHours').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showError('كلمات المرور غير متطابقة');
+                return;
+            }
+            
+            try {
+                // Check if phone already exists
+                const shops = await getData('shops');
+                const existingShop = shops.find(s => s.phone === phone);
+                
+                if (existingShop) {
+                    showError('رقم الهاتف مسجل بالفعل');
+                    return;
+                }
+                
+                // Create new shop
+                const newShop = {
+                    id: Date.now().toString(),
+                    name: shopName,
+                    type: shopType,
+                    phone: phone,
+                    hours: shopHours,
+                    password: password,
+                    registeredAt: new Date().toISOString()
+                };
+                
+                shops.push(newShop);
+                
+                if (await saveData('shops', shops)) {
+                    currentShopOwner = newShop;
+                    localStorage.setItem('shopOwnerLoggedIn', JSON.stringify(newShop));
+                    showDashboard();
+                    showSuccess('تم التسجيل بنجاح');
+                }
+                
+            } catch (error) {
+                console.error('Error during registration:', error);
+                showError('حدث خطأ أثناء التسجيل');
+            }
+        });
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            if (!currentShopOwner) return;
+            
+            try {
+                // Load shop info
+                loadShopInfo();
+                
+                // Load offers
+                loadOffers();
+                
+                // Load statistics
+                loadStatistics();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Load shop information
+        function loadShopInfo() {
+            const shopInfoContent = document.getElementById('shopInfoContent');
+            
+            shopInfoContent.innerHTML = `
+                <div class="shop-details">
+                    <p><strong>اسم المحل:</strong> ${currentShopOwner.name}</p>
+                    <p><strong>النوع:</strong> ${currentShopOwner.type}</p>
+                    <p><strong>رقم الهاتف:</strong> ${currentShopOwner.phone}</p>
+                    <p><strong>مواعيد العمل:</strong> ${currentShopOwner.hours}</p>
+                    <p><strong>تاريخ التسجيل:</strong> ${new Date(currentShopOwner.registeredAt).toLocaleDateString('ar-EG')}</p>
+                </div>
+            `;
+        }
+        
+        // Load offers
+        async function loadOffers() {
+            try {
+                const offers = await getData('offers');
+                const shopOffers = offers.filter(offer => offer.shopPhone === currentShopOwner.phone);
+                
+                const offersList = document.getElementById('offersList');
+                
+                if (shopOffers.length === 0) {
+                    offersList.innerHTML = '<p>لا توجد عروض حالياً. أضف عرضك الأول!</p>';
+                    return;
+                }
+                
+                let html = '';
+                shopOffers.forEach(offer => {
+                    const statusClass = offer.approved ? 'status-approved' : 
+                                       offer.rejected ? 'status-rejected' : 'status-pending';
+                    const statusText = offer.approved ? 'مقبول' : 
+                                      offer.rejected ? 'مرفوض' : 'قيد المراجعة';
+                    
+                    html += `
+                        <div class="offer-card">
+                            <div class="offer-header">
+                                <h4>عرض ${offer.discount}% خصم</h4>
+                                <span class="offer-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <p><strong>الوصف:</strong> ${offer.description}</p>
+                            <p><strong>المدة:</strong> ${offer.duration}</p>
+                            <p><strong>الهاتف:</strong> ${offer.phone}</p>
+                            <p><strong>التاريخ:</strong> ${new Date(offer.createdAt).toLocaleDateString('ar-EG')}</p>
+                            <div class="offer-actions">
+                                <button class="btn btn-primary btn-sm" onclick="editOffer('${offer.id}')">
+                                    <i class="fas fa-edit"></i> تعديل
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteOffer('${offer.id}')">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                offersList.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading offers:', error);
+                document.getElementById('offersList').innerHTML = '<p>حدث خطأ أثناء تحميل العروض</p>';
+            }
+        }
+        
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const offers = await getData('offers');
+                const shopOffers = offers.filter(offer => offer.shopPhone === currentShopOwner.phone);
+                
+                const totalOffers = shopOffers.length;
+                const approvedOffers = shopOffers.filter(offer => offer.approved).length;
+                const pendingOffers = shopOffers.filter(offer => !offer.approved && !offer.rejected).length;
+                
+                document.getElementById('totalOffers').textContent = totalOffers;
+                document.getElementById('approvedOffers').textContent = approvedOffers;
+                document.getElementById('pendingOffers').textContent = pendingOffers;
+                document.getElementById('totalViews').textContent = Math.floor(Math.random() * 1000) + 100; // Mock views
+                
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+        
+        // Show add offer form
+        function showAddOfferForm() {
+            editingOffer = null;
+            document.getElementById('offerModalTitle').textContent = 'إضافة عرض جديد';
+            document.getElementById('offerForm').reset();
+            document.getElementById('offerPhone').value = currentShopOwner.phone;
+            document.getElementById('offerModal').classList.remove('d-none');
+        }
+        
+        // Edit offer
+        async function editOffer(offerId) {
+            try {
+                const offers = await getData('offers');
+                const offer = offers.find(o => o.id === offerId);
+                
+                if (offer) {
+                    editingOffer = offer;
+                    document.getElementById('offerModalTitle').textContent = 'تعديل العرض';
+                    document.getElementById('offerDescription').value = offer.description;
+                    document.getElementById('offerDiscount').value = offer.discount;
+                    document.getElementById('offerDuration').value = offer.duration;
+                    document.getElementById('offerPhone').value = offer.phone;
+                    document.getElementById('offerModal').classList.remove('d-none');
+                }
+                
+            } catch (error) {
+                console.error('Error editing offer:', error);
+                showError('حدث خطأ أثناء تحميل العرض');
+            }
+        }
+        
+        // Delete offer
+        async function deleteOffer(offerId) {
+            if (!confirm('هل أنت متأكد من حذف هذا العرض؟')) {
+                return;
+            }
+            
+            try {
+                const offers = await getData('offers');
+                const updatedOffers = offers.filter(offer => offer.id !== offerId);
+                
+                if (await saveData('offers', updatedOffers)) {
+                    loadOffers();
+                    loadStatistics();
+                    showSuccess('تم حذف العرض بنجاح');
+                }
+                
+            } catch (error) {
+                console.error('Error deleting offer:', error);
+                showError('حدث خطأ أثناء حذف العرض');
+            }
+        }
+        
+        // Handle offer form submission
+        document.getElementById('offerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const offerData = {
+                description: document.getElementById('offerDescription').value,
+                discount: document.getElementById('offerDiscount').value,
+                duration: document.getElementById('offerDuration').value,
+                phone: document.getElementById('offerPhone').value,
+                shopName: currentShopOwner.name,
+                shopPhone: currentShopOwner.phone,
+                approved: false,
+                rejected: false,
+                createdAt: editingOffer ? editingOffer.createdAt : new Date().toISOString()
+            };
+            
+            try {
+                let offers = await getData('offers');
+                
+                if (editingOffer) {
+                    // Update existing offer
+                    const index = offers.findIndex(o => o.id === editingOffer.id);
+                    if (index !== -1) {
+                        offers[index] = { ...editingOffer, ...offerData };
+                    }
+                } else {
+                    // Add new offer
+                    offerData.id = Date.now().toString();
+                    offers.push(offerData);
+                }
+                
+                if (await saveData('offers', offers)) {
+                    closeOfferModal();
+                    loadOffers();
+                    loadStatistics();
+                    showSuccess(editingOffer ? 'تم تحديث العرض بنجاح' : 'تم إرسال العرض للموافقة');
+                }
+                
+            } catch (error) {
+                console.error('Error saving offer:', error);
+                showError('حدث خطأ أثناء حفظ العرض');
+            }
+        });
+        
+        // Edit shop info
+        function editShopInfo() {
+            document.getElementById('editShopName').value = currentShopOwner.name;
+            document.getElementById('editShopType').value = currentShopOwner.type;
+            document.getElementById('editShopPhone').value = currentShopOwner.phone;
+            document.getElementById('editShopHours').value = currentShopOwner.hours;
+            document.getElementById('shopInfoModal').classList.remove('d-none');
+        }
+        
+        // Handle shop info form submission
+        document.getElementById('shopInfoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const shops = await getData('shops');
+                const shopIndex = shops.findIndex(s => s.id === currentShopOwner.id);
+                
+                if (shopIndex !== -1) {
+                    shops[shopIndex] = {
+                        ...shops[shopIndex],
+                        name: document.getElementById('editShopName').value,
+                        type: document.getElementById('editShopType').value,
+                        phone: document.getElementById('editShopPhone').value,
+                        hours: document.getElementById('editShopHours').value
+                    };
+                    
+                    if (await saveData('shops', shops)) {
+                        currentShopOwner = shops[shopIndex];
+                        localStorage.setItem('shopOwnerLoggedIn', JSON.stringify(currentShopOwner));
+                        closeShopInfoModal();
+                        loadShopInfo();
+                        showSuccess('تم تحديث معلومات المحل بنجاح');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error updating shop info:', error);
+                showError('حدث خطأ أثناء تحديث المعلومات');
+            }
+        });
+        
+        // Close modals
+        function closeOfferModal() {
+            document.getElementById('offerModal').classList.add('d-none');
+            editingOffer = null;
+        }
+        
+        function closeShopInfoModal() {
+            document.getElementById('shopInfoModal').classList.add('d-none');
+        }
+        
+        // Logout
+        function logout() {
+            localStorage.removeItem('shopOwnerLoggedIn');
+            currentShopOwner = null;
+            showLoginForm();
+            showSuccess('تم تسجيل الخروج بنجاح');
+        }
+        
+        // View analytics (placeholder)
+        function viewAnalytics() {
+            alert('صفحة الإحصائيات التفصيلية قيد التطوير');
+        }
+    </script>
+</body>
+</html>

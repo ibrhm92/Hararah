@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الإدارة - قرية حرارة</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            display: block;
+            margin-top: 0.5rem;
+        }
+        
+        .admin-actions {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .pending-items {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .pending-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .pending-item h4 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pending-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 2rem auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-dashboard">
+        <div class="admin-header">
+            <h1><i class="fas fa-cog"></i> لوحة تحكم الإدارة</h1>
+            <p>قرية حرارة - خدمات القرية الذكية</p>
+        </div>
+        
+        <!-- Login Section -->
+        <div id="loginSection" class="login-form">
+            <h2>تسجيل الدخول</h2>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label>اسم المستخدم:</label>
+                    <input type="text" id="adminUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور:</label>
+                    <input type="password" id="adminPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">تسجيل الدخول</button>
+            </form>
+        </div>
+        
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="d-none">
+            <!-- Statistics -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3><i class="fas fa-tools"></i> الصنايعية</h3>
+                    <span class="stat-number" id="craftsmenCount">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-tractor"></i> الآلات الزراعية</h3>
+                    <span class="stat-number" id="machinesCount">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-store"></i> المحلات التجارية</h3>
+                    <span class="stat-number" id="shopsCount">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-clock"></i> الإعلانات المعلقة</h3>
+                    <span class="stat-number" id="pendingAdsCount">0</span>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="admin-actions">
+                <h3>الإجراءات السريعة</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="manageData('craftsmen')">
+                        <i class="fas fa-tools"></i> إدارة الصنايعية
+                    </button>
+                    <button class="btn btn-primary" onclick="manageData('machines')">
+                        <i class="fas fa-tractor"></i> إدارة الآلات
+                    </button>
+                    <button class="btn btn-primary" onclick="manageData('shops')">
+                        <i class="fas fa-store"></i> إدارة المحلات
+                    </button>
+                    <button class="btn btn-warning" onclick="reviewPending('ads')">
+                        <i class="fas fa-bullhorn"></i> مراجعة الإعلانات
+                    </button>
+                    <button class="btn btn-warning" onclick="reviewPending('offers')">
+                        <i class="fas fa-tags"></i> مراجعة العروض
+                    </button>
+                    <button class="btn btn-success" onclick="addNews()">
+                        <i class="fas fa-newspaper"></i> إضافة خبر
+                    </button>
+                    <button class="btn btn-info" onclick="manageEmergency()">
+                        <i class="fas fa-phone-alt"></i> أرقام الطوارئ
+                    </button>
+                    <button class="btn btn-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Pending Items -->
+            <div class="pending-items">
+                <h3>العناصر المعلقة</h3>
+                <div id="pendingItemsList">
+                    <!-- Pending items will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Data Management Section -->
+            <div id="dataManagementSection" class="d-none">
+                <h3 id="dataManagementTitle">إدارة البيانات</h3>
+                <div class="table-responsive">
+                    <table class="data-table" id="dataTable">
+                        <!-- Data will be loaded here -->
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="showAddForm()">
+                        <i class="fas fa-plus"></i> إضافة جديد
+                    </button>
+                    <button class="btn btn-outline" onclick="hideDataManagement()">
+                        <i class="fas fa-arrow-right"></i> رجوع
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Modal -->
+    <div id="addEditModal" class="modal d-none">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">إضافة بيانات جديدة</h3>
+                <button onclick="closeModal()">&times;</button>
+            </div>
+            <form id="addEditForm">
+                <div id="modalFormContent">
+                    <!-- Form content will be loaded here -->
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                    <button type="button" onclick="closeModal()" class="btn btn-outline">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="../script.js"></script>
+    <script>
+        // Admin specific JavaScript
+        let currentDataType = '';
+        let editingItem = null;
+        
+        // Initialize admin page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAuth();
+            loadDashboardData();
+        });
+        
+        // Check admin authentication
+        function checkAdminAuth() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+            if (isLoggedIn) {
+                showDashboard();
+            } else {
+                showLogin();
+            }
+        }
+        
+        // Show login form
+        function showLogin() {
+            document.getElementById('loginSection').classList.remove('d-none');
+            document.getElementById('dashboardSection').classList.add('d-none');
+        }
+        
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginSection').classList.add('d-none');
+            document.getElementById('dashboardSection').classList.remove('d-none');
+            loadDashboardData();
+        }
+        
+        // Handle admin login
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            // Simple authentication (in production, use proper authentication)
+            if (username === 'admin' && password === 'admin123') {
+                localStorage.setItem('adminLoggedIn', 'true');
+                showDashboard();
+                showSuccess('تم تسجيل الدخول بنجاح');
+            } else {
+                showError('اسم المستخدم أو كلمة المرور غير صحيحة');
+            }
+        });
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const craftsmen = await getData('craftsmen');
+                const machines = await getData('machines');
+                const shops = await getData('shops');
+                const ads = await getData('ads');
+                const offers = await getData('offers');
+                
+                document.getElementById('craftsmenCount').textContent = craftsmen.length;
+                document.getElementById('machinesCount').textContent = machines.length;
+                document.getElementById('shopsCount').textContent = shops.length;
+                document.getElementById('pendingAdsCount').textContent = 
+                    ads.filter(ad => !ad.approved).length + offers.filter(offer => !offer.approved).length;
+                
+                loadPendingItems();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Load pending items
+        async function loadPendingItems() {
+            try {
+                const ads = await getData('ads');
+                const offers = await getData('offers');
+                
+                const pendingAds = ads.filter(ad => !ad.approved);
+                const pendingOffers = offers.filter(offer => !offer.approved);
+                
+                const pendingItemsList = document.getElementById('pendingItemsList');
+                
+                if (pendingAds.length === 0 && pendingOffers.length === 0) {
+                    pendingItemsList.innerHTML = '<p>لا توجد عناصر معلقة</p>';
+                    return;
+                }
+                
+                let html = '';
+                
+                pendingAds.forEach(ad => {
+                    html += `
+                        <div class="pending-item">
+                            <h4><i class="fas fa-bullhorn"></i> إعلان: ${ad.title}</h4>
+                            <p>${ad.description}</p>
+                            <p><strong>النوع:</strong> ${ad.type}</p>
+                            <p><strong>الهاتف:</strong> ${ad.phone}</p>
+                            <div class="pending-actions">
+                                <button class="btn btn-success btn-sm" onclick="approveItem('ads', '${ad.id}')">
+                                    <i class="fas fa-check"></i> موافقة
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectItem('ads', '${ad.id}')">
+                                    <i class="fas fa-times"></i> رفض
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                pendingOffers.forEach(offer => {
+                    html += `
+                        <div class="pending-item">
+                            <h4><i class="fas fa-tags"></i> عرض: ${offer.shopName}</h4>
+                            <p>${offer.description}</p>
+                            <p><strong>الخصم:</strong> ${offer.discount}%</p>
+                            <p><strong>الهاتف:</strong> ${offer.phone}</p>
+                            <div class="pending-actions">
+                                <button class="btn btn-success btn-sm" onclick="approveItem('offers', '${offer.id}')">
+                                    <i class="fas fa-check"></i> موافقة
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectItem('offers', '${offer.id}')">
+                                    <i class="fas fa-times"></i> رفض
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                pendingItemsList.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading pending items:', error);
+            }
+        }
+        
+        // Manage data
+        async function manageData(type) {
+            currentDataType = type;
+            document.getElementById('dataManagementSection').classList.remove('d-none');
+            
+            const titles = {
+                'craftsmen': 'إدارة الصنايعية',
+                'machines': 'إدارة الآلات الزراعية',
+                'shops': 'إدارة المحلات التجارية'
+            };
+            
+            document.getElementById('dataManagementTitle').textContent = titles[type] || 'إدارة البيانات';
+            
+            try {
+                const data = await getData(type);
+                const table = document.getElementById('dataTable');
+                
+                let html = '<thead><tr>';
+                
+                // Table headers based on type
+                if (type === 'craftsmen') {
+                    html += '<th>الاسم</th><th>التخصص</th><th>رقم الهاتف</th><th>ملاحظات</th><th>الإجراءات</th>';
+                } else if (type === 'machines') {
+                    html += '<th>الاسم</th><th>نوع المعدة</th><th>رقم الهاتف</th><th>حالة التوفر</th><th>الإجراءات</th>';
+                } else if (type === 'shops') {
+                    html += '<th>اسم المحل</th><th>النوع</th><th>رقم الهاتف</th><th>مواعيد العمل</th><th>الإجراءات</th>';
+                }
+                
+                html += '</tr></thead><tbody>';
+                
+                data.forEach(item => {
+                    html += '<tr>';
+                    
+                    if (type === 'craftsmen') {
+                        html += `<td>${item.name}</td><td>${item.specialty}</td><td>${item.phone}</td><td>${item.notes || '-'}</td>`;
+                    } else if (type === 'machines') {
+                        html += `<td>${item.name}</td><td>${item.type}</td><td>${item.phone}</td><td>${item.available ? 'متاح' : 'مشغول'}</td>`;
+                    } else if (type === 'shops') {
+                        html += `<td>${item.name}</td><td>${item.type}</td><td>${item.phone}</td><td>${item.hours}</td>`;
+                    }
+                    
+                    html += `
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-primary btn-sm" onclick="editItem('${type}', '${item.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteItem('${type}', '${item.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    html += '</tr>';
+                });
+                
+                html += '</tbody>';
+                table.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('حدث خطأ أثناء تحميل البيانات');
+            }
+        }
+        
+        // Hide data management
+        function hideDataManagement() {
+            document.getElementById('dataManagementSection').classList.add('d-none');
+        }
+        
+        // Show add form
+        function showAddForm() {
+            editingItem = null;
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalFormContent');
+            
+            modalTitle.textContent = 'إضافة بيانات جديدة';
+            
+            let formHtml = '';
+            
+            if (currentDataType === 'craftsmen') {
+                formHtml = `
+                    <div class="form-group">
+                        <label>الاسم:</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>التخصص:</label>
+                        <select name="specialty" class="form-control" required>
+                            <option value="">اختر التخصص</option>
+                            <option value="كهربائي">كهربائي</option>
+                            <option value="سباك">سباك</option>
+                            <option value="نجار">نجار</option>
+                            <option value="حداد">حداد</option>
+                            <option value="فني أجهزة">فني أجهزة</option>
+                            <option value="ميكانيكي زراعي">ميكانيكي زراعي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الهاتف:</label>
+                        <input type="tel" name="phone" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ملاحظات:</label>
+                        <textarea name="notes" class="form-control"></textarea>
+                    </div>
+                `;
+            } else if (currentDataType === 'machines') {
+                formHtml = `
+                    <div class="form-group">
+                        <label>الاسم:</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع المعدة:</label>
+                        <select name="type" class="form-control" required>
+                            <option value="">اختر النوع</option>
+                            <option value="جرار">جرار</option>
+                            <option value="حصادة">حصادة</option>
+                            <option value="ماكينة ري">ماكينة ري</option>
+                            <option value="دراس">دراس</option>
+                            <option value="عربات نقل">عربات نقل</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الهاتف:</label>
+                        <input type="tel" name="phone" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>حالة التوفر:</label>
+                        <select name="available" class="form-control" required>
+                            <option value="true">متاح</option>
+                            <option value="false">مشغول</option>
+                        </select>
+                    </div>
+                `;
+            } else if (currentDataType === 'shops') {
+                formHtml = `
+                    <div class="form-group">
+                        <label>اسم المحل:</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>النوع:</label>
+                        <select name="type" class="form-control" required>
+                            <option value="">اختر النوع</option>
+                            <option value="بقالة">بقالة</option>
+                            <option value="صيدلية">صيدلية</option>
+                            <option value="مخبز">مخبز</option>
+                            <option value="أعلاف">أعلاف</option>
+                            <option value="أدوات زراعية">أدوات زراعية</option>
+                            <option value="حلاق">حلاق</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الهاتف:</label>
+                        <input type="tel" name="phone" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>مواعيد العمل:</label>
+                        <input type="text" name="hours" class="form-control" required>
+                    </div>
+                `;
+            }
+            
+            modalContent.innerHTML = formHtml;
+            document.getElementById('addEditModal').classList.remove('d-none');
+        }
+        
+        // Edit item
+        async function editItem(type, id) {
+            try {
+                const data = await getData(type);
+                const item = data.find(d => d.id === id);
+                
+                if (!item) {
+                    showError('العنصر غير موجود');
+                    return;
+                }
+                
+                editingItem = item;
+                const modalTitle = document.getElementById('modalTitle');
+                const modalContent = document.getElementById('modalFormContent');
+                
+                modalTitle.textContent = 'تعديل البيانات';
+                
+                // Load form with existing data (similar to showAddForm but with pre-filled values)
+                showAddForm();
+                
+                // Fill form with existing data
+                setTimeout(() => {
+                    const form = document.getElementById('addEditForm');
+                    Object.keys(item).forEach(key => {
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            input.value = item[key];
+                        }
+                    });
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error editing item:', error);
+                showError('حدث خطأ أثناء تحميل البيانات');
+            }
+        }
+        
+        // Delete item
+        async function deleteItem(type, id) {
+            if (!confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
+                return;
+            }
+            
+            try {
+                const data = await getData(type);
+                const updatedData = data.filter(item => item.id !== id);
+                
+                if (await saveData(type, updatedData)) {
+                    manageData(type);
+                    loadDashboardData();
+                }
+                
+            } catch (error) {
+                console.error('Error deleting item:', error);
+                showError('حدث خطأ أثناء حذف العنصر');
+            }
+        }
+        
+        // Approve item
+        async function approveItem(type, id) {
+            try {
+                const data = await getData(type);
+                const item = data.find(d => d.id === id);
+                
+                if (item) {
+                    item.approved = true;
+                    
+                    if (await saveData(type, data)) {
+                        loadPendingItems();
+                        loadDashboardData();
+                        showSuccess('تمت الموافقة على العنصر');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error approving item:', error);
+                showError('حدث خطأ أثناء الموافقة على العنصر');
+            }
+        }
+        
+        // Reject item
+        async function rejectItem(type, id) {
+            if (!confirm('هل أنت متأكد من رفض هذا العنصر؟')) {
+                return;
+            }
+            
+            try {
+                const data = await getData(type);
+                const updatedData = data.filter(item => item.id !== id);
+                
+                if (await saveData(type, updatedData)) {
+                    loadPendingItems();
+                    loadDashboardData();
+                    showSuccess('تم رفض العنصر');
+                }
+                
+            } catch (error) {
+                console.error('Error rejecting item:', error);
+                showError('حدث خطأ أثناء رفض العنصر');
+            }
+        }
+        
+        // Handle form submission
+        document.getElementById('addEditForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                let currentData = await getData(currentDataType);
+                
+                if (editingItem) {
+                    // Update existing item
+                    const index = currentData.findIndex(item => item.id === editingItem.id);
+                    if (index !== -1) {
+                        currentData[index] = { ...editingItem, ...data };
+                    }
+                } else {
+                    // Add new item
+                    data.id = Date.now().toString();
+                    currentData.push(data);
+                }
+                
+                if (await saveData(currentDataType, currentData)) {
+                    closeModal();
+                    manageData(currentDataType);
+                    loadDashboardData();
+                }
+                
+            } catch (error) {
+                console.error('Error saving data:', error);
+                showError('حدث خطأ أثناء حفظ البيانات');
+            }
+        });
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('addEditModal').classList.add('d-none');
+            editingItem = null;
+        }
+        
+        // Logout
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            showLogin();
+            showSuccess('تم تسجيل الخروج بنجاح');
+        }
+        
+        // Review pending items
+        function reviewPending(type) {
+            // Scroll to pending items section
+            document.querySelector('.pending-items').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Add news
+        function addNews() {
+            // Implementation for adding news
+            alert('واجهة إضافة الأخبار قيد التطوير');
+        }
+        
+        // Manage emergency numbers
+        function manageEmergency() {
+            // Implementation for managing emergency numbers
+            alert('واجهة إدارة أرقام الطوارئ قيد التطوير');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قرية حرارة - خدمات القرية الذكية</title>
+    <meta name="description" content="تطبيق خدمات القرية الذكية - دليل شامل للخدمات والمحلات والأخبار المحلية">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="قرية حرارة">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-mosque"></i>
+            <h2>قرية حرارة</h2>
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-mosque"></i>
+                <h1>قرية حرارة</h1>
+            </div>
+            <div class="header-actions">
+                <button id="refreshBtn" class="btn-icon" title="تحديث">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="menuBtn" class="btn-icon" title="القائمة">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-header">
+            <h3>القائمة الرئيسية</h3>
+            <button id="closeNav" class="btn-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="nav-list">
+            <li><a href="#" data-page="craftsmen" class="nav-link">
+                <i class="fas fa-tools"></i>
+                <span>الصنايعية والخدمات</span>
+            </a></li>
+            <li><a href="#" data-page="machines" class="nav-link">
+                <i class="fas fa-tractor"></i>
+                <span>أصحاب الآلات الزراعية</span>
+            </a></li>
+            <li><a href="#" data-page="shops" class="nav-link">
+                <i class="fas fa-store"></i>
+                <span>المحلات التجارية</span>
+            </a></li>
+            <li><a href="#" data-page="offers" class="nav-link">
+                <i class="fas fa-tags"></i>
+                <span>العروض والتخفيضات</span>
+            </a></li>
+            <li><a href="#" data-page="ads" class="nav-link">
+                <i class="fas fa-bullhorn"></i>
+                <span>الإعلانات المحلية</span>
+            </a></li>
+            <li><a href="#" data-page="emergency" class="nav-link">
+                <i class="fas fa-phone-alt"></i>
+                <span>أرقام الطوارئ</span>
+            </a></li>
+            <li><a href="#" data-page="news" class="nav-link">
+                <i class="fas fa-newspaper"></i>
+                <span>الأخبار والتنبيهات</span>
+            </a></li>
+            <li><a href="#" data-page="add-service" class="nav-link">
+                <i class="fas fa-plus-circle"></i>
+                <span>أضف خدمة</span>
+            </a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Page -->
+        <section id="homePage" class="page active">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h2>مرحباً بك في قرية حرارة</h2>
+                    <p>خدمات القرية الذكية - كل ما تحتاجه في مكان واحد</p>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <h3>خدمات سريعة</h3>
+                <div class="action-grid">
+                    <button class="action-card" data-page="craftsmen">
+                        <i class="fas fa-tools"></i>
+                        <span>الصنايعية</span>
+                    </button>
+                    <button class="action-card" data-page="emergency">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>الطوارئ</span>
+                    </button>
+                    <button class="action-card" data-page="offers">
+                        <i class="fas fa-tags"></i>
+                        <span>العروض</span>
+                    </button>
+                    <button class="action-card" data-page="add-service">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>أضف خدمة</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="latest-news">
+                <h3>آخر الأخبار</h3>
+                <div id="latestNewsList" class="news-list">
+                    <!-- News items will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Other pages will be loaded dynamically -->
+        <div id="pageContent"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 قرية حرارة - جميع الحقوق محفوظة</p>
+            <div class="footer-links">
+                <a href="#" id="adminLink">لوحة التحكم</a>
+                <a href="#" id="shopOwnerLink">أصحاب المحلات</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
