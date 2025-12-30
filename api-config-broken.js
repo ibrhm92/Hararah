@@ -7,6 +7,7 @@ const API_CONFIG = {
     // Replace this with your actual Google Apps Script Web App URL
     // استبدل هذا بـ URL الفعلي لتطبيق Google Apps Script Web App
     BASE_URL: 'https://script.google.com/macros/s/AKfycbx1hvx36P4YuSvVUbLgXK99pHH-AVZzdiQ4KWBQzQ_Vo0W9szE4UTrx4iMCWhcFif8d/exec',
+
     
     // Request timeout in milliseconds - مهلة الطلب بالمللي ثانية
     TIMEOUT: 30000,
@@ -72,40 +73,32 @@ class ApiClient {
     }
 
     // Generic request method - طلب عام
-    async request(action, type, data = null, params = {}) {
-        const url = new URL(this.baseUrl);
-
-        // Add all parameters to URL search params for Google Apps Script
-        // إضافة جميع المعلمات كـ search params لـ Google Apps Script
-        url.searchParams.append('action', action);
-        url.searchParams.append('type', type);
-
-        if (data) {
-            // Convert data object to individual search params
-            // تحويل كائن البيانات إلى معلمات منفصلة
-            Object.keys(data).forEach(key => {
-                if (data[key] !== null && data[key] !== undefined) {
-                    url.searchParams.append(key, JSON.stringify(data[key]));
-                }
+    async request(action, endpoint, data = null, params = null) {
+        const url = new URL(this.baseUrl + endpoint);
+        
+        if (params) {
+            Object.keys(params).forEach(key => {
+                url.searchParams.append(key, params[key]);
             });
         }
 
-        // Add additional params - إضافة معلمات إضافية
-        Object.keys(params).forEach(key => {
-            url.searchParams.append(key, params[key]);
-        });
-
         const options = {
-            method: 'GET', // Use GET for Google Apps Script compatibility
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
         };
 
+        if (data) {
+            options.body = JSON.stringify({
+                action: action,
+                data: data
+            });
+        }
+
         // Handle caching for GET requests - التعامل مع التخزين المؤقت للطلبات GET
-        const cacheKey = `${action}_${type}`;
         if (action === 'get') {
-            const cached = this.getCachedData(cacheKey);
+            const cached = this.getCachedData(endpoint);
             if (cached) {
                 return cached;
             }
@@ -116,8 +109,8 @@ class ApiClient {
             const result = await response.json();
 
             // Cache GET requests - تخزين الطلبات GET
-            if (action === 'get' && result.success) {
-                this.setCachedData(cacheKey, result.data);
+            if (action === 'get') {
+                this.setCachedData(endpoint, result);
             }
 
             return result;
@@ -437,3 +430,4 @@ if (typeof module !== 'undefined' && module.exports) {
     window.updateApiUrl = updateApiUrl;
     window.loadApiUrl = loadApiUrl;
 }
+

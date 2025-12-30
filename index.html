@@ -101,43 +101,83 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Home Page -->
-        <section id="homePage" class="page active">
-            <div class="hero-section">
+        <div id="homePage" class="page home-page active">
+            <!-- Hero Section -->
+            <section class="hero-section">
                 <div class="hero-content">
                     <h2>مرحباً بك في قرية حرارة</h2>
-                    <p>خدمات القرية الذكية - كل ما تحتاجه في مكان واحد</p>
+                    <p>منصتك الشاملة لجميع خدمات القرية</p>
+                </div>
+            </section>
+
+            <!-- Village Info Section -->
+            <section class="village-info">
+                <div class="info-card">
+                    <h3><i class="fas fa-info-circle"></i> نبذة عن قريتنا</h3>
+                    <p>قرية حرارة هي قرية مصرية تقع في محافظة البحيرة. تشتهر بالزراعة والطبيعة الخلابة، وتتميز بروح التعاون والتكاتف بين أهلها. تضم القرية العديد من الخدمات والمرافق التي تلبي احتياجات السكان.</p>
+                    <div class="village-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">5,000+</span>
+                            <span class="stat-label">عدد السكان</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">خدمة متوفرة</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">100+</span>
+                            <span class="stat-label">صانع ماهر</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actions Grid -->
+            <div class="actions-grid">
+                <div class="action-card" data-page="craftsmen">
+                    <i class="fas fa-tools"></i>
+                    <h3>الصنايعية والخدمات</h3>
+                    <p>ابحث عن الصنايعية المهرة والخدمات المتوفرة في القرية</p>
+                </div>
+                <div class="action-card" data-page="machines">
+                    <i class="fas fa-tractor"></i>
+                    <h3>أصحاب الآلات الزراعية</h3>
+                    <p>استأجر أو اشتري الآلات الزراعية من أصحابها</p>
+                </div>
+                <div class="action-card" data-page="shops">
+                    <i class="fas fa-store"></i>
+                    <h3>المحلات التجارية</h3>
+                    <p>اكتشف جميع المحلات والخدمات التجارية</p>
+                </div>
+                <div class="action-card" data-page="offers">
+                    <i class="fas fa-tag"></i>
+                    <h3>العروض والتخفيضات</h3>
+                    <p>احصل على أفضل العروض المعتمدة من الإدارة</p>
+                </div>
+                <div class="action-card" data-page="ads">
+                    <i class="fas fa-bullhorn"></i>
+                    <h3>الإعلانات المحلية</h3>
+                    <p>شاهد الإعلانات المعتمدة من القرية</p>
+                </div>
+                <div class="action-card" data-page="emergency">
+                    <i class="fas fa-phone-alt"></i>
+                    <h3>أرقام الطوارئ</h3>
+                    <p>احصل على أرقام الطوارئ والخدمات الهامة</p>
                 </div>
             </div>
 
-            <div class="quick-actions">
-                <h3>خدمات سريعة</h3>
-                <div class="action-grid">
-                    <button class="action-card" data-page="craftsmen">
-                        <i class="fas fa-tools"></i>
-                        <span>الصنايعية</span>
-                    </button>
-                    <button class="action-card" data-page="emergency">
-                        <i class="fas fa-phone-alt"></i>
-                        <span>الطوارئ</span>
-                    </button>
-                    <button class="action-card" data-page="offers">
-                        <i class="fas fa-tags"></i>
-                        <span>العروض</span>
-                    </button>
-                    <button class="action-card" data-page="add-service">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>أضف خدمة</span>
-                    </button>
+            <!-- Latest News Section -->
+            <section class="latest-news">
+                <h3><i class="fas fa-newspaper"></i> آخر الأخبار</h3>
+                <div id="latestNewsList">
+                    <div class="news-item">
+                        <h4>جاري تحميل الأخبار...</h4>
+                        <div class="news-date">يرجى الانتظار</div>
+                        <p>سيتم عرض الأخبار المعتمدة من الإدارة هنا</p>
+                    </div>
                 </div>
-            </div>
-
-            <div class="latest-news">
-                <h3>آخر الأخبار</h3>
-                <div id="latestNewsList" class="news-list">
-                    <!-- News items will be loaded here -->
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
 
         <!-- Other pages will be loaded dynamically -->
         <div id="pageContent"></div>

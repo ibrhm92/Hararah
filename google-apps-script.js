@@ -2,7 +2,7 @@
 // This script acts as a RESTful API for the village app
 
 // Global variables
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+const SPREADSHEET_ID = '1jEzL7epcUhsrCau8l90cINX5UcQqUEx_3vTgunUL3lo';
 const SHEET_NAMES = {
   craftsmen: 'Craftsmen',
   machines: 'Machines',
@@ -17,7 +17,7 @@ const SHEET_NAMES = {
 const CONFIG = {
   // Admin credentials (in production, use proper authentication)
   ADMIN_USERNAME: 'admin',
-  ADMIN_PASSWORD: 'admin123',
+  ADMIN_PASSWORD: '123',
   
   // CORS settings
   ALLOWED_ORIGINS: ['https://your-domain.vercel.app', 'http://localhost:3000'],
@@ -53,15 +53,32 @@ function handleRequest(e, method) {
         .setHeaders(headers);
     }
 
-    // Parse request parameters
-    const params = method === 'GET' ? e.parameter : JSON.parse(e.postData.contents);
+    // Parse request parameters (both GET and POST use e.parameter)
+    const params = e.parameter || {};
     const action = params.action;
     const type = params.type;
 
-    // Rate limiting check
-    if (!checkRateLimit(e)) {
-      return createErrorResponse('Rate limit exceeded', 429, headers);
+    // Parse data from parameters (JSON strings from frontend)
+    const data = {};
+    if (action === 'save' || action === 'update' || action === 'register') {
+      // Extract data fields from parameters
+      Object.keys(params).forEach(key => {
+        if (key !== 'action' && key !== 'type' && key !== 'id' && key !== 'approve') {
+          try {
+            data[key] = JSON.parse(params[key]);
+          } catch {
+            data[key] = params[key];
+          }
+        }
+      });
     }
+
+    console.log('Action:', action, 'Type:', type, 'Data keys:', Object.keys(data));
+
+    // Rate limiting check (disabled for debugging)
+    // if (!checkRateLimit(e)) {
+    //   return createErrorResponse('Rate limit exceeded', 429, headers);
+    // }
 
     // Route to appropriate handler
     let result;
@@ -70,25 +87,25 @@ function handleRequest(e, method) {
         result = handleGet(type, params);
         break;
       case 'save':
-        result = handleSave(type, params);
+        result = handleSave(type, { action: action, type: type, data: data });
         break;
       case 'update':
-        result = handleUpdate(type, params);
+        result = handleUpdate(type, { action: action, type: type, data: data, id: params.id });
         break;
       case 'delete':
-        result = handleDelete(type, params);
+        result = handleDelete(type, { action: action, type: type, id: params.id });
         break;
       case 'approve':
-        result = handleApprove(type, params);
+        result = handleApprove(type, { action: action, type: type, id: params.id, approve: params.approve });
         break;
       case 'login':
         result = handleLogin(params);
         break;
       case 'register':
-        result = handleRegister(params);
+        result = handleRegister({ action: action, type: type, data: data });
         break;
       default:
-        result = createErrorResponse('Invalid action', 400, headers);
+        result = createErrorResponse('Invalid action: ' + action, 400, headers);
     }
 
     return result;
@@ -152,9 +169,11 @@ function handleSave(type, params) {
     const sheet = getSheet(type);
     const data = params.data;
 
+    console.log('Saving data:', data);
+
     // Validate required fields
     if (!validateRequiredFields(type, data)) {
-      return createErrorResponse('Missing required fields', 400);
+      return createErrorResponse('Missing required fields for type: ' + type, 400);
     }
 
     // Add metadata
@@ -164,7 +183,12 @@ function handleSave(type, params) {
 
     // Convert to row format
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    const row = headers.map(header => data[header] || '');
+    const row = headers.map(header => {
+      const value = data[header];
+      return value !== undefined ? value : '';
+    });
+
+    console.log('Row to save:', row);
 
     // Add to sheet
     sheet.appendRow(row);
@@ -173,7 +197,7 @@ function handleSave(type, params) {
 
   } catch (error) {
     console.error('Error in handleSave:', error);
-    return createErrorResponse('Error saving data', 500);
+    return createErrorResponse('Error saving data: ' + error.toString(), 500);
   }
 }
 
@@ -184,6 +208,8 @@ function handleUpdate(type, params) {
     const data = params.data;
     const id = params.id;
 
+    console.log('Updating:', type, id, data);
+
     if (!id) {
       return createErrorResponse('ID is required for update', 400);
     }
@@ -192,7 +218,7 @@ function handleUpdate(type, params) {
     const allData = sheet.getDataRange().getValues();
     const headers = allData[0];
     const idIndex = headers.indexOf('ID');
-    
+
     let rowIndex = -1;
     for (let i = 1; i < allData.length; i++) {
       if (allData[i][idIndex] === id) {
@@ -210,14 +236,15 @@ function handleUpdate(type, params) {
 
     // Update the row
     headers.forEach((header, index) => {
-      sheet.getRange(rowIndex, index + 1).setValue(data[header] || '');
+      const value = data[header];
+      sheet.getRange(rowIndex, index + 1).setValue(value !== undefined ? value : '');
     });
 
     return createSuccessResponse(data, 'Data updated successfully');
 
   } catch (error) {
     console.error('Error in handleUpdate:', error);
-    return createErrorResponse('Error updating data', 500);
+    return createErrorResponse('Error updating data: ' + error.toString(), 500);
   }
 }
 
@@ -362,6 +389,8 @@ function handleRegister(params) {
   try {
     const { type, data } = params;
 
+    console.log('Registering:', type, data);
+
     if (type === 'shop-owner') {
       // Check if phone already exists
       const sheet = getSheet('shops');
@@ -381,7 +410,12 @@ function handleRegister(params) {
       data.updatedAt = new Date().toISOString();
       data.status = 'نشط';
 
-      const row = headers.map(header => data[header] || '');
+      const row = headers.map(header => {
+        const value = data[header];
+        return value !== undefined ? value : '';
+      });
+
+      console.log('Registration row:', row);
       sheet.appendRow(row);
 
       return createSuccessResponse(data, 'Registration successful');
@@ -391,7 +425,7 @@ function handleRegister(params) {
 
   } catch (error) {
     console.error('Error in handleRegister:', error);
-    return createErrorResponse('Error during registration', 500);
+    return createErrorResponse('Error during registration: ' + error.toString(), 500);
   }
 }
 

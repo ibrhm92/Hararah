@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار API - قرية حرارة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-flask"></i> اختبار API - قرية حرارة</h1>
+
+    <div class="test-section">
+        <h2><i class="fas fa-database"></i> اختبار استرجاع البيانات</h2>
+        <button class="btn" onclick="testGetCraftsmen()">جلب الصنايعية</button>
+        <button class="btn" onclick="testGetShops()">جلب المحلات</button>
+        <button class="btn" onclick="testGetOffers()">جلب العروض</button>
+        <div id="getResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2><i class="fas fa-plus"></i> اختبار حفظ البيانات</h2>
+        <button class="btn btn-success" onclick="testSaveCraftsman()">إضافة صانع تجريبي</button>
+        <button class="btn btn-success" onclick="testSaveShop()">إضافة محل تجريبي</button>
+        <button class="btn btn-success" onclick="testSaveOffer()">إضافة عرض تجريبي</button>
+        <div id="saveResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2><i class="fas fa-user-shield"></i> اختبار المصادقة</h2>
+        <button class="btn btn-danger" onclick="testAdminLogin()">تسجيل دخول الإدارة</button>
+        <button class="btn btn-danger" onclick="testShopOwnerRegister()">تسجيل صاحب محل</button>
+        <div id="authResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2><i class="fas fa-trash"></i> تنظيف البيانات التجريبية</h2>
+        <button class="btn btn-danger" onclick="clearTestData()">مسح البيانات التجريبية</button>
+        <div id="clearResults"></div>
+    </div>
+
+    <script src="api-config.js"></script>
+    <script>
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function testGetCraftsmen() {
+            try {
+                const data = await apiClient.getCraftsmen();
+                addResult('getResults', `تم جلب ${data.length} صانع`, 'success');
+                console.log('Craftsmen:', data);
+            } catch (error) {
+                addResult('getResults', `خطأ في جلب الصنايعية: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetShops() {
+            try {
+                const data = await apiClient.getShops();
+                addResult('getResults', `تم جلب ${data.length} محل`, 'success');
+                console.log('Shops:', data);
+            } catch (error) {
+                addResult('getResults', `خطأ في جلب المحلات: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetOffers() {
+            try {
+                const data = await apiClient.getOffers();
+                addResult('getResults', `تم جلب ${data.length} عرض`, 'success');
+                console.log('Offers:', data);
+            } catch (error) {
+                addResult('getResults', `خطأ في جلب العروض: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSaveCraftsman() {
+            try {
+                const testData = {
+                    name: `صانع تجريبي ${Date.now()}`,
+                    specialty: 'كهربائي',
+                    phone: `01${Math.floor(Math.random() * 100000000)}`,
+                    notes: 'بيانات تجريبية للاختبار'
+                };
+                const result = await apiClient.saveCraftsman(testData);
+                addResult('saveResults', `تم حفظ الصانع: ${result.name}`, 'success');
+                console.log('Saved craftsman:', result);
+            } catch (error) {
+                addResult('saveResults', `خطأ في حفظ الصانع: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSaveShop() {
+            try {
+                const testData = {
+                    name: `محل تجريبي ${Date.now()}`,
+                    type: 'بقالة',
+                    phone: `01${Math.floor(Math.random() * 100000000)}`,
+                    hours: '8:00 - 20:00',
+                    address: 'عنوان تجريبي',
+                    password: '123456'
+                };
+                const result = await apiClient.saveShop(testData);
+                addResult('saveResults', `تم حفظ المحل: ${result.name}`, 'success');
+                console.log('Saved shop:', result);
+            } catch (error) {
+                addResult('saveResults', `خطأ في حفظ المحل: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSaveOffer() {
+            try {
+                const testData = {
+                    shopName: 'محل تجريبي',
+                    shopPhone: '01234567890',
+                    description: 'عرض تجريبي للاختبار',
+                    discount: '20',
+                    duration: 'أسبوع',
+                    phone: '01234567890'
+                };
+                const result = await apiClient.saveOffer(testData);
+                addResult('saveResults', `تم حفظ العرض: ${result.description}`, 'success');
+                console.log('Saved offer:', result);
+            } catch (error) {
+                addResult('saveResults', `خطأ في حفظ العرض: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminLogin() {
+            try {
+                const result = await apiClient.adminLogin('admin', '123');
+                addResult('authResults', `تم تسجيل دخول الإدارة: ${result.username}`, 'success');
+                console.log('Admin login:', result);
+            } catch (error) {
+                addResult('authResults', `خطأ في تسجيل دخول الإدارة: ${error.message}`, 'error');
+            }
+        }
+
+        async function testShopOwnerRegister() {
+            try {
+                const testData = {
+                    name: `محل تجريبي ${Date.now()}`,
+                    type: 'بقالة',
+                    phone: `01${Math.floor(Math.random() * 100000000)}`,
+                    hours: '8:00 - 20:00',
+                    password: '123456'
+                };
+                const result = await apiClient.shopOwnerRegister(testData);
+                addResult('authResults', `تم تسجيل صاحب المحل: ${result.name}`, 'success');
+                console.log('Shop owner registered:', result);
+            } catch (error) {
+                addResult('authResults', `خطأ في تسجيل صاحب المحل: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearTestData() {
+            if (!confirm('هل أنت متأكد من مسح جميع البيانات التجريبية؟')) {
+                return;
+            }
+
+            try {
+                // This would require additional API endpoints for bulk delete
+                addResult('clearResults', 'وظيفة مسح البيانات التجريبية قيد التطوير', 'error');
+            } catch (error) {
+                addResult('clearResults', `خطأ في مسح البيانات: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            addResult('getResults', 'جاهز لاختبار استرجاع البيانات', 'info');
+            addResult('saveResults', 'جاهز لاختبار حفظ البيانات', 'info');
+            addResult('authResults', 'جاهز لاختبار المصادقة', 'info');
+        });
+    </script>
+</body>
+</html>
