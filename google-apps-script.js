@@ -20,7 +20,7 @@ const CONFIG = {
   ADMIN_PASSWORD: '123',
   
   // CORS settings
-  ALLOWED_ORIGINS: ['https://your-domain.vercel.app', 'http://localhost:3000'],
+  ALLOWED_ORIGINS: ['https://hararah.vercel.app', 'http://localhost:3000', 'https://your-domain.vercel.app'],
   
   // Rate limiting
   RATE_LIMIT: 100, // requests per minute
@@ -561,6 +561,20 @@ function testSaveCraftsman() {
   
   const result = handleSave('craftsmen', { data: testData });
   Logger.log(result.getContent());
+}
+
+// Handle CORS preflight OPTIONS requests
+function handleCorsPreflight() {
+   const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Max-Age': '86400'
+   };
+
+   return ContentService.createTextOutput('{}')
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders(headers);
 }
 
 // Initialize function to set up the spreadsheet
