@@ -1,7 +1,9 @@
 # إصلاح مشكلة API بسرعة 🚀
 
-## المشكلة
-تظهر رسالة "فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت" عند حفظ أو استرجاع البيانات.
+## المشكلة الحالية
+خطأ CORS: `"Access to fetch... has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource"`
+
+هذا يحدث لأن Google Apps Script لا يتعامل مع OPTIONS requests (preflight) بشكل صحيح عند إرسال headers مع GET requests.
 
 ## السبب
 لم يتم تحديث رابط Google Apps Script API في `api-config.js`.

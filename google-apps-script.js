@@ -53,25 +53,29 @@ function handleRequest(e, method) {
         .setHeaders(headers);
     }
 
-    // Parse request parameters (both GET and POST use e.parameter)
-    const params = e.parameter || {};
+    // Parse request parameters
+    let params = e.parameter || {};
+    let data = {};
+
+    if (method === 'POST' && e.postData && e.postData.contents) {
+      // For POST requests, parse JSON body and merge with URL parameters
+      try {
+        const postData = JSON.parse(e.postData.contents);
+        params = { ...params, ...postData };
+        data = postData.data || {};
+      } catch (parseError) {
+        console.error('Error parsing POST data:', parseError);
+        return createErrorResponse('Invalid JSON in request body', 400, headers);
+      }
+    } else if (method === 'GET') {
+      // For GET requests, parse data from URL parameters (JSON strings)
+      if (params.action === 'get') {
+        data = {};
+      }
+    }
+
     const action = params.action;
     const type = params.type;
-
-    // Parse data from parameters (JSON strings from frontend)
-    const data = {};
-    if (action === 'save' || action === 'update' || action === 'register') {
-      // Extract data fields from parameters
-      Object.keys(params).forEach(key => {
-        if (key !== 'action' && key !== 'type' && key !== 'id' && key !== 'approve') {
-          try {
-            data[key] = JSON.parse(params[key]);
-          } catch {
-            data[key] = params[key];
-          }
-        }
-      });
-    }
 
     console.log('Action:', action, 'Type:', type, 'Data keys:', Object.keys(data));
 
@@ -96,7 +100,7 @@ function handleRequest(e, method) {
         result = handleDelete(type, { action: action, type: type, id: params.id });
         break;
       case 'approve':
-        result = handleApprove(type, { action: action, type: type, id: params.id, approve: params.approve });
+        result = handleApprove(type, { action: action, type: type, id: params.id, approve: params.approve === 'true' || params.approve === true });
         break;
       case 'login':
         result = handleLogin(params);

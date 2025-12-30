@@ -148,10 +148,14 @@ const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
 ### 🚨 إذا ظهرت رسالة "فشل الاتصال بالخادم"
 **اقرأ الحل السريع**: [quick-fix-api.md](quick-fix-api.md)
 
+### 🚨 إذا ظهرت رسالة CORS
+**اقرأ إصلاح CORS**: [cors-fix.md](cors-fix.md)
+
 **الأسباب الشائعة:**
 - لم يتم تحديث رابط Google Apps Script في `api-config.js`
 - لم يتم نشر Apps Script كـ Web App
 - لم يتم مشاركة Google Sheets مع Apps Script
+- مشاكل CORS مع GET requests
 
 ## 🧪 اختبار النظام
 

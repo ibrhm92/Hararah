@@ -76,59 +76,83 @@ class ApiClient {
     async request(action, type, data = null, params = {}) {
         const url = new URL(this.baseUrl);
 
-        // Add all parameters to URL search params for Google Apps Script
-        // إضافة جميع المعلمات كـ search params لـ Google Apps Script
-        url.searchParams.append('action', action);
-        url.searchParams.append('type', type);
-
-        if (data) {
-            // Convert data object to individual search params
-            // تحويل كائن البيانات إلى معلمات منفصلة
-            Object.keys(data).forEach(key => {
-                if (data[key] !== null && data[key] !== undefined) {
-                    url.searchParams.append(key, JSON.stringify(data[key]));
-                }
-            });
-        }
-
-        // Add additional params - إضافة معلمات إضافية
-        Object.keys(params).forEach(key => {
-            url.searchParams.append(key, params[key]);
-        });
-
-        const options = {
-            method: 'GET', // Use GET for Google Apps Script compatibility
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
-
-        // Handle caching for GET requests - التعامل مع التخزين المؤقت للطلبات GET
-        const cacheKey = `${action}_${type}`;
+        // For GET requests, use URL parameters
+        // للطلبات GET، استخدم معلمات URL
         if (action === 'get') {
+            url.searchParams.append('action', action);
+            url.searchParams.append('type', type);
+
+            // Add additional params - إضافة معلمات إضافية
+            Object.keys(params).forEach(key => {
+                url.searchParams.append(key, params[key]);
+            });
+
+            const options = {
+                method: 'GET',
+                // Remove Content-Type header for GET to avoid CORS preflight
+                // إزالة Content-Type header لتجنب CORS preflight
+            };
+
+            // Handle caching for GET requests - التعامل مع التخزين المؤقت للطلبات GET
+            const cacheKey = `${action}_${type}`;
             const cached = this.getCachedData(cacheKey);
             if (cached) {
                 return cached;
             }
+
+            try {
+                console.log('🔗 GET API Request:', url.toString());
+                const response = await this.fetchWithRetry(url.toString(), options);
+                console.log('📡 Response status:', response.status);
+
+                const result = await response.json();
+                console.log('📋 API Response:', result);
+
+                // Cache GET requests - تخزين الطلبات GET
+                if (result.success) {
+                    this.setCachedData(cacheKey, result.data);
+                }
+
+                return result;
+            } catch (error) {
+                console.error('❌ GET API request failed:', error);
+                throw error;
+            }
+        }
+
+        // For POST/PUT/DELETE requests (save, update, delete), use POST with JSON body
+        // للطلبات POST/PUT/DELETE، استخدم POST مع JSON body
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: action,
+                type: type,
+                data: data,
+                ...params
+            })
+        };
+
+        // Clear cache for write operations
+        if (action === 'save' || action === 'update' || action === 'delete') {
+            this.clearCache(type);
         }
 
         try {
-            console.log('🔗 API Request:', url.toString());
+            console.log('🔗 POST API Request:', url.toString());
+            console.log('📤 Request data:', { action, type, data, ...params });
+
             const response = await this.fetchWithRetry(url.toString(), options);
             console.log('📡 Response status:', response.status);
 
             const result = await response.json();
             console.log('📋 API Response:', result);
 
-            // Cache GET requests - تخزين الطلبات GET
-            if (action === 'get' && result.success) {
-                this.setCachedData(cacheKey, result.data);
-            }
-
             return result;
         } catch (error) {
-            console.error('❌ API request failed:', error);
-            console.error('❌ Request URL was:', url.toString());
+            console.error('❌ POST API request failed:', error);
             throw error;
         }
     }
