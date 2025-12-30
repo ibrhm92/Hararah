@@ -54,9 +54,10 @@
 - **Google Fonts** (Tajawal)
 
 ### الخلفية
-- **Google Sheets** كقاعدة بيانات
-- **Google Apps Script** كـ Backend API
-- **RESTful API** للتعامل مع البيانات
+- **Supabase** كقاعدة بيانات و Backend
+- **PostgreSQL** قاعدة البيانات المتقدمة
+- **RESTful API** مع Real-time capabilities
+- **Row Level Security** للأمان المتقدم
 
 ### النشر
 - **Vercel** للاستضافة (أو أي استضافة static)
@@ -77,22 +78,132 @@
 
 ## 🔧 خطوات التثبيت
 
-### 1. إعداد Google Sheets و Apps Script
-📖 **اقرأ الدليل التفصيلي**: [google-setup-guide.md](google-setup-guide.md)
+### 1. إعداد Supabase
+📖 **اقرأ الدليل التفصيلي**: [supabase-setup-guide.md](supabase-setup-guide.md)
 
 **الخطوات السريعة:**
-1. أنشئ Google Sheets جديد باسم "قاعدة بيانات قرية حرارة"
-2. أنشئ 7 أوراق بالأسماء التالية:
-   - `Craftsmen` (الصنايعية)
-   - `Machines` (الآلات الزراعية)
-   - `Shops` (المحلات التجارية)
-   - `Offers` (العروض والتخفيضات)
-   - `Ads` (الإعلانات المحلية)
-   - `News` (الأخبار والتنبيهات)
-   - `Emergency` (أرقام الطوارئ)
-3. أنشئ مشروع Google Apps Script وانسخ الكود من `google-apps-script.js`
-4. انشر التطبيق واحصل على الـ URL
-5. حدث `api-config.js` بالـ URL الجديد
+1. أنشئ حساب على [Supabase](https://supabase.com)
+2. أنشئ مشروع جديد
+3. اذهب إلى **Settings > API** واحصل على:
+   - **Project URL**
+   - **anon/public key**
+4. أضف المتغيرات البيئية في Vercel:
+   - `SUPABASE_URL=your_project_url`
+   - `SUPABASE_ANON_KEY=your_anon_key`
+5. نفذ SQL التالي في **Supabase SQL Editor** لإنشاء الجداول:
+
+```sql
+-- إنشاء جدول الصنايعية
+CREATE TABLE craftsmen (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  specialty TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  address TEXT,
+  notes TEXT,
+  status TEXT DEFAULT 'نشط',
+  createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- إنشاء جدول الآلات
+CREATE TABLE machines (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  available BOOLEAN DEFAULT true,
+  notes TEXT,
+  createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- إنشاء جدول المحلات
+CREATE TABLE shops (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  hours TEXT NOT NULL,
+  address TEXT,
+  password TEXT,
+  registeredAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  status TEXT DEFAULT 'نشط'
+);
+
+-- إنشاء جدول العروض
+CREATE TABLE offers (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  shopName TEXT NOT NULL,
+  shopPhone TEXT NOT NULL,
+  description TEXT NOT NULL,
+  discount TEXT NOT NULL,
+  duration TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  approved BOOLEAN DEFAULT false,
+  rejected BOOLEAN DEFAULT false,
+  createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- إنشاء جدول الإعلانات
+CREATE TABLE ads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  type TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  approved BOOLEAN DEFAULT false,
+  rejected BOOLEAN DEFAULT false,
+  createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- إنشاء جدول الأخبار
+CREATE TABLE news (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  author TEXT DEFAULT 'الإدارة',
+  urgent BOOLEAN DEFAULT false,
+  createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- إنشاء جدول الطوارئ
+CREATE TABLE emergency (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  address TEXT,
+  notes TEXT,
+  icon TEXT DEFAULT 'emergency',
+  createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- تفعيل RLS (Row Level Security)
+ALTER TABLE craftsmen ENABLE ROW LEVEL SECURITY;
+ALTER TABLE machines ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shops ENABLE ROW LEVEL SECURITY;
+ALTER TABLE offers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE news ENABLE ROW LEVEL SECURITY;
+ALTER TABLE emergency ENABLE ROW LEVEL SECURITY;
+
+-- إنشاء سياسات للقراءة العامة
+CREATE POLICY "Enable read access for all users" ON craftsmen FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON machines FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON shops FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON offers FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON ads FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON news FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON emergency FOR SELECT USING (true);
+
+-- إنشاء سياسات للكتابة (للمستخدمين المصرح لهم فقط)
+-- يمكن تخصيص هذا حسب احتياجات التطبيق
+```
 
 ### 2. إعداد Google Apps Script
 1. من Google Sheets، اذهب إلى Extensions > Apps Script

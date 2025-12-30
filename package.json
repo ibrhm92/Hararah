@@ -1,0 +1,31 @@
+{
+  "name": "village-app",
+  "version": "1.0.0",
+  "description": "تطبيق خدمات القرية الذكية - Village Smart Services App",
+  "main": "index.html",
+  "scripts": {
+    "dev": "serve . -p 3000",
+    "build": "echo 'No build step required for static site'",
+    "start": "serve . -p 3000",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "keywords": [
+    "village",
+    "services",
+    "PWA",
+    "supabase",
+    "arabic",
+    "egypt"
+  ],
+  "author": "Village App Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
