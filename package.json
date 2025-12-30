@@ -1,0 +1,14 @@
+{
+  "name": "village-app",
+  "version": "1.0.0",
+  "description": "تطبيق قرية حرارة - خدمات القرية الذكية",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel dev"
+  },
+  "keywords": ["village", "app", "PWA", "services"],
+  "author": "Village App Team",
+  "license": "MIT"
+}

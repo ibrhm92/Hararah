@@ -29,8 +29,9 @@
 
 ```
 قرية حرارة/
-├── api/
-│   └── proxy.js               # API Proxy لحل مشاكل CORS
+├── pages/
+│   └── api/
+│       └── proxy.js           # API Proxy لحل مشاكل CORS
 ├── index.html                 # الصفحة الرئيسية
 ├── styles.css                 # تنسيقات CSS
 ├── script.js                  # JavaScript الرئيسي
@@ -163,8 +164,9 @@ const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
 4. **Vercel Proxy** يعيد الرد مع CORS headers صحيحة
 
 #### الملفات المعنية:
-- `api/proxy.js`: كود Vercel API Route
-- `vercel.json`: إعدادات Vercel
+- `pages/api/proxy.js`: كود Vercel API Route
+- `package.json`: إعدادات Node.js لـ Vercel
+- `.vercelignore`: ملفات يتم تجاهلها عند النشر
 - `api-config.js`: يشير إلى `/api/proxy` بدلاً من Google Script مباشرة
 
 #### فوائد الـ API Proxy:
