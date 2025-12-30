@@ -3,7 +3,6 @@
   "short_name": "قرية حرارة",
   "description": "تطبيق خدمات القرية الذكية - دليل شامل للخدمات والمحلات والأخبار المحلية",
   "start_url": "/",
-  "scope": "https://hararah.vercel.app",
   "display": "standalone",
   "background_color": "#2c3e50",
   "theme_color": "#2c3e50",
