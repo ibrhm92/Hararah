@@ -7,7 +7,7 @@ const API_CONFIG = {
     // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
     // مهم: استبدل هذا بـ URL الفعلي لتطبيق Google Apps Script Web App
     // Get it from: Google Apps Script > Deploy > New deployment > Web app
-    BASE_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec',
+    BASE_URL: 'https://script.google.com/macros/s/AKfycbx1hvx36P4YuSvVUbLgXK99pHH-AVZzdiQ4KWBQzQ_Vo0W9szE4UTrx4iMCWhcFif8d/exec',
     
     // Request timeout in milliseconds - مهلة الطلب بالمللي ثانية
     TIMEOUT: 30000,
