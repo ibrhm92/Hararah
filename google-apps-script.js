@@ -38,19 +38,10 @@ function doPost(e) {
 
 function handleRequest(e, method) {
   try {
-    // Set CORS headers
-    const headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Content-Type': 'application/json'
-    };
-
     // Handle OPTIONS request for CORS
     if (method === 'OPTIONS') {
       return ContentService.createTextOutput('')
-        .setMimeType(ContentService.MimeType.JSON)
-        .setHeaders(headers);
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     // Parse request parameters
@@ -65,7 +56,7 @@ function handleRequest(e, method) {
         data = postData.data || {};
       } catch (parseError) {
         console.error('Error parsing POST data:', parseError);
-        return createErrorResponse('Invalid JSON in request body', 400, headers);
+        return createErrorResponse('Invalid JSON in request body', 400);
       }
     } else if (method === 'GET') {
       // For GET requests, parse data from URL parameters (JSON strings)
@@ -109,17 +100,14 @@ function handleRequest(e, method) {
         result = handleRegister({ action: action, type: type, data: data });
         break;
       default:
-        result = createErrorResponse('Invalid action: ' + action, 400, headers);
+        result = createErrorResponse('Invalid action: ' + action, 400);
     }
 
     return result;
 
   } catch (error) {
     console.error('Error in handleRequest:', error);
-    return createErrorResponse('Internal server error', 500, {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json'
-    });
+    return createErrorResponse('Internal server error', 500);
   }
 }
 
@@ -505,13 +493,9 @@ function createSuccessResponse(data, message = 'Success') {
     message: message,
     data: data
   };
-  
+
   return ContentService.createTextOutput(JSON.stringify(response))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeaders({
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json'
-    });
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function createErrorResponse(message, code = 400, headers = null) {
@@ -520,15 +504,9 @@ function createErrorResponse(message, code = 400, headers = null) {
     error: message,
     code: code
   };
-  
-  const defaultHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  };
-  
+
   return ContentService.createTextOutput(JSON.stringify(response))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeaders(headers || defaultHeaders);
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // Deployment function
@@ -565,16 +543,8 @@ function testSaveCraftsman() {
 
 // Handle CORS preflight OPTIONS requests
 function handleCorsPreflight() {
-   const headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-      'Access-Control-Max-Age': '86400'
-   };
-
    return ContentService.createTextOutput('{}')
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeaders(headers);
+      .setMimeType(ContentService.MimeType.JSON);
 }
 
 // Initialize function to set up the spreadsheet
