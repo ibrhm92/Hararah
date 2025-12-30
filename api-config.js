@@ -4,9 +4,10 @@
 
 // API Configuration - إعدادات API
 const API_CONFIG = {
-    // Replace this with your actual Google Apps Script Web App URL
-    // استبدل هذا بـ URL الفعلي لتطبيق Google Apps Script Web App
-    BASE_URL: 'https://script.google.com/macros/s/AKfycbx1hvx36P4YuSvVUbLgXK99pHH-AVZzdiQ4KWBQzQ_Vo0W9szE4UTrx4iMCWhcFif8d/exec',
+    // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
+    // مهم: استبدل هذا بـ URL الفعلي لتطبيق Google Apps Script Web App
+    // Get it from: Google Apps Script > Deploy > New deployment > Web app
+    BASE_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec',
     
     // Request timeout in milliseconds - مهلة الطلب بالمللي ثانية
     TIMEOUT: 30000,
@@ -112,8 +113,12 @@ class ApiClient {
         }
 
         try {
+            console.log('🔗 API Request:', url.toString());
             const response = await this.fetchWithRetry(url.toString(), options);
+            console.log('📡 Response status:', response.status);
+
             const result = await response.json();
+            console.log('📋 API Response:', result);
 
             // Cache GET requests - تخزين الطلبات GET
             if (action === 'get' && result.success) {
@@ -122,7 +127,8 @@ class ApiClient {
 
             return result;
         } catch (error) {
-            console.error('API request failed:', error);
+            console.error('❌ API request failed:', error);
+            console.error('❌ Request URL was:', url.toString());
             throw error;
         }
     }
@@ -426,6 +432,25 @@ function loadApiUrl() {
 
 // Initialize API URL on load - تهيئة URL الـ API عند التحميل
 loadApiUrl();
+
+// Check if API URL needs to be configured - التحقق من إعداد URL الـ API
+function checkApiConfiguration() {
+    if (API_CONFIG.BASE_URL.includes('YOUR_DEPLOYMENT_ID')) {
+        console.warn('⚠️  API URL not configured! Please update BASE_URL in api-config.js');
+        console.warn('⚠️  لم يتم إعداد URL الـ API! يرجى تحديث BASE_URL في api-config.js');
+        console.warn('📖 Read google-setup-guide.md for instructions');
+        console.warn('📖 اقرأ google-setup-guide.md للتعليمات');
+
+        // Show warning in the UI if possible
+        if (typeof showError === 'function') {
+            showError('لم يتم إعداد رابط API. يرجى اتباع تعليمات google-setup-guide.md');
+        }
+    } else {
+        console.log('✅ API URL configured:', API_CONFIG.BASE_URL);
+    }
+}
+
+checkApiConfiguration();
 
 // Export utility functions - تصدير الوظائف المساعدة
 if (typeof module !== 'undefined' && module.exports) {

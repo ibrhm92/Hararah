@@ -143,6 +143,16 @@ const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
 - **Admin**: username: `admin`, password: `admin123`
 - **يمكن تغييرها من Google Apps Script**
 
+## 🔧 إصلاح مشاكل API
+
+### 🚨 إذا ظهرت رسالة "فشل الاتصال بالخادم"
+**اقرأ الحل السريع**: [quick-fix-api.md](quick-fix-api.md)
+
+**الأسباب الشائعة:**
+- لم يتم تحديث رابط Google Apps Script في `api-config.js`
+- لم يتم نشر Apps Script كـ Web App
+- لم يتم مشاركة Google Sheets مع Apps Script
+
 ## 🧪 اختبار النظام
 
 ### اختبار API

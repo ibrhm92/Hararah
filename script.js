@@ -2404,4 +2404,17 @@ window.addEventListener('offline', () => {
 // Initialize app when DOM is ready - تهيئة التطبيق عندما يكون DOM جاهزاً
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
+    checkApiConfigurationUI();
 });
+
+// Check API configuration and show warning if needed - التحقق من إعداد API وإظهار تحذير إذا لزم الأمر
+function checkApiConfigurationUI() {
+    setTimeout(() => {
+        if (window.API_CONFIG && window.API_CONFIG.BASE_URL.includes('YOUR_DEPLOYMENT_ID')) {
+            const warning = document.getElementById('apiWarning');
+            if (warning) {
+                warning.style.display = 'block';
+            }
+        }
+    }, 2000); // Show after loading screen disappears
+}
