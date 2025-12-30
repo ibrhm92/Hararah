@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "تطبيق قرية حرارة - خدمات القرية الذكية",
   "main": "index.html",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build step required'",
@@ -10,5 +13,6 @@
   },
   "keywords": ["village", "app", "PWA", "services"],
   "author": "Village App Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {}
 }
