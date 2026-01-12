@@ -73,15 +73,28 @@ async function getData(type) {
             console.log('Using cached data for', type);
             return cached;
         }
-        
+
         console.log('Fetching data from Firebase for', type);
+        console.log('Current domain:', window.location.origin);
         const data = await firebaseClient.getCollection(type);
+        console.log('Successfully fetched data for', type, 'count:', data.length);
         setCache(type, data);
         return data;
-        
+
     } catch (error) {
-        console.error('Error fetching data:', error);
-        return getFromCache(type) || [];
+        console.error('Error fetching data from Firebase:', error);
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        // Try cache as fallback
+        const cached = getFromCache(type);
+        if (cached) {
+            console.log('Using cached data as fallback for', type);
+            return cached;
+        }
+        return [];
     }
 }
 
