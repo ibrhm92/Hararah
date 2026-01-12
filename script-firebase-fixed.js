@@ -79,7 +79,11 @@ async function getData(type) {
         const data = await firebaseClient.getCollection(type);
         console.log('Successfully fetched data for', type, 'count:', data.length);
         setCache(type, data);
-        return data;
+
+        // Merge with local data - دمج مع البيانات المحلية
+        const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+        const merged = [...data, ...localData.filter(l => !data.find(d => d.id === l.id))];
+        return merged;
 
     } catch (error) {
         console.error('Error fetching data from Firebase:', error);
@@ -100,12 +104,15 @@ async function getData(type) {
             return cached;
         }
 
-        // Show error for critical data
-        if (type === 'emergency') {
-            showError('تعذر تحميل أرقام الطوارئ. تحقق من اتصال الإنترنت.');
+        // Fallback to localStorage - الرجوع للتخزين المحلي
+        const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+        console.log('Using local data for', type, 'count:', localData.length);
+        if (localData.length > 0) {
+            if (!document.querySelector('.offline-warning')) {
+                showOfflineWarning();
+            }
         }
-
-        return [];
+        return localData;
     }
 }
 
@@ -114,19 +121,38 @@ async function saveData(type, data) {
     try {
         console.log('Saving data to Firebase for', type, data);
         const result = await firebaseClient.addDocument(type, data);
-        
+
         if (result) {
             clearCache(type);
+            // Also save to localStorage as backup - حفظ في التخزين المحلي كنسخة احتياطية
+            const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+            const existingIndex = localData.findIndex(l => l.id === result.id);
+            if (existingIndex === -1) {
+                localData.push(result);
+                localStorage.setItem(`local_${type}`, JSON.stringify(localData));
+            }
             showSuccess('تم حفظ البيانات بنجاح');
-            return true;
+            return result;
         } else {
-            showError('فشل حفظ البيانات');
-            return false;
+            // Fallback to localStorage - الرجوع للتخزين المحلي
+            const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+            const localItem = { id: Date.now().toString(), ...data, local: true };
+            localData.push(localItem);
+            localStorage.setItem(`local_${type}`, JSON.stringify(localData));
+            clearCache(type);
+            showSuccess('تم حفظ البيانات محلياً (بدون قاعدة بيانات)');
+            return localItem;
         }
     } catch (error) {
         console.error('Error saving data:', error);
-        showError('حدث خطأ أثناء حفظ البيانات: ' + error.message);
-        return false;
+        // Fallback to localStorage - الرجوع للتخزين المحلي
+        const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+        const localItem = { id: Date.now().toString(), ...data, local: true };
+        localData.push(localItem);
+        localStorage.setItem(`local_${type}`, JSON.stringify(localData));
+        clearCache(type);
+        showSuccess('تم حفظ البيانات محلياً بسبب خطأ في قاعدة البيانات');
+        return localItem;
     }
 }
 
@@ -135,19 +161,48 @@ async function updateData(type, id, data) {
     try {
         console.log('Updating data in Firebase for', type, id, data);
         const result = await firebaseClient.updateDocument(type, id, data);
-        
+
         if (result) {
             clearCache(type);
+            // Update localStorage - تحديث التخزين المحلي
+            const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+            const index = localData.findIndex(l => l.id === id);
+            if (index !== -1) {
+                localData[index] = { ...localData[index], ...data };
+            } else {
+                localData.push({ id, ...data });
+            }
+            localStorage.setItem(`local_${type}`, JSON.stringify(localData));
             showSuccess('تم تحديث البيانات بنجاح');
-            return true;
+            return result;
         } else {
-            showError('فشل تحديث البيانات');
-            return false;
+            // Fallback to localStorage - الرجوع للتخزين المحلي
+            const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+            const index = localData.findIndex(l => l.id === id);
+            if (index !== -1) {
+                localData[index] = { ...localData[index], ...data };
+            } else {
+                localData.push({ id, ...data });
+            }
+            localStorage.setItem(`local_${type}`, JSON.stringify(localData));
+            clearCache(type);
+            showSuccess('تم تحديث البيانات محلياً (بدون قاعدة بيانات)');
+            return { id, ...data };
         }
     } catch (error) {
         console.error('Error updating data:', error);
-        showError('حدث خطأ أثناء تحديث البيانات: ' + error.message);
-        return false;
+        // Fallback to localStorage - الرجوع للتخزين المحلي
+        const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+        const index = localData.findIndex(l => l.id === id);
+        if (index !== -1) {
+            localData[index] = { ...localData[index], ...data };
+        } else {
+            localData.push({ id, ...data });
+        }
+        localStorage.setItem(`local_${type}`, JSON.stringify(localData));
+        clearCache(type);
+        showSuccess('تم تحديث البيانات محلياً بسبب خطأ في قاعدة البيانات');
+        return { id, ...data };
     }
 }
 
@@ -156,19 +211,33 @@ async function deleteData(type, id) {
     try {
         console.log('Deleting data from Firebase for', type, id);
         const result = await firebaseClient.deleteDocument(type, id);
-        
+
         if (result) {
             clearCache(type);
+            // Delete from localStorage - حذف من التخزين المحلي
+            const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+            const filtered = localData.filter(l => l.id !== id);
+            localStorage.setItem(`local_${type}`, JSON.stringify(filtered));
             showSuccess('تم حذف البيانات بنجاح');
             return true;
         } else {
-            showError('فشل حذف البيانات');
-            return false;
+            // Fallback to localStorage - الرجوع للتخزين المحلي
+            const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+            const filtered = localData.filter(l => l.id !== id);
+            localStorage.setItem(`local_${type}`, JSON.stringify(filtered));
+            clearCache(type);
+            showSuccess('تم حذف البيانات محلياً (بدون قاعدة بيانات)');
+            return true;
         }
     } catch (error) {
         console.error('Error deleting data:', error);
-        showError('حدث خطأ أثناء حذف البيانات: ' + error.message);
-        return false;
+        // Fallback to localStorage - الرجوع للتخزين المحلي
+        const localData = JSON.parse(localStorage.getItem(`local_${type}`) || '[]');
+        const filtered = localData.filter(l => l.id !== id);
+        localStorage.setItem(`local_${type}`, JSON.stringify(filtered));
+        clearCache(type);
+        showSuccess('تم حذف البيانات محلياً بسبب خطأ في قاعدة البيانات');
+        return true;
     }
 }
 
@@ -341,8 +410,9 @@ async function loadPage(page) {
                 await loadEmergencyPage();
                 break;
             case 'admin':
-                await loadAdminPage();
-                break;
+                // Redirect to admin page - التوجيه لصفحة الإدارة
+                window.location.href = 'admin.html';
+                return;
             case 'add-service':
                 await loadAddServicePage();
                 break;
@@ -375,41 +445,281 @@ async function loadCraftsmenPage() {
                         <option value="سباك">سباك</option>
                         <option value="حداد">حداد</option>
                         <option value="ميكانيكي">ميكانيكي</option>
+                        <option value="نقاش">نقاش</option>
+                        <option value="مبلط">مبلط</option>
+                        <option value="سباكة">سباكة</option>
+                        <option value="تكييف">تكييف</option>
+                        <option value="أخرى">أخرى</option>
                     </select>
                 </div>
             </div>
-            <div class="data-table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>الاسم</th>
-                            <th>التخصص</th>
-                            <th>رقم الهاتف</th>
-                            <th>العنوان</th>
-                            <th>الملاحظات</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${craftsmen.map(craftsman => `
-                            <tr>
-                                <td>${craftsman.name || 'غير محدد'}</td>
-                                <td><span class="badge bg-primary">${craftsman.specialty || 'بدون تخصص'}</span></td>
-                                <td>${craftsman.phone || 'لا يوجد'}</td>
-                                <td><i class="fas fa-map-marker-alt"></i> ${craftsman.address || 'لا يوجد'}</td>
-                                <td>${craftsman.notes || 'لا توجد ملاحظات'}</td>
-                                <td>
-                                    <a href="tel:${craftsman.phone}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-phone"></i> اتصال
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+            <div class="craftsmen-list">
+                ${craftsmen.length > 0 ? craftsmen.map(craftsman => `
+                    <div class="craftsman-card">
+                        <div class="craftsman-header">
+                            <h3>${craftsman.name || 'غير محدد'}</h3>
+                            <span class="status-badge status-${(craftsman.status || 'متاح').toLowerCase().replace(' ', '-')}">
+                                ${craftsman.status || 'متاح'}
+                            </span>
+                        </div>
+                        <div class="craftsman-details">
+                            <div class="detail-item">
+                                <i class="fas fa-tools"></i>
+                                <span>${craftsman.specialty || 'بدون تخصص'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>${craftsman.phone || 'لا يوجد'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${craftsman.address || 'لا يوجد'}</span>
+                            </div>
+                            ${craftsman.notes ? `
+                            <div class="detail-item">
+                                <i class="fas fa-sticky-note"></i>
+                                <span>${craftsman.notes}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="craftsman-actions">
+                            <a href="tel:${craftsman.phone}" class="btn btn-primary">
+                                <i class="fas fa-phone"></i> اتصال
+                            </a>
+                        </div>
+                    </div>
+                `).join('') : '<div class="empty-state"><i class="fas fa-tools"></i><h3>لا توجد صنايعية حالياً</h3><p>سيتم إضافة الصنايعية قريباً</p></div>'}
             </div>
         </div>
     `;
+
+    // Add CSS for mobile responsiveness
+    const style = document.createElement('style');
+    style.textContent = `
+        .craftsmen-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .craftsman-card {
+            background: var(--surface, #fff);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--border-color, #e0e0e0);
+        }
+
+        .craftsman-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .craftsman-header {
+            background: linear-gradient(135deg, var(--primary-color, #2c3e50), var(--primary-dark, #1a252f));
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .craftsman-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-متاح { background: #28a745; color: white; }
+        .status-مشغول { background: #ffc107; color: #000; }
+        .status-غير-متاح { background: #dc3545; color: white; }
+
+        .craftsman-details {
+            padding: 1rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary, #333);
+            font-size: 0.95rem;
+        }
+
+        .detail-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-item i {
+            width: 18px;
+            color: var(--primary-color, #2c3e50);
+            opacity: 0.8;
+        }
+
+        .craftsman-actions {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color, #e0e0e0);
+            background: var(--surface-alt, #f8f9fa);
+        }
+
+        .craftsman-actions .btn {
+            width: 100%;
+            text-align: center;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .craftsman-actions .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted, #6c757d);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary, #495057);
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .craftsmen-list {
+                grid-template-columns: 1fr;
+                padding: 0.5rem;
+                gap: 0.75rem;
+            }
+
+            .craftsman-card {
+                border-radius: 8px;
+            }
+
+            .craftsman-header {
+                padding: 0.875rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .craftsman-header h3 {
+                font-size: 1.1rem;
+            }
+
+            .status-badge {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .craftsman-details {
+                padding: 0.875rem;
+            }
+
+            .detail-item {
+                font-size: 0.9rem;
+                gap: 0.5rem;
+            }
+
+            .craftsman-actions {
+                padding: 0.875rem;
+            }
+
+            .empty-state {
+                padding: 2rem 1rem;
+            }
+
+            .empty-state i {
+                font-size: 3rem;
+            }
+
+            .empty-state h3 {
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .craftsmen-list {
+                padding: 0.25rem;
+            }
+
+            .craftsman-header {
+                padding: 0.75rem;
+            }
+
+            .craftsman-details {
+                padding: 0.75rem;
+            }
+
+            .craftsman-actions {
+                padding: 0.75rem;
+            }
+        }
+    `;
+
+    // Add search and filter functionality
+    const searchInput = document.getElementById('craftsmenSearch');
+    const filterSelect = document.getElementById('craftsmenFilter');
+
+    function filterCraftsmen() {
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const filterValue = filterSelect ? filterSelect.value : '';
+        const cards = document.querySelectorAll('.craftsman-card');
+
+        cards.forEach(card => {
+            const name = card.querySelector('h3').textContent.toLowerCase();
+            const specialtyElement = card.querySelector('.detail-item i.fa-tools');
+            const specialty = specialtyElement ? specialtyElement.nextElementSibling.textContent.toLowerCase() : '';
+
+            const matchesSearch = name.includes(searchTerm) || specialty.includes(searchTerm);
+            const matchesFilter = !filterValue || specialty.includes(filterValue.toLowerCase());
+
+            card.style.display = matchesSearch && matchesFilter ? 'block' : 'none';
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterCraftsmen);
+    }
+
+    if (filterSelect) {
+        filterSelect.addEventListener('change', filterCraftsmen);
+    }
+
+    document.head.appendChild(style);
 }
 
 // Load machines page - تحميل صفحة الآلات
