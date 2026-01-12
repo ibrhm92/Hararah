@@ -274,18 +274,19 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: var(--space-6);
-            margin-bottom: var(--space-8);
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
         }
         
         .stat-card {
             background: var(--surface);
-            padding: var(--space-6);
-            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
             transition: var(--transition);
             border: 1px solid var(--border-color);
+            text-align: center;
         }
         
         .stat-card:hover {
@@ -294,14 +295,14 @@
         }
         
         .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: var(--radius-lg);
-            display: flex;
+            width: 45px;
+            height: 45px;
+            border-radius: var(--radius);
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: var(--space-4);
-            font-size: 1.5rem;
+            margin-bottom: var(--space-3);
+            font-size: 1.2rem;
         }
         
         .stat-icon.blue { background: var(--info-light); color: var(--info); }
@@ -310,15 +311,15 @@
         .stat-icon.red { background: var(--error-light); color: var(--error); }
         
         .stat-value {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: var(--space-2);
+            margin-bottom: var(--space-1);
         }
         
         .stat-label {
             color: var(--text-secondary);
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 500;
         }
         
@@ -780,7 +781,27 @@
             }
             
             .stats-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-3);
+            }
+            
+            .stat-card {
+                padding: var(--space-3);
+            }
+            
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+                margin-bottom: var(--space-2);
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+            
+            .stat-label {
+                font-size: 0.7rem;
             }
             
             .actions-grid {
