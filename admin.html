@@ -352,6 +352,15 @@
         .services-management.active {
             display: block;
         }
+
+        .news-management {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .news-management.active {
+            display: block;
+        }
         
         .services-header {
             background: var(--surface);
@@ -1074,6 +1083,61 @@
         </div>
     </div>
 
+    <!-- News Management Section -->
+    <div id="newsManagement" class="news-management">
+        <div class="services-header">
+            <div class="services-title">
+                <i class="fas fa-newspaper"></i>
+                <h2>إدارة الأخبار والتنبيهات</h2>
+            </div>
+            <button class="add-service-btn" onclick="showAddNewsModal()">
+                <i class="fas fa-plus"></i>
+                <span>إضافة خبر جديد</span>
+            </button>
+            <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                <i class="fas fa-arrow-right"></i>
+                <span>العودة للوحة التحكم</span>
+            </button>
+        </div>
+
+        <div class="services-filters">
+            <div class="filter-group">
+                <label class="filter-label">البحث</label>
+                <input type="text" id="newsSearch" class="filter-input" placeholder="ابحث عن خبر..." onkeyup="filterNews()">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">النوع</label>
+                <select id="newsTypeFilter" class="filter-input" onchange="filterNews()">
+                    <option value="">جميع الأنواع</option>
+                    <option value="عادي">عادي</option>
+                    <option value="عاجل">عاجل</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="services-table-container">
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>العنوان</th>
+                        <th>المحتوى</th>
+                        <th>التاريخ</th>
+                        <th>النوع</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="newsTableBody">
+                    <!-- News will be loaded here -->
+                </tbody>
+            </table>
+            <div id="newsEmptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-newspaper"></i>
+                <h3>لا توجد أخبار حالياً</h3>
+                <p>ابدأ بإضافة أول خبر للقرية</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Add/Edit Service Modal -->
     <div id="serviceModal" class="modal">
         <div class="modal-content">
@@ -1149,7 +1213,63 @@
             </form>
         </div>
     </div>
-    
+
+    <!-- Add/Edit News Modal -->
+    <div id="newsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-newspaper"></i>
+                    <span id="newsModalTitle">إضافة خبر جديد</span>
+                </h3>
+                <button class="modal-close" onclick="closeNewsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newsForm">
+                <div class="modal-body">
+                    <input type="hidden" id="newsId">
+
+                    <div class="form-group">
+                        <label class="form-label" for="newsTitle">عنوان الخبر *</label>
+                        <input type="text" id="newsTitle" class="form-input" required placeholder="أدخل عنوان الخبر">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newsContent">محتوى الخبر *</label>
+                        <textarea id="newsContent" class="form-textarea" required placeholder="أدخل محتوى الخبر"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newsImage">الصورة (اختياري)</label>
+                        <input type="file" id="newsImage" class="form-input" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newsAuthor">الكاتب</label>
+                        <input type="text" id="newsAuthor" class="form-input" placeholder="أدخل اسم الكاتب">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="newsUrgent"> خبر عاجل
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeNewsModal()">
+                        <i class="fas fa-times"></i>
+                        <span>إلغاء</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="module" src="api-config-firebase.js"></script>
     <script type="module" src="script-firebase-fixed.js"></script>
     
@@ -1167,7 +1287,6 @@
         const errorText = document.getElementById('errorText');
         const loginContainer = document.getElementById('loginContainer');
         const dashboardContainer = document.getElementById('dashboardContainer');
-        const adminName = document.getElementById('adminName');
         
         // Check if already logged in
         window.addEventListener('DOMContentLoaded', () => {
@@ -1180,51 +1299,60 @@
         // Login form submission
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
-            
+
             // Show loading state
             loginBtn.classList.add('loading');
             loginBtn.disabled = true;
             errorMessage.classList.remove('show');
-            
-            // Simulate API call
-            setTimeout(() => {
-                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                    // Successful login
-                    sessionStorage.setItem('adminLoggedIn', 'true');
-                    sessionStorage.setItem('adminUsername', username);
-                    showDashboard();
-                } else {
-                    // Failed login
-                    errorText.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
-                    errorMessage.classList.add('show');
-                    
-                    // Shake animation
-                    loginForm.style.animation = 'shake 0.5s';
-                    setTimeout(() => {
-                        loginForm.style.animation = '';
-                    }, 500);
-                }
-                
+
+            // Check credentials
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Successful login
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                sessionStorage.setItem('adminUsername', username);
                 loginBtn.classList.remove('loading');
                 loginBtn.disabled = false;
-            }, 1000);
+                showDashboard();
+            } else {
+                // Failed login
+                errorText.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                errorMessage.classList.add('show');
+
+                // Shake animation
+                loginForm.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    loginForm.style.animation = '';
+                }, 500);
+
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }
         });
         
         // Show dashboard
         function showDashboard() {
             const username = sessionStorage.getItem('adminUsername') || 'المسؤول';
             adminName.textContent = username;
-            
+
+            // Update visitor statistics
+            const visits = JSON.parse(localStorage.getItem('villageVisits') || '{"total": 0, "monthly": {}, "yearly": {}}');
+            const now = new Date();
+            const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            const yearKey = now.getFullYear().toString();
+
+          
+          
+
             loginContainer.style.display = 'none';
             dashboardContainer.style.display = 'block';
-            
+
             // Animate dashboard appearance
             dashboardContainer.style.opacity = '0';
             dashboardContainer.style.transform = 'translateY(20px)';
-            
+
             setTimeout(() => {
                 dashboardContainer.style.transition = 'all 0.5s ease';
                 dashboardContainer.style.opacity = '1';
@@ -1502,7 +1630,127 @@
         }
         
         function manageNews() {
-            alert('صفحة إدارة الأخبار - قيد التطوير');
+            showNewsManagement();
+        }
+
+        function showNewsManagement() {
+            const dashboard = document.getElementById('dashboardContainer');
+            const newsMgmt = document.getElementById('newsManagement');
+
+            if (dashboard) {
+                dashboard.style.display = 'none';
+            }
+            if (newsMgmt) {
+                newsMgmt.classList.add('active');
+            }
+            loadNews();
+        }
+
+        async function loadNews() {
+            try {
+                newsData = await window.getData('news');
+                renderNews();
+            } catch (error) {
+                console.error('Error loading news:', error);
+                showNotification('حدث خطأ في تحميل الأخبار', 'error');
+                newsData = [];
+                renderNews();
+            }
+        }
+
+        function renderNews(filteredNews = null) {
+            const tbody = document.getElementById('newsTableBody');
+            const emptyState = document.getElementById('newsEmptyState');
+            const newsToRender = filteredNews || newsData;
+
+            if (newsToRender.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = newsToRender.map(news => `
+                <tr>
+                    <td>${news.title}</td>
+                    <td>${news.content ? news.content.substring(0, 50) + '...' : ''}</td>
+                    <td>${news.created_at ? new Date(news.created_at).toLocaleDateString('ar-SA') : 'غير محدد'}</td>
+                    <td>
+                        <span class="badge ${news.urgent ? 'badge-warning' : 'badge-primary'}">
+                            ${news.urgent ? 'عاجل' : 'عادي'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-sm btn-edit" onclick="editNews('${news.id}')">
+                                <i class="fas fa-edit"></i>
+                                تعديل
+                            </button>
+                            <button class="btn-sm btn-delete" onclick="deleteNews('${news.id}')">
+                                <i class="fas fa-trash"></i>
+                                حذف
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterNews() {
+            const searchTerm = document.getElementById('newsSearch').value.toLowerCase();
+            const typeFilter = document.getElementById('newsTypeFilter').value;
+
+            const filtered = newsData.filter(news => {
+                const matchesSearch = news.title.toLowerCase().includes(searchTerm) ||
+                                    (news.content && news.content.toLowerCase().includes(searchTerm));
+                const matchesType = !typeFilter || (typeFilter === 'عاجل' ? news.urgent : !news.urgent);
+
+                return matchesSearch && matchesType;
+            });
+
+            renderNews(filtered);
+        }
+
+        function showAddNewsModal() {
+            currentNewsId = null;
+            document.getElementById('newsModalTitle').textContent = 'إضافة خبر جديد';
+            document.getElementById('newsForm').reset();
+            document.getElementById('newsModal').classList.add('active');
+        }
+
+        function editNews(id) {
+            const news = newsData.find(n => n.id === id);
+            if (!news) return;
+
+            currentNewsId = id;
+            document.getElementById('newsModalTitle').textContent = 'تعديل الخبر';
+            document.getElementById('newsId').value = news.id;
+            document.getElementById('newsTitle').value = news.title;
+            document.getElementById('newsContent').value = news.content;
+            document.getElementById('newsImage').value = news.image || '';
+            document.getElementById('newsAuthor').value = news.author || '';
+            document.getElementById('newsUrgent').checked = news.urgent || false;
+            document.getElementById('newsModal').classList.add('active');
+        }
+
+        function closeNewsModal() {
+            document.getElementById('newsModal').classList.remove('active');
+            document.getElementById('newsForm').reset();
+            currentNewsId = null;
+        }
+
+        async function deleteNews(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الخبر؟')) {
+                try {
+                    await window.deleteData('news', id);
+                    newsData = newsData.filter(n => n.id !== id);
+                    renderNews();
+                    showNotification('تم حذف الخبر بنجاح', 'success');
+                } catch (error) {
+                    console.error('Error deleting news:', error);
+                    showNotification('حدث خطأ في حذف الخبر', 'error');
+                }
+            }
         }
         
         function manageOffers() {
@@ -1521,6 +1769,63 @@
             alert('صفحة التقارير والإحصائيات - قيد التطوير');
         }
         
+        let newsData = [];
+        let currentNewsId = null;
+
+        // News form submission handler
+        document.getElementById('newsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const imageFile = document.getElementById('newsImage').files[0];
+            let imageUrl = '';
+
+            if (imageFile) {
+                showNotification('جاري رفع الصورة...', 'info');
+                try {
+                    imageUrl = await window.uploadImage(imageFile);
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    showNotification('حدث خطأ في رفع الصورة', 'error');
+                    return;
+                }
+            } else if (currentNewsId) {
+                // Keep old image if editing and no new file
+                const oldNews = newsData.find(n => n.id === currentNewsId);
+                imageUrl = oldNews ? oldNews.image || '' : '';
+            }
+
+            const formData = {
+                title: document.getElementById('newsTitle').value.trim(),
+                content: document.getElementById('newsContent').value.trim(),
+                image: imageUrl,
+                author: document.getElementById('newsAuthor').value.trim(),
+                urgent: document.getElementById('newsUrgent').checked
+            };
+
+            try {
+                if (currentNewsId) {
+                    // Edit existing news
+                    await window.updateData('news', currentNewsId, formData);
+                    const index = newsData.findIndex(n => n.id === currentNewsId);
+                    if (index !== -1) {
+                        newsData[index] = { ...newsData[index], ...formData };
+                    }
+                    showNotification('تم تحديث الخبر بنجاح', 'success');
+                } else {
+                    // Add new news
+                    const newNews = await window.saveData('news', formData);
+                    newsData.push(newNews);
+                    showNotification('تم إضافة الخبر بنجاح', 'success');
+                }
+
+                renderNews();
+                closeNewsModal();
+            } catch (error) {
+                console.error('Error saving news:', error);
+                showNotification('حدث خطأ في حفظ الخبر', 'error');
+            }
+        });
+
         // Make functions globally accessible
         window.manageServices = manageServices;
         window.showServicesManagement = showServicesManagement;
@@ -1530,6 +1835,13 @@
         window.deleteService = deleteService;
         window.closeServiceModal = closeServiceModal;
         window.filterServices = filterServices;
+        window.manageNews = manageNews;
+        window.showNewsManagement = showNewsManagement;
+        window.showAddNewsModal = showAddNewsModal;
+        window.editNews = editNews;
+        window.deleteNews = deleteNews;
+        window.closeNewsModal = closeNewsModal;
+        window.filterNews = filterNews;
         
         // Add shake animation
         const style = document.createElement('style');

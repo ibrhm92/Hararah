@@ -1244,19 +1244,35 @@ async function loadInitialData() {
         // Load latest news - تحميل آخر الأخبار
         const news = await getData('news');
         const latestNewsList = document.getElementById('latestNewsList');
-        
+
         if (latestNewsList) {
             if (news.length > 0) {
-                const latestNews = news.slice(0, 3);
+                // Sort by created_at descending - ترتيب حسب التاريخ تنازلياً
+                const sortedNews = news.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                const latestNews = sortedNews.slice(0, 3);
                 latestNewsList.innerHTML = latestNews.map(item => `
                     <div class="news-item ${item.urgent ? 'urgent' : ''}">
-                        <h4>${item.title || 'غير محدد'}</h4>
-                        <div class="news-date">${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-SA') : 'غير محدد'}</div>
-                        <p>${item.content ? item.content.substring(0, 100) + '...' : 'لا يوجد محتوى'}</p>
+                        ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-image">` : ''}
+                        <div class="news-content">
+                            <h4>${item.title || 'غير محدد'}</h4>
+                            <div class="news-date">${item.created_at ? (item.created_at.toDate ? item.created_at.toDate() : new Date(item.created_at)).toLocaleDateString('ar-SA') : 'غير محدد'}</div>
+                            <p>${item.content ? item.content.substring(0, 100) + '...' : 'لا يوجد محتوى'}</p>
+                            ${item.author ? `<div class="news-author">بقلم: ${item.author}</div>` : ''}
+                        </div>
                     </div>
                 `).join('');
+
+                // Show more button if more than 3 news
+                const showMoreBtn = document.getElementById('showMoreNews');
+                if (sortedNews.length > 3) {
+                    showMoreBtn.style.display = 'block';
+                } else {
+                    showMoreBtn.style.display = 'none';
+                }
             } else {
                 latestNewsList.innerHTML = '<div class="text-center">لا توجد أخبار حالياً</div>';
+                const showMoreBtn = document.getElementById('showMoreNews');
+                showMoreBtn.style.display = 'none';
             }
         }
     } catch (error) {
@@ -1290,11 +1306,22 @@ function showAddOfferForm() {
 // EXPORT FUNCTIONS - تصدير الوظائف
 // =============================================================================
 
+// Upload image - رفع الصورة
+async function uploadImage(file) {
+    try {
+        return await firebaseClient.uploadImage(file);
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        throw error;
+    }
+}
+
 // Export functions for use in HTML - تصدير الوظائف للاستخدام في HTML
 window.getData = getData;
 window.saveData = saveData;
 window.updateData = updateData;
 window.deleteData = deleteData;
+window.uploadImage = uploadImage;
 window.navigateToPage = navigateToPage;
 window.loadPage = loadPage;
 window.showSuccess = showSuccess;

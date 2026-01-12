@@ -220,6 +220,38 @@
                         <p>سيتم عرض الأخبار المعتمدة من الإدارة هنا</p>
                     </div>
                 </div>
+                <div id="showMoreNews" class="show-more-news" style="display: none; text-align: center; margin-top: 1rem;">
+                    <button onclick="navigateToPage('news')" class="btn btn-primary">عرض المزيد من الأخبار</button>
+                </div>
+                <style>
+                    .news-item {
+                        display: flex;
+                        gap: 1rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                        background: var(--surface, #fff);
+                        border-radius: 8px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                    .news-image {
+                        width: 120px;
+                        height: 120px;
+                        object-fit: cover;
+                        border-radius: 8px;
+                    }
+                    .news-content {
+                        flex: 1;
+                    }
+                    .news-author {
+                        font-size: 0.8rem;
+                        color: var(--text-muted, #6c757d);
+                        margin-top: 0.25rem;
+                    }
+                    .show-more-news .btn {
+                        padding: 0.75rem 1.5rem;
+                        font-size: 1rem;
+                    }
+                </style>
             </section>
         </div>
 
@@ -240,5 +272,7 @@
 
 <script type="module" src="api-config-firebase.js"></script>
 <script type="module" src="script-firebase-fixed.js"></script>
+
+
 </body>
 </html>

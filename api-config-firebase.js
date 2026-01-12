@@ -2,6 +2,7 @@
 // Import Firebase modules - استيراد وحدات Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
 
 // Firebase Configuration - إعدادات Firebase
@@ -18,6 +19,7 @@ const firebaseConfig = {
 // Initialize Firebase - تهيئة Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const analytics = getAnalytics(app);
 
 // API Configuration - إعدادات API
@@ -268,17 +270,33 @@ class FirebaseApiClient {
             throw error;
         }
     }
+
+    // Upload image (base64 encoding) - رفع الصورة (ترميز base64)
+    async uploadImage(file) {
+        try {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        } catch (error) {
+            console.error('Error encoding image:', error);
+            throw error;
+        }
+    }
 }
 
 // Create Firebase API client - إنشاء عميل Firebase API
 const firebaseClient = new FirebaseApiClient();
 
 // Export for use in other modules - تصدير للاستخدام في الوحدات الأخرى
-export { 
-    app, 
-    db, 
-    analytics, 
-    firebaseClient, 
-    API_CONFIG, 
-    firebaseConfig 
+export {
+    app,
+    db,
+    storage,
+    analytics,
+    firebaseClient,
+    API_CONFIG,
+    firebaseConfig
 };
