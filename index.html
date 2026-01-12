@@ -44,6 +44,9 @@
                 </a>
             </div>
             <div class="header-actions">
+                <button id="backBtn" class="btn-icon" title="الرئيسية" onclick="navigateToPage('home')">
+                    <i class="fas fa-home"></i>
+                </button>
                 <button id="refreshBtn" class="btn-icon" title="تحديث">
                     <i class="fas fa-sync-alt"></i>
                 </button>
@@ -140,35 +143,72 @@
             <div class="actions-grid">
                 <div class="action-card" data-page="craftsmen">
                     <i class="fas fa-tools"></i>
-                    <h3>الصنايعية والخدمات</h3>
-                    <p>ابحث عن الصنايعية المهرة والخدمات المتوفرة في القرية</p>
+                    <h3>الصنايعية</h3>
+                    <p>الخدمات والحرف</p>
                 </div>
                 <div class="action-card" data-page="machines">
                     <i class="fas fa-tractor"></i>
-                    <h3>أصحاب الآلات الزراعية</h3>
-                    <p>استأجر أو اشتري الآلات الزراعية من أصحابها</p>
+                    <h3>الآلات الزراعية</h3>
+                    <p>أصحاب الآلات</p>
                 </div>
                 <div class="action-card" data-page="shops">
                     <i class="fas fa-store"></i>
-                    <h3>المحلات التجارية</h3>
-                    <p>اكتشف جميع المحلات والخدمات التجارية</p>
+                    <h3>المحلات</h3>
+                    <p>التجارية</p>
                 </div>
                 <div class="action-card" data-page="offers">
                     <i class="fas fa-tag"></i>
-                    <h3>العروض والتخفيضات</h3>
-                    <p>احصل على أفضل العروض المعتمدة من الإدارة</p>
+                    <h3>العروض</h3>
+                    <p>والتخفيضات</p>
                 </div>
                 <div class="action-card" data-page="ads">
                     <i class="fas fa-bullhorn"></i>
-                    <h3>الإعلانات المحلية</h3>
-                    <p>شاهد الإعلانات المعتمدة من القرية</p>
+                    <h3>الإعلانات</h3>
+                    <p>المحلية</p>
                 </div>
                 <div class="action-card" data-page="emergency">
                     <i class="fas fa-phone-alt"></i>
-                    <h3>أرقام الطوارئ</h3>
-                    <p>احصل على أرقام الطوارئ والخدمات الهامة</p>
+                    <h3>الطوارئ</h3>
+                    <p>أرقام الطوارئ</p>
                 </div>
             </div>
+
+            <style>
+                .actions-grid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 1rem !important;
+                    max-width: 600px;
+                    margin: 0 auto;
+                }
+                .action-card {
+                    min-height: auto !important;
+                    padding: 1rem !important;
+                }
+                .action-card h3 {
+                    font-size: 1rem !important;
+                    margin-bottom: 0.25rem !important;
+                }
+                .action-card p {
+                    font-size: 0.8rem !important;
+                    margin: 0 !important;
+                }
+                @media (max-width: 768px) {
+                    .actions-grid {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        max-width: none;
+                        gap: 0.75rem !important;
+                    }
+                    .action-card {
+                        padding: 0.75rem !important;
+                    }
+                    .action-card h3 {
+                        font-size: 0.9rem !important;
+                    }
+                    .action-card p {
+                        font-size: 0.75rem !important;
+                    }
+                }
+            </style>
 
             <!-- Latest News Section -->
             <section class="latest-news">

@@ -944,20 +944,38 @@ async function loadNewsPage() {
 // Load emergency page - تحميل صفحة الطوارئ
 async function loadEmergencyPage() {
     const emergency = await getData('emergency');
+
+    // Government emergency numbers - أرقام الطوارئ الحكومية
+    const governmentEmergency = [
+        { name: 'الشرطة', phone: '122', icon: 'shield-alt', address: 'طوارئ الشرطة', notes: 'للطوارئ الأمنية والجرائم' },
+        { name: 'الإسعاف', phone: '123', icon: 'ambulance', address: 'طوارئ الإسعاف', notes: 'للحالات الطبية الطارئة' },
+        { name: 'الحماية المدنية', phone: '180', icon: 'fire-extinguisher', address: 'إطفاء وحماية مدنية', notes: 'للحرائق والكوارث الطبيعية' },
+        { name: 'الكهرباء', phone: '121', icon: 'bolt', address: 'شركة الكهرباء المصرية', notes: 'لأعطال الكهرباء والانقطاعات' },
+        { name: 'الغاز الطبيعي', phone: '129', icon: 'fire', address: 'شركة الغاز الطبيعي', notes: 'لأعطال الغاز وتسربات' },
+        { name: 'المياه', phone: '125', icon: 'tint', address: 'شركة مياه الشرب والصرف الصحي', notes: 'لأعطال المياه والصرف الصحي' },
+        { name: 'التليفونات', phone: '144', icon: 'phone', address: 'الشركة المصرية للاتصالات', notes: 'لأعطال الهاتف الثابت' },
+        { name: 'الطوارئ السياحية', phone: '126', icon: 'plane', address: 'غرفة عمليات السياحة', notes: 'للمساعدة السياحية' }
+    ];
+
+    const allEmergency = [...governmentEmergency, ...emergency];
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page emergency-page active">
             <div class="page-header">
                 <h2><i class="fas fa-phone-alt"></i> أرقام الطوارئ</h2>
             </div>
+            <div class="emergency-notice">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>في حالة الطوارئ، اتصل بالرقم المناسب فوراً</p>
+            </div>
             <div class="emergency-grid">
-                ${emergency.map(item => `
+                ${allEmergency.map(item => `
                     <div class="emergency-card">
                         <div class="emergency-icon">
-                            <i class="fas fa-${item.icon === 'ambulance' ? 'ambulance' : item.icon === 'fire' ? 'fire-extinguisher' : item.icon === 'police' ? 'shield-alt' : item.icon === 'hospital' ? 'hospital' : 'phone-alt'}"></i>
+                            <i class="fas fa-${item.icon || 'phone-alt'}"></i>
                         </div>
                         <div class="emergency-info">
                             <h3>${item.name || 'غير محدد'}</h3>
