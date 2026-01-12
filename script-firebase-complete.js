@@ -1,4 +1,4 @@
-// Fixed Firebase Script - سكريبت Firebase مصحح
+// Complete Firebase Script - سكريبت Firebase الكامل
 // Import Firebase client - استيراد عميل Firebase
 import { firebaseClient } from './api-config-firebase.js';
 
@@ -73,39 +73,15 @@ async function getData(type) {
             console.log('Using cached data for', type);
             return cached;
         }
-
+        
         console.log('Fetching data from Firebase for', type);
-        console.log('Current domain:', window.location.origin);
         const data = await firebaseClient.getCollection(type);
-        console.log('Successfully fetched data for', type, 'count:', data.length);
         setCache(type, data);
         return data;
-
+        
     } catch (error) {
-        console.error('Error fetching data from Firebase:', error);
-        console.error('Error details:', {
-            message: error.message,
-            code: error.code,
-            stack: error.stack
-        });
-
-        // Try cache as fallback with warning
-        const cached = getFromCache(type);
-        if (cached && cached.length > 0) {
-            console.log('Using cached data as fallback for', type);
-            // Show warning about offline mode
-            if (!document.querySelector('.offline-warning')) {
-                showOfflineWarning();
-            }
-            return cached;
-        }
-
-        // Show error for critical data
-        if (type === 'emergency') {
-            showError('تعذر تحميل أرقام الطوارئ. تحقق من اتصال الإنترنت.');
-        }
-
-        return [];
+        console.error('Error fetching data:', error);
+        return getFromCache(type) || [];
     }
 }
 
@@ -172,6 +148,57 @@ async function deleteData(type, id) {
     }
 }
 
+// Approve item - موافقة على عنصر
+async function approveItem(type, id, approved) {
+    try {
+        console.log('Approving item in Firebase for', type, id, approved);
+        const result = await firebaseClient.approveItem(type, id, approved);
+        
+        if (result) {
+            clearCache(type);
+            showSuccess(approved ? 'تمت الموافقة بنجاح' : 'تم الرفض بنجاح');
+            return true;
+        } else {
+            showError('فشل عملية الموافقة');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error approving item:', error);
+        showError('حدث خطأ أثناء الموافقة: ' + error.message);
+        return false;
+    }
+}
+
+// Search data - البحث في البيانات
+async function searchData(type, searchTerm, fields = []) {
+    try {
+        console.log('Searching data in Firebase for', type, searchTerm);
+        const data = await firebaseClient.searchDocuments(type, searchTerm, fields);
+        return data;
+    } catch (error) {
+        console.error('Error searching data:', error);
+        return [];
+    }
+}
+
+// Get statistics - جلب الإحصائيات
+async function getStats() {
+    try {
+        console.log('Getting statistics from Firebase');
+        const stats = {};
+        const collections = ['craftsmen', 'machines', 'shops', 'offers', 'ads', 'news', 'emergency'];
+        
+        for (const collection of collections) {
+            stats[collection] = await firebaseClient.getCollectionStats(collection);
+        }
+        
+        return stats;
+    } catch (error) {
+        console.error('Error getting stats:', error);
+        return {};
+    }
+}
+
 // =============================================================================
 // UTILITY FUNCTIONS - وظائف مساعدة
 // =============================================================================
@@ -231,43 +258,15 @@ function showInfo(message) {
         <span>${message}</span>
     `;
     document.body.appendChild(toast);
-
+    
     // Show toast - عرض الإشعار
     setTimeout(() => toast.classList.add('show'), 100);
-
+    
     // Hide toast after 3 seconds - إخفاء الإشعار بعد 3 ثواني
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => document.body.removeChild(toast), 300);
     }, 3000);
-}
-
-// Show offline warning - عرض تحذير العمل دون اتصال
-function showOfflineWarning() {
-    if (document.querySelector('.offline-warning')) return;
-
-    const warning = document.createElement('div');
-    warning.className = 'offline-warning alert alert-warning';
-    warning.innerHTML = `
-        <i class="fas fa-wifi-slash"></i>
-        <strong>وضع دون اتصال:</strong> يتم عرض البيانات المحفوظة سابقاً. قد لا تكون محدثة.
-        <button onclick="this.parentElement.remove()" class="btn-close" style="float: left; margin-left: 10px;">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-
-    // Insert after header
-    const header = document.querySelector('.header');
-    if (header) {
-        header.insertAdjacentElement('afterend', warning);
-    }
-
-    // Auto-hide after 10 seconds
-    setTimeout(() => {
-        if (warning.parentElement) {
-            warning.remove();
-        }
-    }, 10000);
 }
 
 // =============================================================================
@@ -277,10 +276,10 @@ function showOfflineWarning() {
 // Navigate to page - التنقل بين الصفحات
 function navigateToPage(page) {
     currentPage = page;
-
+    
     // Hide all pages - إخفاء جميع الصفحات
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-
+    
     // Show target page - إظهار الصفحة المستهدفة
     const targetPage = document.getElementById(page + 'Page');
     if (targetPage) {
@@ -289,16 +288,10 @@ function navigateToPage(page) {
         // Load page dynamically - تحميل الصفحة ديناميكياً
         loadPage(page);
     }
-
-    // Scroll to top after page change - التمرير إلى الأعلى بعد تغيير الصفحة
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-
+    
     // Close navigation - إغلاق القائمة
     document.getElementById('mainNav').classList.remove('active');
-
+    
     // Update active nav - تحديث القائمة النشطة
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
@@ -359,9 +352,9 @@ async function loadPage(page) {
 async function loadCraftsmenPage() {
     const craftsmen = await getData('craftsmen');
     const pageContent = document.getElementById('pageContent');
-
+    
     if (!pageContent) return;
-
+    
     pageContent.innerHTML = `
         <div class="page craftsmen-page active">
             <div class="page-header">
@@ -378,35 +371,25 @@ async function loadCraftsmenPage() {
                     </select>
                 </div>
             </div>
-            <div class="data-table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>الاسم</th>
-                            <th>التخصص</th>
-                            <th>رقم الهاتف</th>
-                            <th>العنوان</th>
-                            <th>الملاحظات</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${craftsmen.map(craftsman => `
-                            <tr>
-                                <td>${craftsman.name || 'غير محدد'}</td>
-                                <td><span class="badge bg-primary">${craftsman.specialty || 'بدون تخصص'}</span></td>
-                                <td>${craftsman.phone || 'لا يوجد'}</td>
-                                <td><i class="fas fa-map-marker-alt"></i> ${craftsman.address || 'لا يوجد'}</td>
-                                <td>${craftsman.notes || 'لا توجد ملاحظات'}</td>
-                                <td>
-                                    <a href="tel:${craftsman.phone}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-phone"></i> اتصال
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+            <div class="craftsmen-grid">
+                ${craftsmen.map(craftsman => `
+                    <div class="service-card">
+                        <div class="service-header">
+                            <h3>${craftsman.name || 'غير محدد'}</h3>
+                            <span class="badge bg-primary">${craftsman.specialty || 'بدون تخصص'}</span>
+                        </div>
+                        <div class="service-body">
+                            <p><i class="fas fa-phone"></i> ${craftsman.phone || 'لا يوجد'}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${craftsman.address || 'لا يوجد'}</p>
+                            <p><i class="fas fa-info-circle"></i> ${craftsman.notes || 'لا توجد ملاحظات'}</p>
+                        </div>
+                        <div class="service-footer">
+                            <a href="tel:${craftsman.phone}" class="btn btn-primary">
+                                <i class="fas fa-phone"></i> اتصال
+                            </a>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         </div>
     `;
@@ -416,9 +399,9 @@ async function loadCraftsmenPage() {
 async function loadMachinesPage() {
     const machines = await getData('machines');
     const pageContent = document.getElementById('pageContent');
-
+    
     if (!pageContent) return;
-
+    
     pageContent.innerHTML = `
         <div class="page machines-page active">
             <div class="page-header">
@@ -434,35 +417,27 @@ async function loadMachinesPage() {
                     </select>
                 </div>
             </div>
-            <div class="data-table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>الاسم</th>
-                            <th>النوع</th>
-                            <th>الحالة</th>
-                            <th>رقم الهاتف</th>
-                            <th>الملاحظات</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${machines.map(machine => `
-                            <tr>
-                                <td>${machine.name || 'غير محدد'}</td>
-                                <td><i class="fas fa-cogs"></i> ${machine.type || 'غير محدد'}</td>
-                                <td><span class="badge bg-${machine.available ? 'success' : 'danger'}">${machine.available ? 'متاحة' : 'غير متاحة'}</span></td>
-                                <td>${machine.phone || 'لا يوجد'}</td>
-                                <td>${machine.notes || 'لا توجد ملاحظات'}</td>
-                                <td>
-                                    <a href="tel:${machine.phone}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-phone"></i> اتصال
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+            <div class="machines-grid">
+                ${machines.map(machine => `
+                    <div class="service-card">
+                        <div class="service-header">
+                            <h3>${machine.name || 'غير محدد'}</h3>
+                            <span class="badge bg-${machine.available ? 'success' : 'danger'}">
+                                ${machine.available ? 'متاحة' : 'غير متاحة'}
+                            </span>
+                        </div>
+                        <div class="service-body">
+                            <p><i class="fas fa-cogs"></i> ${machine.type || 'غير محدد'}</p>
+                            <p><i class="fas fa-phone"></i> ${machine.phone || 'لا يوجد'}</p>
+                            <p><i class="fas fa-info-circle"></i> ${machine.notes || 'لا توجد ملاحظات'}</p>
+                        </div>
+                        <div class="service-footer">
+                            <a href="tel:${machine.phone}" class="btn btn-primary">
+                                <i class="fas fa-phone"></i> اتصال
+                            </a>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         </div>
     `;
@@ -472,9 +447,9 @@ async function loadMachinesPage() {
 async function loadShopsPage() {
     const shops = await getData('shops');
     const pageContent = document.getElementById('pageContent');
-
+    
     if (!pageContent) return;
-
+    
     pageContent.innerHTML = `
         <div class="page shops-page active">
             <div class="page-header">
@@ -490,35 +465,25 @@ async function loadShopsPage() {
                     </select>
                 </div>
             </div>
-            <div class="data-table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>اسم المحل</th>
-                            <th>النوع</th>
-                            <th>رقم الهاتف</th>
-                            <th>العنوان</th>
-                            <th>ساعات العمل</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${shops.map(shop => `
-                            <tr>
-                                <td>${shop.name || 'غير محدد'}</td>
-                                <td><span class="badge bg-primary">${shop.type || 'بدون نوع'}</span></td>
-                                <td>${shop.phone || 'لا يوجد'}</td>
-                                <td><i class="fas fa-map-marker-alt"></i> ${shop.address || 'لا يوجد'}</td>
-                                <td><i class="fas fa-clock"></i> ${shop.hours || 'لا يوجد'}</td>
-                                <td>
-                                    <a href="tel:${shop.phone}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-phone"></i> اتصال
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+            <div class="shops-grid">
+                ${shops.map(shop => `
+                    <div class="service-card">
+                        <div class="service-header">
+                            <h3>${shop.name || 'غير محدد'}</h3>
+                            <span class="badge bg-primary">${shop.type || 'بدون نوع'}</span>
+                        </div>
+                        <div class="service-body">
+                            <p><i class="fas fa-phone"></i> ${shop.phone || 'لا يوجد'}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${shop.address || 'لا يوجد'}</p>
+                            <p><i class="fas fa-clock"></i> ${shop.hours || 'لا يوجد'}</p>
+                        </div>
+                        <div class="service-footer">
+                            <a href="tel:${shop.phone}" class="btn btn-primary">
+                                <i class="fas fa-phone"></i> اتصال
+                            </a>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         </div>
     `;
@@ -711,6 +676,9 @@ async function loadAdminDashboard() {
     
     if (!pageContent) return;
     
+    // Load statistics - تحميل الإحصائيات
+    const stats = await getStats();
+    
     pageContent.innerHTML = `
         <div class="page admin-page active">
             <div class="admin-header">
@@ -718,6 +686,30 @@ async function loadAdminDashboard() {
                 <button class="btn btn-danger" onclick="logoutAdmin()">
                     <i class="fas fa-sign-out-alt"></i> تسجيل خروج
                 </button>
+            </div>
+            
+            <!-- Statistics Cards - بطاقات الإحصائيات -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h3>الصنايعية</h3>
+                    <span id="craftsmenCount">${stats.craftsmen || 0}</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-tools"></i>
+                    <h3>الآلات</h3>
+                    <span id="machinesCount">${stats.machines || 0}</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-store"></i>
+                    <h3>المحلات</h3>
+                    <span id="shopsCount">${stats.shops || 0}</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-tags"></i>
+                    <h3>العروض</h3>
+                    <span id="offersCount">${stats.offers || 0}</span>
+                </div>
             </div>
             
             <!-- Content Area - منطقة المحتوى -->
@@ -814,35 +806,33 @@ function checkAdminLoginStatus() {
 // Initialize app - تهيئة التطبيق
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Harara Village App initialized with Firebase');
-
-    // Check admin login status - التحقق من حالة تسجيل دخول الإدارة
-    checkAdminLoginStatus();
-
-    // Initialize navigation - تهيئة التنقل
-    initializeNavigation();
-
-    // Load initial data - تحميل البيانات الأولية
-    loadInitialData();
-
-    // Test connection in background - اختبار الاتصال في الخلفية
-    setTimeout(() => {
-        testConnection();
-    }, 2000);
-
-    // Hide loading screen after 5 seconds - إخفاء شاشة التحميل بعد 5 ثواني
+    
+    // Hide loading screen immediately - إخفاء شاشة التحميل فوراً
     setTimeout(() => {
         const loadingScreen = document.getElementById('loadingScreen');
         if (loadingScreen) {
             loadingScreen.style.display = 'none';
         }
-    }, 5000);
+    }, 500);
+    
+    // Check admin login status - التحقق من حالة تسجيل دخول الإدارة
+    checkAdminLoginStatus();
+    
+    // Initialize navigation - تهيئة التنقل
+    initializeNavigation();
+    
+    // Load initial data - تحميل البيانات الأولية
+    loadInitialData();
+    
+    // Test connection in background - اختبار الاتصال في الخلفية
+    testConnection();
 });
 
 // Test connection - اختبار الاتصال
 async function testConnection() {
     try {
         console.log('Testing connection to Firebase...');
-        // Don't block UI - لا تمنع الواجهة
+        // Don't block the UI - لا تمنع الواجهة
         const result = await firebaseClient.getCollection('craftsmen');
         console.log('Connection test successful:', result);
         showSuccess('تم الاتصال بقاعدة بيانات Firebase بنجاح');
@@ -933,7 +923,7 @@ async function loadInitialData() {
         }
     } catch (error) {
         console.error('Error loading initial data:', error);
-        // Don't block UI - لا تمنع الواجهة
+        // Don't block the UI - لا تمنع الواجهة
         const latestNewsList = document.getElementById('latestNewsList');
         if (latestNewsList) {
             latestNewsList.innerHTML = '<div class="text-center">جاري تحميل الأخبار...</div>';
@@ -967,6 +957,9 @@ window.getData = getData;
 window.saveData = saveData;
 window.updateData = updateData;
 window.deleteData = deleteData;
+window.approveItem = approveItem;
+window.searchData = searchData;
+window.getStats = getStats;
 window.navigateToPage = navigateToPage;
 window.loadPage = loadPage;
 window.showSuccess = showSuccess;
