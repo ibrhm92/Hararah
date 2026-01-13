@@ -572,9 +572,9 @@ function formatEgyptianWhatsApp(phone) {
         digits = digits.substring(1);
     }
     
-    // If number starts with 20 (country code already present), use as is
-    // إذا بدأ الرقم بـ 20 (كود الدولة موجود بالفعل)، استخدمه كما هو
-    if (digits.startsWith('20')) {
+    // If number already has country code (20 followed by valid length), use as is
+    // إذا بدأ الرقم بـ 20 مع الطول الصحيح (كود الدولة موجود بالفعل)، استخدمه كما هو
+    if (digits.startsWith('20') && digits.length >= 12) {
         return digits;
     }
     
