@@ -598,6 +598,28 @@ async function deleteData(type, id) {
 // UTILITY FUNCTIONS - وظائف مساعدة
 // =============================================================================
 
+// Format Egyptian phone number for WhatsApp - تنسيق رقم الهاتف المصري لواتساب
+function formatEgyptianWhatsApp(phone) {
+    if (!phone) return '';
+    
+    // Remove all non-digit characters - إزالة جميع الأحرف غير الرقمية
+    let digits = phone.replace(/\D/g, '');
+    
+    // If number starts with 0, remove it (Egyptian local format) - إذا بدأ الرقم بـ 0، إزالته
+    if (digits.startsWith('0')) {
+        digits = digits.substring(1);
+    }
+    
+    // If number already has country code (20 followed by valid length), use as is
+    // إذا بدأ الرقم بـ 20 مع الطول الصحيح (كود الدولة موجود بالفعل)، استخدمه كما هو
+    if (digits.startsWith('20') && digits.length >= 12) {
+        return digits;
+    }
+    
+    // Add Egyptian country code (+20) - إضافة كود مصر
+    return '20' + digits;
+}
+
 // Show success message - عرض رسالة نجاح
 function showSuccess(message) {
     console.log('Success:', message);
@@ -850,7 +872,7 @@ async function loadCraftsmenPage() {
                             <a href="tel:${craftsman.phone}" class="btn btn-primary">
                                 <i class="fas fa-phone"></i> اتصال
                             </a>
-                            <a href="https://wa.me/${craftsman.phone?.replace(/\D/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                            <a href="https://wa.me/${formatEgyptianWhatsApp(craftsman.phone)}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
                                 <i class="fab fa-whatsapp"></i> واتس
                             </a>
                         </div>
@@ -1755,6 +1777,7 @@ window.testConnection = testConnection;
 window.handleAdminLogin = handleAdminLogin;
 window.logoutAdmin = logoutAdmin;
 window.showAddCraftsmanForm = showAddCraftsmanForm;
+window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;
 
 // Export notification functions - تصدير وظائف الإشعارات
 window.toggleNotificationsPanel = toggleNotificationsPanel;
