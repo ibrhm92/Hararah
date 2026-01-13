@@ -850,6 +850,9 @@ async function loadCraftsmenPage() {
                             <a href="tel:${craftsman.phone}" class="btn btn-primary">
                                 <i class="fas fa-phone"></i> اتصال
                             </a>
+                            <a href="https://wa.me/${craftsman.phone?.replace(/\D/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                                <i class="fab fa-whatsapp"></i> واتس
+                            </a>
                         </div>
                     </div>
                 `).join('') : '<div class="empty-state"><i class="fas fa-tools"></i><h3>لا توجد صنايعية حالياً</h3><p>سيتم إضافة الصنايعية قريباً</p></div>'}
