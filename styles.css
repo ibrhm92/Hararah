@@ -1086,6 +1086,61 @@ main {
     border-color: var(--primary-color);
 }
 
+/* Urgent news - أخبار عاجلة */
+.news-item.urgent {
+    border-right: 4px solid #ff4444;
+    background: linear-gradient(to right, rgba(255, 68, 68, 0.05), transparent);
+    animation: urgentPulse 2s infinite;
+}
+
+.news-item.urgent::before {
+    background: linear-gradient(135deg, #ff4444, #ff6666) !important;
+    animation: urgentGlow 1.5s ease-in-out infinite;
+}
+
+.news-item.urgent h4::before {
+    content: '⚠️ عاجل - ';
+    color: #ff4444;
+    font-weight: 700;
+    margin-right: 0.5rem;
+}
+
+/* New news notification - إشعار الأخبار الجديدة */
+.news-item.new {
+    animation: newsEntry 0.6s ease-out;
+}
+
+@keyframes newsEntry {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes urgentPulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(255, 68, 68, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 12px rgba(255, 68, 68, 0.5);
+    }
+}
+
+@keyframes urgentGlow {
+    0%, 100% {
+        transform: scaleY(1);
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4);
+    }
+    50% {
+        transform: scaleY(1.1);
+        box-shadow: 0 0 8px 2px rgba(255, 68, 68, 0.2);
+    }
+}
+
 .news-item h4 {
     font-size: 1.1rem;
     margin-bottom: var(--space-2);

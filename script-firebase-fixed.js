@@ -273,21 +273,80 @@ async function checkForNewNews() {
         });
         
         if (newNews.length > 0) {
-            const latestNews = newNews[0];
-            const title = latestNews.title || 'خبر جديد';
-            const message = latestNews.content?.substring(0, 100) + '...' || 'خبر جديد نزل الآن';
+            // عكس الترتيب لأخذ أحدث خبر أولاً
+            newNews.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
             
-            addNotification(title, message, 'news');
-            
-            sendBrowserNotification(title, {
-                body: message,
-                tag: 'news-notification'
+            newNews.forEach(newsItem => {
+                const title = newsItem.title || 'خبر جديد';
+                const message = newsItem.content?.substring(0, 150) || 'خبر جديد نزل الآن';
+                const urgentText = newsItem.urgent ? ' ⚠️ عاجل' : '';
+                
+                // إضافة الإشعار لللوحة الداخلية
+                addNotification(title + urgentText, message, 'news');
+                
+                // إرسال إشعار المتصفح/الهاتف الخارجي
+                sendBrowserNotification('📰 ' + title, {
+                    body: message,
+                    icon: newsItem.image || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
+                    tag: 'news-' + newsItem.id,
+                    requireInteraction: newsItem.urgent || false,
+                    vibrate: [200, 100, 200],  // نمط الاهتزاز للهواتف
+                    data: {
+                        newsId: newsItem.id,
+                        newsTitle: title,
+                        url: 'news'
+                    }
+                });
             });
+            
+            // تحديث الأخبار على الصفحة الرئيسية إذا كنا عليها
+            if (currentPage === 'home' || currentPage === 'news') {
+                updateLatestNewsDisplay(news);
+            }
         }
         
         lastNewsCheckTime = Date.now();
     } catch (error) {
         console.error('Error checking for new news:', error);
+    }
+}
+
+// Update latest news display - تحديث عرض الأخبار
+function updateLatestNewsDisplay(allNews) {
+    try {
+        const latestNewsList = document.getElementById('latestNewsList');
+        
+        if (latestNewsList && allNews && allNews.length > 0) {
+            // ترتيب الأخبار حسب التاريخ تنازلياً (أحدث أولاً)
+            const sortedNews = allNews.sort((a, b) => 
+                new Date(b.created_at || 0) - new Date(a.created_at || 0)
+            );
+            
+            // أخذ أحدث 3 أخبار
+            const latestNews = sortedNews.slice(0, 3);
+            
+            // تحديث HTML
+            latestNewsList.innerHTML = latestNews.map(item => `
+                <div class="news-item ${item.urgent ? 'urgent' : ''}">
+                    ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-image">` : ''}
+                    <div class="news-content">
+                        <h4>${item.title || 'غير محدد'}</h4>
+                        <div class="news-date">${item.created_at ? (item.created_at.toDate ? item.created_at.toDate() : new Date(item.created_at)).toLocaleDateString('ar-SA') : 'غير محدد'}</div>
+                        <p>${item.content ? item.content.substring(0, 100) + '...' : 'لا يوجد محتوى'}</p>
+                        ${item.author ? `<div class="news-author">بقلم: ${item.author}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            // إظهار زر عرض المزيد إذا كان هناك أكثر من 3 أخبار
+            const showMoreBtn = document.getElementById('showMoreNews');
+            if (showMoreBtn) {
+                showMoreBtn.style.display = sortedNews.length > 3 ? 'block' : 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error updating latest news display:', error);
     }
 }
 
@@ -1703,10 +1762,9 @@ window.addNotification = addNotification;
 window.requestNotificationPermission = requestNotificationPermission;
 window.startNewsMonitoring = startNewsMonitoring;
 window.stopNewsMonitoring = stopNewsMonitoring;
+window.updateLatestNewsDisplay = updateLatestNewsDisplay;
 window.showLoadingOverlay = showLoadingOverlay;
 window.hideLoadingOverlay = hideLoadingOverlay;
 window.showAddMachineForm = showAddMachineForm;
 window.showAddShopForm = showAddShopForm;
 window.showAddOfferForm = showAddOfferForm;
-window.showLoadingOverlay = showLoadingOverlay;
-window.hideLoadingOverlay = hideLoadingOverlay;
