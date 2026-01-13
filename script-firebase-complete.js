@@ -261,13 +261,58 @@ function getTimeAgoArabic(date) {
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
+
     if (seconds < 60) return 'الآن';
     if (minutes < 60) return `قبل ${minutes} دقيقة`;
     if (hours < 24) return `قبل ${hours} ساعة`;
     if (days < 30) return `قبل ${days} يوم`;
-    
+
     return new Date(date).toLocaleDateString('ar-SA');
+}
+
+// Toggle news expansion - تبديل توسيع الخبر
+function toggleNewsExpansion(newsId) {
+    const newsItem = document.querySelector(`[data-news-id="${newsId}"]`);
+    if (!newsItem) return;
+
+    const newsFull = newsItem.querySelector('.news-full');
+    const isExpanded = newsFull.style.display !== 'none';
+
+    // Close all other expanded news - إغلاق جميع الأخبار الموسعة الأخرى
+    document.querySelectorAll('.news-full').forEach(full => {
+        if (full !== newsFull) {
+            full.style.display = 'none';
+            full.parentElement.classList.remove('expanded');
+        }
+    });
+
+    // Toggle current news - تبديل الخبر الحالي
+    if (isExpanded) {
+        newsFull.style.display = 'none';
+        newsItem.classList.remove('expanded');
+    } else {
+        newsFull.style.display = 'block';
+        newsItem.classList.add('expanded');
+        // Smooth scroll to show the expanded content - تمرير سلس لإظهار المحتوى الموسع
+        newsItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// Share news function - وظيفة مشاركة الخبر
+function shareNews(title, content) {
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: content,
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy to clipboard - احتياطي: نسخ إلى الحافظة
+        const text = `${title}\n\n${content}\n\n${window.location.href}`;
+        navigator.clipboard.writeText(text).then(() => {
+            showSuccess('تم نسخ الخبر إلى الحافظة');
+        });
+    }
 }
 
 // Check for new news - التحقق من الأخبار الجديدة
@@ -351,13 +396,28 @@ function updateLatestNewsDisplay(allNews) {
 
             // تحديث HTML
             latestNewsList.innerHTML = latestNews.map(item => `
-                <div class="news-item ${item.urgent ? 'urgent' : ''}">
-                    ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-image">` : ''}
-                    <div class="news-content">
+                <div class="news-item ${item.urgent ? 'urgent' : ''}" data-news-id="${item.id}" onclick="toggleNewsExpansion('${item.id}')">
+                    <div class="news-header">
                         <h4>${item.title || 'غير محدد'}</h4>
-                        <div class="news-date">${item.created_at ? (item.created_at.toDate ? item.created_at.toDate() : new Date(item.created_at)).toLocaleDateString('ar-SA') : 'غير محدد'}</div>
-                        <p>${item.content ? item.content.substring(0, 100) + '...' : 'لا يوجد محتوى'}</p>
-                        ${item.author ? `<div class="news-author">بقلم: ${item.author}</div>` : ''}
+                        <div class="news-meta">
+                            <span class="news-date">${item.created_at ? (item.created_at.toDate ? item.created_at.toDate() : new Date(item.created_at)).toLocaleDateString('ar-SA') : 'غير محدد'}</span>
+                            ${item.author ? `<span class="news-author">بقلم: ${item.author}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="news-preview">
+                        <p>${item.content ? item.content.substring(0, 150) + '...' : 'لا يوجد محتوى'}</p>
+                        ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-thumb">` : ''}
+                    </div>
+                    <div class="news-full" style="display: none;">
+                        ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-image-full">` : ''}
+                        <div class="news-content-full">
+                            ${item.content || 'لا يوجد محتوى'}
+                        </div>
+                        <div class="news-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="shareNews('${item.title}', '${item.content?.substring(0, 100)}')">
+                                <i class="fas fa-share"></i> مشاركة
+                            </button>
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -1392,15 +1452,38 @@ async function loadInitialData() {
         // Load latest news - تحميل آخر الأخبار
         const news = await getData('news');
         const latestNewsList = document.getElementById('latestNewsList');
-        
+
         if (latestNewsList) {
             if (news.length > 0) {
-                const latestNews = news.slice(0, 3);
-                latestNewsList.innerHTML = latestNews.map(item => `
-                    <div class="news-item ${item.urgent ? 'urgent' : ''}">
-                        <h4>${item.title || 'غير محدد'}</h4>
-                        <div class="news-date">${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-SA') : 'غير محدد'}</div>
-                        <p>${item.content ? item.content.substring(0, 100) + '...' : 'لا يوجد محتوى'}</p>
+                // Sort news by date (newest first) - ترتيب الأخبار حسب التاريخ (أحدث أولاً)
+                const sortedNews = news.sort((a, b) =>
+                    new Date(b.created_at || 0) - new Date(a.created_at || 0)
+                );
+
+                latestNewsList.innerHTML = sortedNews.map(item => `
+                    <div class="news-item ${item.urgent ? 'urgent' : ''}" data-news-id="${item.id}" onclick="toggleNewsExpansion('${item.id}')">
+                        <div class="news-header">
+                            <h4>${item.title || 'غير محدد'}</h4>
+                            <div class="news-meta">
+                                <span class="news-date">${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-SA') : 'غير محدد'}</span>
+                                ${item.author ? `<span class="news-author">بقلم: ${item.author}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="news-preview">
+                            <p>${item.content ? item.content.substring(0, 150) + '...' : 'لا يوجد محتوى'}</p>
+                            ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-thumb">` : ''}
+                        </div>
+                        <div class="news-full" style="display: none;">
+                            ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-image-full">` : ''}
+                            <div class="news-content-full">
+                                ${item.content || 'لا يوجد محتوى'}
+                            </div>
+                            <div class="news-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="shareNews('${item.title}', '${item.content?.substring(0, 100)}')">
+                                    <i class="fas fa-share"></i> مشاركة
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `).join('');
             } else {
@@ -1470,3 +1553,5 @@ window.startNewsMonitoring = startNewsMonitoring;
 window.stopNewsMonitoring = stopNewsMonitoring;
 window.updateLatestNewsDisplay = updateLatestNewsDisplay;
 window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;
+window.toggleNewsExpansion = toggleNewsExpansion;
+window.shareNews = shareNews;
