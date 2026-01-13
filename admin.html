@@ -898,6 +898,10 @@
                 </div>
                 <div class="user-info">
                     <span id="adminName">المسؤول</span>
+                    <button class="back-btn" onclick="backToHome()" style="background: rgba(34, 197, 94, 0.2); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <i class="fas fa-home"></i>
+                        <span>العودة للرئيسية</span>
+                    </button>
                     <button class="logout-btn" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>تسجيل الخروج</span>
@@ -916,33 +920,33 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon blue">
-                            <i class="fas fa-users"></i>
+                            <i class="fas fa-eye"></i>
                         </div>
-                        <div class="stat-value">1,234</div>
-                        <div class="stat-label">إجمالي المستخدمين</div>
+                        <div class="stat-value" id="totalVisitsStat">جاري التحميل...</div>
+                        <div class="stat-label">إجمالي الزيارات</div>
                     </div>
-                    
+
                     <div class="stat-card">
                         <div class="stat-icon green">
-                            <i class="fas fa-store"></i>
+                            <i class="fas fa-users"></i>
                         </div>
-                        <div class="stat-value">156</div>
-                        <div class="stat-label">المحلات التجارية</div>
+                        <div class="stat-value" id="craftsmenStat">جاري التحميل...</div>
+                        <div class="stat-label">الصنايعية</div>
                     </div>
-                    
+
                     <div class="stat-card">
                         <div class="stat-icon orange">
-                            <i class="fas fa-tools"></i>
+                            <i class="fas fa-store"></i>
                         </div>
-                        <div class="stat-value">89</div>
-                        <div class="stat-label">الخدمات المتوفرة</div>
+                        <div class="stat-value" id="shopsStat">جاري التحميل...</div>
+                        <div class="stat-label">المحلات التجارية</div>
                     </div>
-                    
+
                     <div class="stat-card">
                         <div class="stat-icon red">
                             <i class="fas fa-newspaper"></i>
                         </div>
-                        <div class="stat-value">45</div>
+                        <div class="stat-value" id="newsStat">جاري التحميل...</div>
                         <div class="stat-label">الأخبار المنشورة</div>
                     </div>
                 </div>
@@ -1389,23 +1393,28 @@
             }, 100);
         }
         
+        // Back to home function
+        function backToHome() {
+            window.location.href = 'index.html';
+        }
+
         // Logout function
         function logout() {
             sessionStorage.removeItem('adminLoggedIn');
             sessionStorage.removeItem('adminUsername');
-            
+
             dashboardContainer.style.transition = 'all 0.3s ease';
             dashboardContainer.style.opacity = '0';
             dashboardContainer.style.transform = 'translateY(20px)';
-            
+
             setTimeout(() => {
                 dashboardContainer.style.display = 'none';
                 loginContainer.style.display = 'flex';
-                
+
                 // Reset form
                 loginForm.reset();
                 errorMessage.classList.remove('show');
-                
+
                 loginContainer.style.opacity = '0';
                 setTimeout(() => {
                     loginContainer.style.transition = 'all 0.3s ease';
@@ -1606,15 +1615,18 @@
         }
         
         function backToDashboard() {
-            const dashboard = document.getElementById('dashboardContainer');
-            const servicesMgmt = document.getElementById('servicesManagement');
-            
-            if (servicesMgmt) {
-                servicesMgmt.classList.remove('active');
-            }
-            if (dashboard) {
-                dashboard.style.display = 'block';
-            }
+            // Hide all management sections
+            const managementSections = ['servicesManagement', 'newsManagement', 'reports-section', 'settings-section'];
+            managementSections.forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.style.display = 'none';
+                }
+            });
+
+            // Show main dashboard sections
+            document.getElementById('stats-section').style.display = 'block';
+            document.getElementById('actions-section').style.display = 'block';
         }
         
         // Service form submission handler
@@ -1795,8 +1807,484 @@
         }
         
         function viewReports() {
-            alert('صفحة التقارير والإحصائيات - قيد التطوير');
+            showReportsPage();
         }
+
+        async function showReportsPage() {
+            const dashboard = document.getElementById('dashboardContainer');
+            const mainContent = document.querySelector('.dashboard-content');
+
+            if (!mainContent) return;
+
+            // Hide other sections
+            document.getElementById('stats-section').style.display = 'none';
+            document.getElementById('actions-section').style.display = 'none';
+
+            // Check if reports section already exists
+            let reportsSection = document.getElementById('reports-section');
+            if (!reportsSection) {
+                reportsSection = document.createElement('section');
+                reportsSection.id = 'reports-section';
+                reportsSection.className = 'reports-section';
+                reportsSection.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+                        <h2 style="margin: 0; color: var(--text-primary);">
+                            <i class="fas fa-chart-bar"></i>
+                            التقارير والإحصائيات
+                        </h2>
+                        <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                            <i class="fas fa-arrow-right"></i>
+                            <span>العودة للوحة التحكم</span>
+                        </button>
+                    </div>
+
+                    <!-- Visit Counter Section -->
+                    <div class="reports-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-eye"></i>
+                            إحصائيات الزيارات
+                        </h3>
+                        <div class="visit-stats" style="display: flex; gap: var(--space-4); align-items: center;">
+                            <div class="stat-card" style="flex: 1; text-align: center; padding: var(--space-4);">
+                                <i class="fas fa-eye" style="font-size: 2rem; color: var(--primary-color); margin-bottom: var(--space-2);"></i>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--secondary-color);" id="totalVisits">جاري التحميل...</div>
+                                <div style="color: var(--text-secondary);">إجمالي الزيارات</div>
+                                <button class="btn btn-warning btn-sm" onclick="resetVisitCount()" style="margin-top: var(--space-2);">
+                                    <i class="fas fa-refresh"></i> إعادة تعيين
+                                </button>
+                            </div>
+                            <div class="stat-card" style="flex: 1; text-align: center; padding: var(--space-4);">
+                                <i class="fas fa-calendar-day" style="font-size: 2rem; color: var(--primary-color); margin-bottom: var(--space-2);"></i>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--secondary-color);" id="todayVisits">جاري التحميل...</div>
+                                <div style="color: var(--text-secondary);">زيارات اليوم</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Database Statistics -->
+                    <div class="reports-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-database"></i>
+                            إحصائيات قاعدة البيانات
+                        </h3>
+                        <div class="stats-grid" id="dbStats">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-value" id="craftsmenCount">جاري التحميل...</div>
+                                <div class="stat-label">الصنايعية</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <div class="stat-value" id="shopsCount">جاري التحميل...</div>
+                                <div class="stat-label">المحلات</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <div class="stat-value" id="machinesCount">جاري التحميل...</div>
+                                <div class="stat-label">الآلات</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon red">
+                                    <i class="fas fa-newspaper"></i>
+                                </div>
+                                <div class="stat-value" id="newsCount">جاري التحميل...</div>
+                                <div class="stat-label">الأخبار</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Reports -->
+                    <div class="reports-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-chart-line"></i>
+                            تقارير إضافية
+                        </h3>
+                        <div class="additional-reports" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                            <div class="report-item" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius); border: 1px solid var(--border-light);">
+                                <i class="fas fa-bell" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                <div>
+                                    <h4 style="margin: 0 0 var(--space-2) 0; color: var(--text-primary);">نظام الإشعارات</h4>
+                                    <p style="margin: 0; color: var(--text-secondary);">يعمل بشكل طبيعي - يرسل إشعارات فورية للأخبار الجديدة</p>
+                                </div>
+                            </div>
+                            <div class="report-item" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius); border: 1px solid var(--border-light);">
+                                <i class="fas fa-mobile-alt" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                <div>
+                                    <h4 style="margin: 0 0 var(--space-2) 0; color: var(--text-primary);">التطبيق المحمول</h4>
+                                    <p style="margin: 0; color: var(--text-secondary);">متوفر للتحميل - يدعم جميع الميزات الأساسية</p>
+                                </div>
+                            </div>
+                            <div class="report-item" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius); border: 1px solid var(--border-light);">
+                                <i class="fas fa-calendar-alt" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                <div>
+                                    <h4 style="margin: 0 0 var(--space-2) 0; color: var(--text-primary);">آخر تحديث</h4>
+                                    <p style="margin: 0; color: var(--text-secondary);" id="lastUpdate">${new Date().toLocaleDateString('ar-SA')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                mainContent.appendChild(reportsSection);
+            }
+
+            reportsSection.style.display = 'block';
+
+            // Load real statistics
+            await loadReportsData();
+        }
+
+        async function loadReportsData() {
+            try {
+                // Load visit statistics
+                const totalVisits = await getVisitCount();
+                const todayVisits = await getTodayVisitCount();
+
+                document.getElementById('totalVisits').textContent = totalVisits;
+                document.getElementById('todayVisits').textContent = todayVisits;
+
+                // Load database statistics
+                const stats = await getStats();
+
+                document.getElementById('craftsmenCount').textContent = stats.craftsmen || 0;
+                document.getElementById('shopsCount').textContent = stats.shops || 0;
+                document.getElementById('machinesCount').textContent = stats.machines || 0;
+                document.getElementById('newsCount').textContent = stats.news || 0;
+
+            } catch (error) {
+                console.error('Error loading reports data:', error);
+                showNotification('حدث خطأ في تحميل البيانات', 'error');
+            }
+        }
+
+        async function getVisitCount() {
+            try {
+                const visitStats = await window.getData('visitStats');
+                if (visitStats && visitStats.length > 0) {
+                    return visitStats.reduce((total, stat) => total + (stat.count || 0), 0);
+                }
+                return 0;
+            } catch (error) {
+                console.error('Error getting visit count from Firebase:', error);
+                try {
+                    return parseInt(localStorage.getItem('visitCount') || '0');
+                } catch (localError) {
+                    return 0;
+                }
+            }
+        }
+
+        async function getTodayVisitCount() {
+            try {
+                const visitStats = await window.getData('visitStats');
+                const today = new Date().toISOString().split('T')[0];
+                const todayStats = visitStats.find(stat => stat.date === today);
+                return todayStats ? todayStats.count || 0 : 0;
+            } catch (error) {
+                console.error('Error getting today visit count:', error);
+                return 0;
+            }
+        }
+
+        async function getStats() {
+            try {
+                const stats = {};
+                const collections = ['craftsmen', 'machines', 'shops', 'offers', 'ads', 'news', 'emergency'];
+
+                for (const collection of collections) {
+                    try {
+                        const data = await window.getData(collection);
+                        stats[collection] = data ? data.length : 0;
+                    } catch (error) {
+                        console.error(`Error loading ${collection}:`, error);
+                        stats[collection] = 0;
+                    }
+                }
+
+                return stats;
+            } catch (error) {
+                console.error('Error getting stats:', error);
+                return {};
+            }
+        }
+
+        async function resetVisitCount() {
+            if (confirm('هل أنت متأكد من إعادة تعيين عداد الزيارات؟ سيتم حذف جميع إحصائيات الزيارات.')) {
+                try {
+                    // Clear all visit stats from Firebase
+                    const visitStats = await window.getData('visitStats');
+                    if (visitStats && visitStats.length > 0) {
+                        for (const stat of visitStats) {
+                            await window.deleteData('visitStats', stat.id);
+                        }
+                    }
+                    localStorage.removeItem('visitCount');
+                    showNotification('تم إعادة تعيين عداد الزيارات بنجاح', 'success');
+
+                    // Reload the data
+                    await loadReportsData();
+                } catch (error) {
+                    console.error('Error resetting visit count:', error);
+                    showNotification('حدث خطأ في إعادة تعيين العداد', 'error');
+                }
+            }
+        }
+
+        // Load real statistics for dashboard
+        async function loadDashboardStats() {
+            try {
+                // Load visit count
+                const totalVisits = await getVisitCount();
+                document.getElementById('totalVisitsStat').textContent = totalVisits;
+
+                // Load other statistics
+                const stats = await getStats();
+                document.getElementById('craftsmenStat').textContent = stats.craftsmen || 0;
+                document.getElementById('shopsStat').textContent = stats.shops || 0;
+                document.getElementById('machinesStat').textContent = stats.machines || 0;
+                document.getElementById('newsStat').textContent = stats.news || 0;
+
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+                showNotification('حدث خطأ في تحميل الإحصائيات', 'error');
+            }
+        }
+
+        function manageSettings() {
+            showSettingsPage();
+        }
+
+        async function showSettingsPage() {
+            const dashboard = document.getElementById('dashboardContainer');
+            const mainContent = document.querySelector('.dashboard-content');
+
+            if (!mainContent) return;
+
+            // Hide other sections
+            document.getElementById('stats-section').style.display = 'none';
+            document.getElementById('actions-section').style.display = 'none';
+
+            // Check if settings section already exists
+            let settingsSection = document.getElementById('settings-section');
+            if (!settingsSection) {
+                settingsSection = document.createElement('section');
+                settingsSection.id = 'settings-section';
+                settingsSection.className = 'settings-section';
+                settingsSection.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+                        <h2 style="margin: 0; color: var(--text-primary);">
+                            <i class="fas fa-cog"></i>
+                            إعدادات النظام
+                        </h2>
+                        <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                            <i class="fas fa-arrow-right"></i>
+                            <span>العودة للوحة التحكم</span>
+                        </button>
+                    </div>
+
+                    <!-- System Settings -->
+                    <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-globe"></i>
+                            إعدادات عامة
+                        </h3>
+                        <div class="settings-grid" style="display: grid; gap: var(--space-4);">
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">لغة النظام</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">اللغة المستخدمة في واجهة النظام</p>
+                                </div>
+                                <select style="padding: var(--space-2) var(--space-3); border: 1px solid var(--border-color); border-radius: var(--radius);">
+                                    <option value="ar">العربية</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">الوضع المظلم</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تفعيل الوضع المظلم للواجهة</p>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: 0.4s; border-radius: 24px;"></span>
+                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-bell"></i>
+                            إعدادات الإشعارات
+                        </h3>
+                        <div class="settings-grid" style="display: grid; gap: var(--space-4);">
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">إشعارات المتصفح</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">عرض إشعارات المتصفح للأخبار الجديدة</p>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--success); transition: 0.4s; border-radius: 24px;"></span>
+                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 29px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">الاهتزاز</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تفعيل الاهتزاز للإشعارات على الهواتف</p>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--success); transition: 0.4s; border-radius: 24px;"></span>
+                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 29px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">أصوات الإشعارات</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تشغيل أصوات للإشعارات الجديدة</p>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--error); transition: 0.4s; border-radius: 24px;"></span>
+                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cache and Performance -->
+                    <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-tachometer-alt"></i>
+                            الأداء والتخزين
+                        </h3>
+                        <div class="settings-grid" style="display: grid; gap: var(--space-4);">
+                            <div class="setting-item" style="padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <label style="font-weight: 600; color: var(--text-primary);">مسح التخزين المؤقت</label>
+                                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">مسح البيانات المخزنة محلياً لتوفير المساحة</p>
+                                    </div>
+                                    <button class="btn btn-warning btn-sm" onclick="clearCache()">
+                                        <i class="fas fa-trash"></i> مسح
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="setting-item" style="padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <label style="font-weight: 600; color: var(--text-primary);">تصدير البيانات</label>
+                                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تصدير جميع البيانات إلى ملف JSON</p>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="exportData()">
+                                        <i class="fas fa-download"></i> تصدير
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Information -->
+                    <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-info-circle"></i>
+                            معلومات النظام
+                        </h3>
+                        <div class="system-info" style="display: grid; gap: var(--space-3);">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">إصدار النظام:</span>
+                                <span style="font-weight: 600;">2.0.0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">تاريخ آخر تحديث:</span>
+                                <span style="font-weight: 600;">${new Date().toLocaleDateString('ar-SA')}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">حالة قاعدة البيانات:</span>
+                                <span style="font-weight: 600; color: var(--success);">متصلة</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">مساحة التخزين المستخدمة:</span>
+                                <span style="font-weight: 600;">~2.5 MB</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                mainContent.appendChild(settingsSection);
+            }
+
+            settingsSection.style.display = 'block';
+        }
+
+        async function clearCache() {
+            if (confirm('هل أنت متأكد من مسح التخزين المؤقت؟ سيتم إعادة تحميل البيانات من الإنترنت.')) {
+                try {
+                    // Clear local cache
+                    for (let i = localStorage.length - 1; i >= 0; i--) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith('cache_')) {
+                            localStorage.removeItem(key);
+                        }
+                    }
+                    showNotification('تم مسح التخزين المؤقت بنجاح', 'success');
+                } catch (error) {
+                    console.error('Error clearing cache:', error);
+                    showNotification('حدث خطأ في مسح التخزين المؤقت', 'error');
+                }
+            }
+        }
+
+        async function exportData() {
+            try {
+                showNotification('جاري تصدير البيانات...', 'info');
+
+                const exportData = {};
+                const collections = ['craftsmen', 'machines', 'shops', 'offers', 'ads', 'news', 'emergency'];
+
+                for (const collection of collections) {
+                    try {
+                        const data = await window.getData(collection);
+                        exportData[collection] = data || [];
+                    } catch (error) {
+                        console.error(`Error exporting ${collection}:`, error);
+                        exportData[collection] = [];
+                    }
+                }
+
+                // Add metadata
+                exportData.metadata = {
+                    exportDate: new Date().toISOString(),
+                    version: '2.0.0',
+                    collections: collections
+                };
+
+                // Create and download file
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+                const exportFileDefaultName = `village-data-export-${new Date().toISOString().split('T')[0]}.json`;
+
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+
+                showNotification('تم تصدير البيانات بنجاح', 'success');
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showNotification('حدث خطأ في تصدير البيانات', 'error');
+            }
+        }
+
         
         let newsData = [];
         let currentNewsId = null;

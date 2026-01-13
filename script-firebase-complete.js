@@ -12,6 +12,7 @@ let notifications = [];
 let notificationCount = 0;
 let lastNewsCheckTime = null;
 let newsCheckInterval = null;
+let visitCount = 0;
 
 // Configuration - إعدادات
 const CONFIG = {
@@ -315,6 +316,142 @@ function shareNews(title, content) {
     }
 }
 
+// View news detail - عرض تفاصيل الخبر
+function viewNewsDetail(newsId) {
+    console.log('View news detail called with ID:', newsId);
+    // Store the news ID and navigate to news detail page
+    sessionStorage.setItem('selectedNewsId', newsId);
+    console.log('Navigating to news-detail page');
+    navigateToPage('news-detail');
+}
+
+// Add reports to navigation - إضافة التقارير للقائمة
+function addReportsToNavigation() {
+    const navList = document.querySelector('.nav-list');
+    if (!navList) return;
+
+    // Check if reports link already exists - التحقق من وجود الرابط مسبقاً
+    if (document.querySelector('[data-page="reports"]')) return;
+
+    const reportsLink = document.createElement('li');
+    reportsLink.innerHTML = `
+        <a href="#" class="nav-link" data-page="reports">
+            <i class="fas fa-chart-bar"></i>
+            <span>التقارير</span>
+        </a>
+    `;
+
+    // Insert before admin link - إدراج قبل رابط الإدارة
+    const adminLink = document.querySelector('[data-page="admin"]');
+    if (adminLink) {
+        adminLink.parentElement.parentElement.insertBefore(reportsLink, adminLink.parentElement);
+    } else {
+        navList.appendChild(reportsLink);
+    }
+}
+
+// Visit counter functions - وظائف عداد الزيارات
+async function incrementVisitCount() {
+    try {
+        // Get current visit stats from Firebase - جلب إحصائيات الزيارات من Firebase
+        const visitStats = await getData('visitStats');
+        let currentCount = 0;
+
+        if (visitStats && visitStats.length > 0) {
+            // Assuming we store as a single document - بافتراض حفظ كمستند واحد
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            const todayStats = visitStats.find(stat => stat.date === today);
+
+            if (todayStats) {
+                currentCount = (todayStats.count || 0) + 1;
+                await updateData('visitStats', todayStats.id, {
+                    ...todayStats,
+                    count: currentCount,
+                    lastVisit: new Date().toISOString()
+                });
+            } else {
+                currentCount = 1;
+                await saveData('visitStats', {
+                    date: today,
+                    count: currentCount,
+                    lastVisit: new Date().toISOString()
+                });
+            }
+        } else {
+            // First visit ever - أول زيارة على الإطلاق
+            const today = new Date().toISOString().split('T')[0];
+            currentCount = 1;
+            await saveData('visitStats', {
+                date: today,
+                count: currentCount,
+                lastVisit: new Date().toISOString()
+            });
+        }
+
+        visitCount = currentCount;
+        console.log('Visit count incremented to:', visitCount);
+    } catch (error) {
+        console.error('Error incrementing visit count:', error);
+        // Fallback to localStorage - احتياطي للتخزين المحلي
+        try {
+            const localCount = parseInt(localStorage.getItem('visitCount') || '0') + 1;
+            localStorage.setItem('visitCount', localCount.toString());
+            visitCount = localCount;
+        } catch (localError) {
+            visitCount = 1;
+        }
+    }
+}
+
+async function getVisitCount() {
+    try {
+        const visitStats = await getData('visitStats');
+        if (visitStats && visitStats.length > 0) {
+            // Sum all daily counts - جمع جميع الزيارات اليومية
+            return visitStats.reduce((total, stat) => total + (stat.count || 0), 0);
+        }
+        return 0;
+    } catch (error) {
+        console.error('Error getting visit count from Firebase:', error);
+        // Fallback - احتياطي
+        try {
+            return parseInt(localStorage.getItem('visitCount') || '0');
+        } catch (localError) {
+            return 0;
+        }
+    }
+}
+
+async function resetVisitCount() {
+    try {
+        // Clear all visit stats from Firebase - مسح جميع إحصائيات الزيارات من Firebase
+        const visitStats = await getData('visitStats');
+        if (visitStats && visitStats.length > 0) {
+            for (const stat of visitStats) {
+                await deleteData('visitStats', stat.id);
+            }
+        }
+        localStorage.removeItem('visitCount');
+        visitCount = 0;
+        showSuccess('تم إعادة تعيين عداد الزيارات');
+    } catch (error) {
+        console.error('Error resetting visit count:', error);
+        showError('حدث خطأ في إعادة تعيين العداد');
+    }
+}
+
+async function getTodayVisitCount() {
+    try {
+        const visitStats = await getData('visitStats');
+        const today = new Date().toISOString().split('T')[0];
+        const todayStats = visitStats.find(stat => stat.date === today);
+        return todayStats ? todayStats.count || 0 : 0;
+    } catch (error) {
+        console.error('Error getting today visit count:', error);
+        return 0;
+    }
+}
+
 // Check for new news - التحقق من الأخبار الجديدة
 async function checkForNewNews() {
     try {
@@ -396,7 +533,7 @@ function updateLatestNewsDisplay(allNews) {
 
             // تحديث HTML
             latestNewsList.innerHTML = latestNews.map(item => `
-                <div class="news-item ${item.urgent ? 'urgent' : ''}" data-news-id="${item.id}" onclick="toggleNewsExpansion('${item.id}')">
+                <div class="news-item ${item.urgent ? 'urgent' : ''}" onclick="viewNewsDetail('${item.id}')">
                     <div class="news-header">
                         <h4>${item.title || 'غير محدد'}</h4>
                         <div class="news-meta">
@@ -405,19 +542,8 @@ function updateLatestNewsDisplay(allNews) {
                         </div>
                     </div>
                     <div class="news-preview">
-                        <p>${item.content ? item.content.substring(0, 150) + '...' : 'لا يوجد محتوى'}</p>
+                        <p>${item.content ? item.content.substring(0, 100) + '...' : 'لا يوجد محتوى'}</p>
                         ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-thumb">` : ''}
-                    </div>
-                    <div class="news-full" style="display: none;">
-                        ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-image-full">` : ''}
-                        <div class="news-content-full">
-                            ${item.content || 'لا يوجد محتوى'}
-                        </div>
-                        <div class="news-actions">
-                            <button class="btn btn-sm btn-outline-primary" onclick="shareNews('${item.title}', '${item.content?.substring(0, 100)}')">
-                                <i class="fas fa-share"></i> مشاركة
-                            </button>
-                        </div>
                     </div>
                 </div>
             `).join('');
@@ -820,6 +946,12 @@ async function loadPage(page) {
             case 'add-service':
                 await loadAddServicePage();
                 break;
+            case 'reports':
+                await loadReportsPage();
+                break;
+            case 'news-detail':
+                await loadNewsDetailPage();
+                break;
             default:
                 pageContent.innerHTML = '<div class="text-center"><h3>الصفحة غير موجودة</h3></div>';
         }
@@ -1054,35 +1186,170 @@ async function loadAdsPage() {
 async function loadNewsPage() {
     const news = await getData('news');
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
+    // Sort news by date (newest first)
+    const sortedNews = news.sort((a, b) =>
+        new Date(b.created_at || 0) - new Date(a.created_at || 0)
+    );
+
     pageContent.innerHTML = `
         <div class="page news-page active">
             <div class="page-header">
                 <h2><i class="fas fa-newspaper"></i> الأخبار والتنبيهات</h2>
+                <p style="color: var(--text-secondary); margin: var(--space-2) 0 0 0;">جميع الأخبار والتنبيهات المنشورة</p>
             </div>
-            <div class="news-list">
-                ${news.map(item => `
-                    <div class="news-card ${item.urgent ? 'urgent' : ''}">
-                        <div class="news-header">
-                            <h3>${item.title || 'غير محدد'}</h3>
-                            <span class="badge bg-${item.urgent ? 'danger' : 'secondary'}">
-                                ${item.urgent ? 'عاجل' : 'عادي'}
-                            </span>
-                        </div>
-                        <div class="news-body">
-                            <p>${item.content || 'لا يوجد محتوى'}</p>
-                            <div class="news-meta">
-                                <span><i class="fas fa-user"></i> ${item.author || 'مجهول'}</span>
-                                <span><i class="fas fa-calendar"></i> ${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-SA') : 'غير محدد'}</span>
+            <div class="news-feed">
+                ${sortedNews.map(item => `
+                    <div class="news-post ${item.urgent ? 'urgent' : ''}" onclick="viewNewsDetail('${item.id}')">
+                        <div class="news-post-header">
+                            <div class="news-post-title">
+                                <h3>${item.title || 'عنوان غير محدد'}</h3>
+                                ${item.urgent ? '<span class="badge-urgent"><i class="fas fa-exclamation-triangle"></i> عاجل</span>' : ''}
                             </div>
+                            <div class="news-post-meta">
+                                ${item.author ? `<span class="news-author"><i class="fas fa-user"></i> ${item.author}</span>` : ''}
+                                <span class="news-date"><i class="fas fa-clock"></i> ${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-SA') : 'تاريخ غير محدد'}</span>
+                            </div>
+                        </div>
+
+                        ${item.image ? `
+                            <div class="news-post-image">
+                                <img src="${item.image}" alt="${item.title}" />
+                            </div>
+                        ` : ''}
+
+                        <div class="news-post-content">
+                            <p>${item.content || 'لا يوجد محتوى لهذا الخبر'}</p>
+                        </div>
+
+                        <div class="news-post-actions">
+                            <button class="btn-action" onclick="event.stopPropagation(); shareNews('${item.title}', '${item.content?.substring(0, 100)}')">
+                                <i class="fas fa-share"></i>
+                                مشاركة
+                            </button>
+                            <button class="btn-action" onclick="event.stopPropagation(); console.log('Read more clicked')">
+                                <i class="fas fa-eye"></i>
+                                اقرأ المزيد
+                            </button>
                         </div>
                     </div>
                 `).join('')}
+
+                ${sortedNews.length === 0 ? `
+                    <div class="empty-state">
+                        <i class="fas fa-newspaper"></i>
+                        <h3>لا توجد أخبار حالياً</h3>
+                        <p>لم يتم نشر أي أخبار بعد</p>
+                    </div>
+                ` : ''}
             </div>
         </div>
     `;
+}
+
+// Load news detail page - تحميل صفحة تفاصيل الخبر
+async function loadNewsDetailPage() {
+    const pageContent = document.getElementById('pageContent');
+    const newsId = sessionStorage.getItem('selectedNewsId');
+
+    if (!pageContent || !newsId) {
+        pageContent.innerHTML = '<div class="text-center"><h3>الخبر غير متوفر</h3></div>';
+        return;
+    }
+
+    try {
+        const allNews = await getData('news');
+        const selectedNews = allNews.find(news => news.id === newsId);
+
+        if (!selectedNews) {
+            pageContent.innerHTML = '<div class="text-center"><h3>الخبر غير موجود</h3></div>';
+            return;
+        }
+
+        // Get other news (excluding current)
+        const otherNews = allNews.filter(news => news.id !== newsId).slice(0, 10); // Show up to 10 other news
+
+        pageContent.innerHTML = `
+            <div class="news-detail-page">
+                <!-- Back Button -->
+                <div class="news-detail-header">
+                    <button class="btn btn-secondary" onclick="navigateToPage('home')">
+                        <i class="fas fa-arrow-right"></i> العودة للرئيسية
+                    </button>
+                </div>
+
+                <!-- Main News Article -->
+                <article class="news-article">
+                    <header class="news-article-header">
+                        <h1 class="news-article-title">${selectedNews.title || 'عنوان غير محدد'}</h1>
+                        <div class="news-article-meta">
+                            <span class="news-article-date">
+                                <i class="fas fa-calendar"></i>
+                                ${selectedNews.created_at ? new Date(selectedNews.created_at).toLocaleDateString('ar-SA') : 'تاريخ غير محدد'}
+                            </span>
+                            ${selectedNews.author ? `
+                                <span class="news-article-author">
+                                    <i class="fas fa-user"></i>
+                                    بقلم: ${selectedNews.author}
+                                </span>
+                            ` : ''}
+                            ${selectedNews.urgent ? `
+                                <span class="news-article-urgent">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    عاجل
+                                </span>
+                            ` : ''}
+                        </div>
+                    </header>
+
+                    ${selectedNews.image ? `
+                        <div class="news-article-image">
+                            <img src="${selectedNews.image}" alt="${selectedNews.title}" />
+                        </div>
+                    ` : ''}
+
+                    <div class="news-article-content">
+                        ${selectedNews.content ? selectedNews.content.replace(/\n/g, '<br>') : 'لا يوجد محتوى لهذا الخبر'}
+                    </div>
+
+                    <div class="news-article-actions">
+                        <button class="btn btn-primary" onclick="shareNews('${selectedNews.title}', '${selectedNews.content?.substring(0, 100)}')">
+                            <i class="fas fa-share"></i> مشاركة الخبر
+                        </button>
+                    </div>
+                </article>
+
+                <!-- Related News -->
+                ${otherNews.length > 0 ? `
+                    <aside class="related-news">
+                        <h2 class="related-news-title">
+                            <i class="fas fa-newspaper"></i>
+                            أخبار أخرى
+                        </h2>
+                        <div class="related-news-list">
+                            ${otherNews.map(news => `
+                                <div class="related-news-item" onclick="viewNewsDetail('${news.id}')">
+                                    <div class="related-news-content">
+                                        <h4>${news.title || 'عنوان غير محدد'}</h4>
+                                        <p>${news.content ? news.content.substring(0, 80) + '...' : 'لا يوجد محتوى'}</p>
+                                        <span class="related-news-date">
+                                            ${news.created_at ? new Date(news.created_at).toLocaleDateString('ar-SA') : 'تاريخ غير محدد'}
+                                        </span>
+                                    </div>
+                                    ${news.image ? `<img src="${news.image}" alt="${news.title}" class="related-news-thumb" />` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </aside>
+                ` : ''}
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error loading news detail:', error);
+        pageContent.innerHTML = '<div class="text-center"><h3>حدث خطأ في تحميل الخبر</h3></div>';
+    }
 }
 
 // Load emergency page - تحميل صفحة الطوارئ
@@ -1162,12 +1429,9 @@ async function loadAdminPage() {
 // Load admin dashboard - تحميل لوحة تحكم الإدارة
 async function loadAdminDashboard() {
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
-    // Load statistics - تحميل الإحصائيات
-    const stats = await getStats();
-    
+
     pageContent.innerHTML = `
         <div class="page admin-page active">
             <div class="admin-header">
@@ -1176,37 +1440,153 @@ async function loadAdminDashboard() {
                     <i class="fas fa-sign-out-alt"></i> تسجيل خروج
                 </button>
             </div>
-            
-            <!-- Statistics Cards - بطاقات الإحصائيات -->
-            <div class="admin-stats">
-                <div class="stat-card">
-                    <i class="fas fa-users"></i>
-                    <h3>الصنايعية</h3>
-                    <span id="craftsmenCount">${stats.craftsmen || 0}</span>
+
+            <!-- Quick Actions - الإجراءات السريعة -->
+            <div class="admin-actions">
+                <div class="action-card" onclick="navigateToPage('reports')">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>التقارير والإحصائيات</h3>
+                    <p>عرض الإحصائيات والتقارير التفصيلية</p>
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-tools"></i>
-                    <h3>الآلات</h3>
-                    <span id="machinesCount">${stats.machines || 0}</span>
+                <div class="action-card" onclick="navigateToPage('add-service')">
+                    <i class="fas fa-plus-circle"></i>
+                    <h3>إضافة خدمة</h3>
+                    <p>إضافة خدمات جديدة للقرية</p>
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-store"></i>
-                    <h3>المحلات</h3>
-                    <span id="shopsCount">${stats.shops || 0}</span>
+                <div class="action-card" onclick="showInfo('ميزة قيد التطوير')">
+                    <i class="fas fa-cogs"></i>
+                    <h3>إدارة المحتوى</h3>
+                    <p>إدارة الأخبار والمحتوى</p>
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-tags"></i>
-                    <h3>العروض</h3>
-                    <span id="offersCount">${stats.offers || 0}</span>
+                <div class="action-card" onclick="showInfo('ميزة قيد التطوير')">
+                    <i class="fas fa-users-cog"></i>
+                    <h3>إدارة المستخدمين</h3>
+                    <p>إدارة مستخدمي التطبيق</p>
                 </div>
             </div>
-            
-            <!-- Content Area - منطقة المحتوى -->
-            <div id="adminContentArea">
-                <div class="text-center">
-                    <i class="fas fa-cog fa-3x mb-3"></i>
-                    <h3>مرحباً في لوحة التحكم</h3>
-                    <p>لوحة التحكم تعمل بنجاح مع Firebase</p>
+
+            <!-- Quick Stats - إحصائيات سريعة -->
+            <div class="admin-quick-stats">
+                <div class="quick-stat">
+                    <i class="fas fa-eye"></i>
+                    <div class="stat-info">
+                        <span class="stat-number">${getVisitCount()}</span>
+                        <span class="stat-label">زيارة</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Load reports page - تحميل صفحة التقارير
+async function loadReportsPage() {
+    const pageContent = document.getElementById('pageContent');
+
+    if (!pageContent) return;
+
+    // Load detailed statistics - تحميل الإحصائيات التفصيلية
+    const stats = await getStats();
+    const totalVisits = await getVisitCount();
+    const todayVisits = await getTodayVisitCount();
+
+    pageContent.innerHTML = `
+        <div class="page reports-page active">
+            <div class="page-header">
+                <h2><i class="fas fa-chart-bar"></i> التقارير والإحصائيات</h2>
+            </div>
+
+            <!-- Visit Counter Section - قسم عداد الزيارات -->
+            <div class="reports-section">
+                <h3><i class="fas fa-eye"></i> إحصائيات الزيارات</h3>
+                <div class="visit-stats">
+                    <div class="stat-card large">
+                        <i class="fas fa-eye"></i>
+                        <h3>إجمالي الزيارات</h3>
+                        <span class="stat-number large">${totalVisits}</span>
+                        <div class="stat-actions">
+                            <button class="btn btn-warning btn-sm" onclick="resetVisitCount()">
+                                <i class="fas fa-refresh"></i> إعادة تعيين
+                            </button>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-day"></i>
+                        <h3>زيارات اليوم</h3>
+                        <span class="stat-number">${todayVisits}</span>
+                        <small>اليوم</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Statistics - إحصائيات قاعدة البيانات -->
+            <div class="reports-section">
+                <h3><i class="fas fa-database"></i> إحصائيات قاعدة البيانات</h3>
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <h3>الصنايعية</h3>
+                        <span id="craftsmenCount">${stats.craftsmen || 0}</span>
+                        <small>حرفي وخدمة</small>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-tractor"></i>
+                        <h3>الآلات الزراعية</h3>
+                        <span id="machinesCount">${stats.machines || 0}</span>
+                        <small>آلة متاحة</small>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-store"></i>
+                        <h3>المحلات التجارية</h3>
+                        <span id="shopsCount">${stats.shops || 0}</span>
+                        <small>محل تجاري</small>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-tags"></i>
+                        <h3>العروض والتخفيضات</h3>
+                        <span id="offersCount">${stats.offers || 0}</span>
+                        <small>عرض نشط</small>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-newspaper"></i>
+                        <h3>الأخبار</h3>
+                        <span id="newsCount">${stats.news || 0}</span>
+                        <small>خبر منشور</small>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-phone"></i>
+                        <h3>أرقام الطوارئ</h3>
+                        <span id="emergencyCount">${stats.emergency || 0}</span>
+                        <small>رقم طوارئ</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Reports - تقارير إضافية -->
+            <div class="reports-section">
+                <h3><i class="fas fa-chart-line"></i> تقارير إضافية</h3>
+                <div class="additional-reports">
+                    <div class="report-item">
+                        <i class="fas fa-bell"></i>
+                        <div class="report-info">
+                            <h4>نظام الإشعارات</h4>
+                            <p>يعمل بشكل طبيعي - يرسل إشعارات فورية للأخبار الجديدة</p>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div class="report-info">
+                            <h4>التطبيق المحمول</h4>
+                            <p>متوفر للتحميل - يدعم جميع الميزات الأساسية</p>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div class="report-info">
+                            <h4>آخر تحديث</h4>
+                            <p>${new Date().toLocaleDateString('ar-SA')}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1304,24 +1684,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 500);
     
+    // Increment visit count - زيادة عداد الزيارات
+    incrementVisitCount();
+
     // Check admin login status - التحقق من حالة تسجيل دخول الإدارة
     checkAdminLoginStatus();
-    
+
     // Load notifications from storage - تحميل الإشعارات المحفوظة
     loadNotificationsFromStorage();
-    
+
     // Request notification permission - طلب إذن الإشعارات
     requestNotificationPermission();
-    
+
     // Start news monitoring - بدء مراقبة الأخبار
     startNewsMonitoring();
-    
+
     // Initialize navigation - تهيئة التنقل
     initializeNavigation();
-    
+
     // Load initial data - تحميل البيانات الأولية
     loadInitialData();
-    
+
     // Test connection in background - اختبار الاتصال في الخلفية
     testConnection();
 });
@@ -1416,6 +1799,11 @@ function initializeNavigation() {
         }
     });
     
+    // Add reports link to navigation if admin - إضافة رابط التقارير للقائمة إذا كان إدارة
+    if (adminLoggedIn) {
+        addReportsToNavigation();
+    }
+
     // Setup global link and button handlers - إعداد معالجات عامة للأزرار والروابط
     setupGlobalLoadingHandlers();
 }
@@ -1461,7 +1849,7 @@ async function loadInitialData() {
                 );
 
                 latestNewsList.innerHTML = sortedNews.map(item => `
-                    <div class="news-item ${item.urgent ? 'urgent' : ''}" data-news-id="${item.id}" onclick="toggleNewsExpansion('${item.id}')">
+                    <div class="news-item ${item.urgent ? 'urgent' : ''}" onclick="viewNewsDetail('${item.id}')">
                         <div class="news-header">
                             <h4>${item.title || 'غير محدد'}</h4>
                             <div class="news-meta">
@@ -1470,19 +1858,8 @@ async function loadInitialData() {
                             </div>
                         </div>
                         <div class="news-preview">
-                            <p>${item.content ? item.content.substring(0, 150) + '...' : 'لا يوجد محتوى'}</p>
+                            <p>${item.content ? item.content.substring(0, 100) + '...' : 'لا يوجد محتوى'}</p>
                             ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-thumb">` : ''}
-                        </div>
-                        <div class="news-full" style="display: none;">
-                            ${item.image ? `<img src="${item.image}" alt="${item.title}" class="news-image-full">` : ''}
-                            <div class="news-content-full">
-                                ${item.content || 'لا يوجد محتوى'}
-                            </div>
-                            <div class="news-actions">
-                                <button class="btn btn-sm btn-outline-primary" onclick="shareNews('${item.title}', '${item.content?.substring(0, 100)}')">
-                                    <i class="fas fa-share"></i> مشاركة
-                                </button>
-                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -1555,3 +1932,9 @@ window.updateLatestNewsDisplay = updateLatestNewsDisplay;
 window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;
 window.toggleNewsExpansion = toggleNewsExpansion;
 window.shareNews = shareNews;
+window.incrementVisitCount = incrementVisitCount;
+window.getVisitCount = getVisitCount;
+window.resetVisitCount = resetVisitCount;
+window.getTodayVisitCount = getTodayVisitCount;
+window.addReportsToNavigation = addReportsToNavigation;
+window.viewNewsDetail = viewNewsDetail;
