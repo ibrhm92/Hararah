@@ -7,6 +7,7 @@ let currentPage = 'home';
 let isLoading = false;
 let cache = {};
 let adminLoggedIn = false;
+let loadingTimer = null;
 
 // Configuration - إعدادات
 const CONFIG = {
@@ -14,6 +15,42 @@ const CONFIG = {
     CACHE_DURATION: 5 * 60 * 1000, // 5 minutes - 5 دقائق
     OFFLINE_MODE: true
 };
+
+// =============================================================================
+// LOADING FUNCTIONS - وظائف التحميل (جاري التحميل)
+// =============================================================================
+
+// Show loading overlay - إظهار مؤشر التحميل
+function showLoadingOverlay() {
+    const overlay = document.getElementById('pageLoadingOverlay');
+    if (overlay) {
+        overlay.classList.remove('hide');
+        overlay.classList.add('show');
+        overlay.style.display = 'flex';
+    }
+}
+
+// Hide loading overlay - إخفاء مؤشر التحميل
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('pageLoadingOverlay');
+    if (overlay) {
+        overlay.classList.add('hide');
+        overlay.classList.remove('show');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+    }
+}
+
+// Auto hide loading after timeout - إخفاء مؤشر التحميل تلقائياً بعد انتظار
+function autoHideLoading(duration = 3000) {
+    if (loadingTimer) {
+        clearTimeout(loadingTimer);
+    }
+    loadingTimer = setTimeout(() => {
+        hideLoadingOverlay();
+    }, duration);
+}
 
 // =============================================================================
 // CACHING FUNCTIONS - وظائف التخزين المؤقت
@@ -275,6 +312,10 @@ function showInfo(message) {
 
 // Navigate to page - التنقل بين الصفحات
 function navigateToPage(page) {
+    // Show loading overlay - إظهار مؤشر التحميل
+    showLoadingOverlay();
+    autoHideLoading(5000);
+    
     currentPage = page;
     
     // Hide all pages - إخفاء جميع الصفحات
@@ -284,6 +325,7 @@ function navigateToPage(page) {
     const targetPage = document.getElementById(page + 'Page');
     if (targetPage) {
         targetPage.classList.add('active');
+        hideLoadingOverlay();
     } else {
         // Load page dynamically - تحميل الصفحة ديناميكياً
         loadPage(page);
@@ -307,6 +349,7 @@ async function loadPage(page) {
     
     if (!pageContent) {
         console.error('pageContent element not found');
+        hideLoadingOverlay();
         return;
     }
     
@@ -342,9 +385,14 @@ async function loadPage(page) {
             default:
                 pageContent.innerHTML = '<div class="text-center"><h3>الصفحة غير موجودة</h3></div>';
         }
+        
+        // Hide loading overlay after content is loaded - إخفاء مؤشر التحميل
+        hideLoadingOverlay();
+        
     } catch (error) {
         console.error('Error loading page:', error);
         pageContent.innerHTML = '<div class="text-center"><h3>حدث خطأ في تحميل الصفحة</h3></div>';
+        hideLoadingOverlay();
     }
 }
 
@@ -892,10 +940,38 @@ function initializeNavigation() {
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
+            showLoadingOverlay();
             clearCache();
             loadPage(currentPage);
         });
     }
+    
+    // Setup global link and button handlers - إعداد معالجات عامة للأزرار والروابط
+    setupGlobalLoadingHandlers();
+}
+
+// Setup global loading handlers for all links and buttons - إعداد معالجات التحميل العامة
+function setupGlobalLoadingHandlers() {
+    // All internal links - جميع الروابط الداخلية
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (link && !link.href.startsWith('tel:') && !link.href.startsWith('mailto:') && !link.href.startsWith('http')) {
+            showLoadingOverlay();
+            autoHideLoading(5000);
+        }
+    }, true);
+    
+    // All buttons - جميع الأزرار
+    document.addEventListener('click', (e) => {
+        const button = e.target.closest('button');
+        if (button && !button.classList.contains('no-loading')) {
+            // Check if it's a form submit - التحقق من أن الزر لا ينتمي لنموذج
+            if (button.type !== 'submit' && !button.closest('form')) {
+                showLoadingOverlay();
+                autoHideLoading(2000);
+            }
+        }
+    }, true);
 }
 
 // Load initial data - تحميل البيانات الأولية
@@ -972,3 +1048,5 @@ window.showAddCraftsmanForm = showAddCraftsmanForm;
 window.showAddMachineForm = showAddMachineForm;
 window.showAddShopForm = showAddShopForm;
 window.showAddOfferForm = showAddOfferForm;
+window.showLoadingOverlay = showLoadingOverlay;
+window.hideLoadingOverlay = hideLoadingOverlay;
