@@ -560,6 +560,28 @@ async function getStats() {
 // UTILITY FUNCTIONS - وظائف مساعدة
 // =============================================================================
 
+// Format Egyptian phone number for WhatsApp - تنسيق رقم الهاتف المصري لواتساب
+function formatEgyptianWhatsApp(phone) {
+    if (!phone) return '';
+    
+    // Remove all non-digit characters - إزالة جميع الأحرف غير الرقمية
+    let digits = phone.replace(/\D/g, '');
+    
+    // If number starts with 0, remove it (Egyptian local format) - إذا بدأ الرقم بـ 0، إزالته
+    if (digits.startsWith('0')) {
+        digits = digits.substring(1);
+    }
+    
+    // If number starts with 20 (country code already present), use as is
+    // إذا بدأ الرقم بـ 20 (كود الدولة موجود بالفعل)، استخدمه كما هو
+    if (digits.startsWith('20')) {
+        return digits;
+    }
+    
+    // Add Egyptian country code (+20) - إضافة كود مصر
+    return '20' + digits;
+}
+
 // Show success message - عرض رسالة نجاح
 function showSuccess(message) {
     console.log('Success:', message);
@@ -755,7 +777,7 @@ async function loadCraftsmenPage() {
                             <a href="tel:${craftsman.phone}" class="btn btn-primary">
                                 <i class="fas fa-phone"></i> اتصال
                             </a>
-                            <a href="https://wa.me/${craftsman.phone?.replace(/\D/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                            <a href="https://wa.me/${formatEgyptianWhatsApp(craftsman.phone)}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
                                 <i class="fab fa-whatsapp"></i> واتس
                             </a>
                         </div>
@@ -1411,3 +1433,4 @@ window.requestNotificationPermission = requestNotificationPermission;
 window.startNewsMonitoring = startNewsMonitoring;
 window.stopNewsMonitoring = stopNewsMonitoring;
 window.updateLatestNewsDisplay = updateLatestNewsDisplay;
+window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;
