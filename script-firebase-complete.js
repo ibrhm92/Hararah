@@ -67,31 +67,37 @@ function autoHideLoading(duration = 3000) {
 
 // Request notification permission - طلب إذن الإشعارات
 async function requestNotificationPermission() {
+    console.log('Requesting notification permission, current status:', Notification.permission);
     if (!('Notification' in window)) {
         console.log('المتصفح لا يدعم الإشعارات');
         return false;
     }
-    
+
     if (Notification.permission === 'granted') {
+        console.log('Notification permission already granted');
         return true;
     }
-    
+
     if (Notification.permission !== 'denied') {
         try {
             const permission = await Notification.requestPermission();
+            console.log('Notification permission result:', permission);
             return permission === 'granted';
         } catch (error) {
             console.error('Error requesting notification permission:', error);
             return false;
         }
     }
-    
+
+    console.log('Notification permission denied or default');
     return false;
 }
 
 // Send browser notification - إرسال إشعار المتصفح
 function sendBrowserNotification(title, options = {}) {
+    console.log('Attempting to send browser notification:', title, 'Permission:', Notification.permission);
     if (Notification.permission === 'granted') {
+        console.log('Permission granted, creating notification');
         const notification = new Notification(title, {
             icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏘️</text></svg>',
             badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
@@ -99,14 +105,17 @@ function sendBrowserNotification(title, options = {}) {
             requireInteraction: false,
             ...options
         });
-        
+
         notification.addEventListener('click', () => {
             window.focus();
             navigateToPage('news');
             notification.close();
         });
-        
+
+        console.log('Browser notification sent successfully');
         return notification;
+    } else {
+        console.warn('Notification permission not granted, cannot send browser notification');
     }
 }
 
@@ -264,18 +273,25 @@ function getTimeAgoArabic(date) {
 // Check for new news - التحقق من الأخبار الجديدة
 async function checkForNewNews() {
     try {
+        console.log('Checking for new news... lastNewsCheckTime:', lastNewsCheckTime);
         const news = await getData('news');
-        
+        console.log('Fetched news count:', news.length);
+
         if (!lastNewsCheckTime) {
             lastNewsCheckTime = Date.now();
+            console.log('First check, initialized lastNewsCheckTime to:', lastNewsCheckTime);
             return;
         }
-        
+
         const newNews = news.filter(item => {
             const itemTime = new Date(item.created_at).getTime();
-            return itemTime > lastNewsCheckTime;
+            const isNew = itemTime > lastNewsCheckTime;
+            console.log('News:', item.title, 'created_at:', item.created_at, 'itemTime:', itemTime, 'isNew:', isNew);
+            return isNew;
         });
-        
+
+        console.log('New news found:', newNews.length);
+
         if (newNews.length > 0) {
             // عكس الترتيب لأخذ أحدث خبر أولاً
             newNews.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -318,18 +334,21 @@ async function checkForNewNews() {
 
 // Update latest news display - تحديث عرض الأخبار
 function updateLatestNewsDisplay(allNews) {
+    console.log('Updating latest news display, currentPage:', currentPage, 'news count:', allNews?.length);
     try {
         const latestNewsList = document.getElementById('latestNewsList');
-        
+
         if (latestNewsList && allNews && allNews.length > 0) {
+            console.log('Found latestNewsList element, processing news');
             // ترتيب الأخبار حسب التاريخ تنازلياً (أحدث أولاً)
-            const sortedNews = allNews.sort((a, b) => 
+            const sortedNews = allNews.sort((a, b) =>
                 new Date(b.created_at || 0) - new Date(a.created_at || 0)
             );
-            
+
             // أخذ أحدث 3 أخبار
             const latestNews = sortedNews.slice(0, 3);
-            
+            console.log('Latest 3 news:', latestNews.map(n => n.title));
+
             // تحديث HTML
             latestNewsList.innerHTML = latestNews.map(item => `
                 <div class="news-item ${item.urgent ? 'urgent' : ''}">
@@ -342,12 +361,15 @@ function updateLatestNewsDisplay(allNews) {
                     </div>
                 </div>
             `).join('');
-            
+
             // إظهار زر عرض المزيد إذا كان هناك أكثر من 3 أخبار
             const showMoreBtn = document.getElementById('showMoreNews');
             if (showMoreBtn) {
                 showMoreBtn.style.display = sortedNews.length > 3 ? 'block' : 'none';
             }
+            console.log('Home page news display updated successfully');
+        } else {
+            console.warn('latestNewsList not found or no news to display');
         }
     } catch (error) {
         console.error('Error updating latest news display:', error);
@@ -447,10 +469,24 @@ async function saveData(type, data) {
     try {
         console.log('Saving data to Firebase for', type, data);
         const result = await firebaseClient.addDocument(type, data);
-        
+
         if (result) {
             clearCache(type);
             showSuccess('تم حفظ البيانات بنجاح');
+
+            // Trigger immediate check for new news if news was saved - فحص فوري للأخبار الجديدة إذا تم حفظ خبر
+            if (type === 'news') {
+                console.log('News saved, triggering immediate check for notifications and display update');
+                setTimeout(async () => {
+                    await checkForNewNews();
+                    // Also update home page display immediately if on home page
+                    if (currentPage === 'home') {
+                        const freshNews = await getData('news');
+                        updateLatestNewsDisplay(freshNews);
+                    }
+                }, 1000); // Small delay to ensure data is committed
+            }
+
             return true;
         } else {
             showError('فشل حفظ البيانات');
