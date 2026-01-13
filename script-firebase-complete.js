@@ -8,12 +8,17 @@ let isLoading = false;
 let cache = {};
 let adminLoggedIn = false;
 let loadingTimer = null;
+let notifications = [];
+let notificationCount = 0;
+let lastNewsCheckTime = null;
+let newsCheckInterval = null;
 
 // Configuration - إعدادات
 const CONFIG = {
     BASE_URL: 'https://firestore.googleapis.com/v1',
     CACHE_DURATION: 5 * 60 * 1000, // 5 minutes - 5 دقائق
-    OFFLINE_MODE: true
+    OFFLINE_MODE: true,
+    NEWS_CHECK_INTERVAL: 60000 // 1 minute - التحقق من الأخبار كل دقيقة
 };
 
 // =============================================================================
@@ -50,6 +55,262 @@ function autoHideLoading(duration = 3000) {
     loadingTimer = setTimeout(() => {
         hideLoadingOverlay();
     }, duration);
+}
+
+// =============================================================================
+// CACHING FUNCTIONS - وظائف التخزين المؤقت
+// =============================================================================
+
+// =============================================================================
+// NOTIFICATION FUNCTIONS - وظائف الإشعارات
+// =============================================================================
+
+// Request notification permission - طلب إذن الإشعارات
+async function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+        console.log('المتصفح لا يدعم الإشعارات');
+        return false;
+    }
+    
+    if (Notification.permission === 'granted') {
+        return true;
+    }
+    
+    if (Notification.permission !== 'denied') {
+        try {
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        } catch (error) {
+            console.error('Error requesting notification permission:', error);
+            return false;
+        }
+    }
+    
+    return false;
+}
+
+// Send browser notification - إرسال إشعار المتصفح
+function sendBrowserNotification(title, options = {}) {
+    if (Notification.permission === 'granted') {
+        const notification = new Notification(title, {
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏘️</text></svg>',
+            badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
+            tag: 'news-notification',
+            requireInteraction: false,
+            ...options
+        });
+        
+        notification.addEventListener('click', () => {
+            window.focus();
+            navigateToPage('news');
+            notification.close();
+        });
+        
+        return notification;
+    }
+}
+
+// Add notification to panel - إضافة إشعار للوحة الإشعارات
+function addNotification(title, message, type = 'news') {
+    const notification = {
+        id: Date.now(),
+        title: title,
+        message: message,
+        type: type,
+        time: new Date(),
+        read: false
+    };
+    
+    notifications.unshift(notification);
+    notificationCount++;
+    updateNotificationBadge();
+    renderNotifications();
+    saveNotificationsToStorage();
+}
+
+// Update notification badge - تحديث شارة الإشعارات
+function updateNotificationBadge() {
+    const unreadCount = notifications.filter(n => !n.read).length;
+    const badge = document.getElementById('notificationBadge');
+    
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Render notifications - عرض الإشعارات
+function renderNotifications() {
+    const notificationsList = document.getElementById('notificationsList');
+    
+    if (!notificationsList) return;
+    
+    if (notifications.length === 0) {
+        notificationsList.innerHTML = `
+            <div class="notifications-empty">
+                <i class="fas fa-inbox"></i>
+                <p>لا توجد إشعارات حالياً</p>
+            </div>
+        `;
+        return;
+    }
+    
+    notificationsList.innerHTML = notifications.map(notif => {
+        const timeAgo = getTimeAgoArabic(notif.time);
+        const icon = notif.type === 'news' ? 'fa-newspaper' : 'fa-bell';
+        
+        return `
+            <div class="notification-item ${!notif.read ? 'unread' : ''}" onclick="markNotificationAsRead(${notif.id})">
+                <div class="notification-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="notification-content">
+                    <p class="notification-title">${notif.title}</p>
+                    <p class="notification-text">${notif.message}</p>
+                    <p class="notification-time">${timeAgo}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Mark notification as read - تحديد الإشعار كمقروء
+function markNotificationAsRead(notificationId) {
+    const notification = notifications.find(n => n.id === notificationId);
+    if (notification) {
+        notification.read = true;
+        updateNotificationBadge();
+        renderNotifications();
+        saveNotificationsToStorage();
+    }
+}
+
+// Clear all notifications - مسح جميع الإشعارات
+function clearAllNotifications() {
+    notifications = [];
+    notificationCount = 0;
+    updateNotificationBadge();
+    renderNotifications();
+    saveNotificationsToStorage();
+}
+
+// Toggle notifications panel - إظهار/إخفاء لوحة الإشعارات
+function toggleNotificationsPanel() {
+    const panel = document.getElementById('notificationsPanel');
+    if (panel) {
+        panel.classList.toggle('show');
+        
+        if (panel.classList.contains('show')) {
+            notifications.forEach(n => n.read = true);
+            updateNotificationBadge();
+            renderNotifications();
+            saveNotificationsToStorage();
+        }
+    }
+}
+
+// Close notifications panel - إغلاق لوحة الإشعارات
+function closeNotificationsPanel() {
+    const panel = document.getElementById('notificationsPanel');
+    if (panel) {
+        panel.classList.remove('show');
+    }
+}
+
+// Save notifications to localStorage - حفظ الإشعارات
+function saveNotificationsToStorage() {
+    try {
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+    } catch (error) {
+        console.error('Error saving notifications:', error);
+    }
+}
+
+// Load notifications from localStorage - تحميل الإشعارات
+function loadNotificationsFromStorage() {
+    try {
+        const stored = localStorage.getItem('notifications');
+        if (stored) {
+            notifications = JSON.parse(stored);
+            updateNotificationBadge();
+            renderNotifications();
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+
+// Get Arabic time ago - الحصول على الوقت بصيغة عربية
+function getTimeAgoArabic(date) {
+    const now = new Date();
+    const diff = now - new Date(date);
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (seconds < 60) return 'الآن';
+    if (minutes < 60) return `قبل ${minutes} دقيقة`;
+    if (hours < 24) return `قبل ${hours} ساعة`;
+    if (days < 30) return `قبل ${days} يوم`;
+    
+    return new Date(date).toLocaleDateString('ar-SA');
+}
+
+// Check for new news - التحقق من الأخبار الجديدة
+async function checkForNewNews() {
+    try {
+        const news = await getData('news');
+        
+        if (!lastNewsCheckTime) {
+            lastNewsCheckTime = Date.now();
+            return;
+        }
+        
+        const newNews = news.filter(item => {
+            const itemTime = new Date(item.created_at).getTime();
+            return itemTime > lastNewsCheckTime;
+        });
+        
+        if (newNews.length > 0) {
+            const latestNews = newNews[0];
+            const title = latestNews.title || 'خبر جديد';
+            const message = latestNews.content?.substring(0, 100) + '...' || 'خبر جديد نزل الآن';
+            
+            addNotification(title, message, 'news');
+            
+            sendBrowserNotification(title, {
+                body: message,
+                tag: 'news-notification'
+            });
+        }
+        
+        lastNewsCheckTime = Date.now();
+    } catch (error) {
+        console.error('Error checking for new news:', error);
+    }
+}
+
+// Start news monitoring - بدء مراقبة الأخبار
+function startNewsMonitoring() {
+    if (newsCheckInterval) {
+        clearInterval(newsCheckInterval);
+    }
+    
+    checkForNewNews();
+    newsCheckInterval = setInterval(checkForNewNews, CONFIG.NEWS_CHECK_INTERVAL);
+}
+
+// Stop news monitoring - إيقاف مراقبة الأخبار
+function stopNewsMonitoring() {
+    if (newsCheckInterval) {
+        clearInterval(newsCheckInterval);
+        newsCheckInterval = null;
+    }
 }
 
 // =============================================================================
@@ -866,6 +1127,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check admin login status - التحقق من حالة تسجيل دخول الإدارة
     checkAdminLoginStatus();
     
+    // Load notifications from storage - تحميل الإشعارات المحفوظة
+    loadNotificationsFromStorage();
+    
+    // Request notification permission - طلب إذن الإشعارات
+    requestNotificationPermission();
+    
+    // Start news monitoring - بدء مراقبة الأخبار
+    startNewsMonitoring();
+    
     // Initialize navigation - تهيئة التنقل
     initializeNavigation();
     
@@ -945,6 +1215,26 @@ function initializeNavigation() {
             loadPage(currentPage);
         });
     }
+    
+    // Notification button - زر الإشعارات
+    const notificationBtn = document.getElementById('notificationBtn');
+    if (notificationBtn) {
+        notificationBtn.addEventListener('click', () => {
+            toggleNotificationsPanel();
+        });
+    }
+    
+    // Close notifications panel when clicking outside - إغلاق لوحة الإشعارات عند الضغط خارجها
+    document.addEventListener('click', (e) => {
+        const panel = document.getElementById('notificationsPanel');
+        const notificationBtn = document.getElementById('notificationBtn');
+        
+        if (panel && notificationBtn && 
+            !panel.contains(e.target) && 
+            !notificationBtn.contains(e.target)) {
+            closeNotificationsPanel();
+        }
+    });
     
     // Setup global link and button handlers - إعداد معالجات عامة للأزرار والروابط
     setupGlobalLoadingHandlers();
@@ -1050,3 +1340,11 @@ window.showAddShopForm = showAddShopForm;
 window.showAddOfferForm = showAddOfferForm;
 window.showLoadingOverlay = showLoadingOverlay;
 window.hideLoadingOverlay = hideLoadingOverlay;
+window.toggleNotificationsPanel = toggleNotificationsPanel;
+window.closeNotificationsPanel = closeNotificationsPanel;
+window.markNotificationAsRead = markNotificationAsRead;
+window.clearAllNotifications = clearAllNotifications;
+window.addNotification = addNotification;
+window.requestNotificationPermission = requestNotificationPermission;
+window.startNewsMonitoring = startNewsMonitoring;
+window.stopNewsMonitoring = stopNewsMonitoring;
