@@ -283,7 +283,7 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: var(--space-4);
             margin-bottom: var(--space-6);
         }
@@ -318,6 +318,9 @@
         .stat-icon.green { background: var(--success-light); color: var(--success); }
         .stat-icon.orange { background: var(--warning-light); color: var(--warning); }
         .stat-icon.red { background: var(--error-light); color: var(--error); }
+        .stat-icon.purple { background: linear-gradient(135deg, #6f42c1, #5a32a3); color: white; }
+        .stat-icon.yellow { background: linear-gradient(135deg, #ffc107, #e0a800); color: white; }
+        .stat-icon.teal { background: linear-gradient(135deg, #20c997, #17a2b8); color: white; }
         
         .stat-value {
             font-size: 1.5rem;
@@ -977,6 +980,30 @@
                         </div>
                         <div class="stat-value" id="newsStat">جاري التحميل...</div>
                         <div class="stat-label">الأخبار المنشورة</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="stat-value" id="doctorsStat">جاري التحميل...</div>
+                        <div class="stat-label">الأطباء والعيادات</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-value" id="offersStat">جاري التحميل...</div>
+                        <div class="stat-label">العروض المتاحة</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon teal">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <div class="stat-value" id="adsStat">جاري التحميل...</div>
+                        <div class="stat-label">الإعلانات المنشورة</div>
                     </div>
                 </div>
             </section>
@@ -1780,8 +1807,11 @@
             const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
             const yearKey = now.getFullYear().toString();
 
-          
-          
+            // Update statistics display
+            document.getElementById('totalVisitsStat').textContent = visits.total || 0;
+            
+            // Load other statistics
+            loadStatistics();
 
             loginContainer.style.display = 'none';
             dashboardContainer.style.display = 'block';
@@ -1795,6 +1825,60 @@
                 dashboardContainer.style.opacity = '1';
                 dashboardContainer.style.transform = 'translateY(0)';
             }, 100);
+        }
+        
+        // Load statistics from Firebase
+        async function loadStatistics() {
+            try {
+                // Load craftsmen count
+                const craftsmen = await window.getData('craftsmen') || [];
+                document.getElementById('craftsmenStat').textContent = craftsmen.length;
+                
+                // Load shops count
+                const shops = await window.getData('shops') || [];
+                document.getElementById('shopsStat').textContent = shops.length;
+                
+                // Load news count
+                const news = await window.getData('news') || [];
+                document.getElementById('newsStat').textContent = news.length;
+                
+                // Load doctors count
+                const doctors = await window.getData('doctors') || [];
+                const doctorsStat = document.getElementById('doctorsStat');
+                if (doctorsStat) {
+                    doctorsStat.textContent = doctors.length;
+                }
+                
+                // Load offers count
+                const offers = await window.getData('offers') || [];
+                const offersStat = document.getElementById('offersStat');
+                if (offersStat) {
+                    offersStat.textContent = offers.length;
+                }
+                
+                // Load ads count
+                const ads = await window.getData('ads') || [];
+                const adsStat = document.getElementById('adsStat');
+                if (adsStat) {
+                    adsStat.textContent = ads.length;
+                }
+                
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                // Set default values on error
+                document.getElementById('craftsmenStat').textContent = '0';
+                document.getElementById('shopsStat').textContent = '0';
+                document.getElementById('newsStat').textContent = '0';
+                
+                const doctorsStat = document.getElementById('doctorsStat');
+                if (doctorsStat) doctorsStat.textContent = '0';
+                
+                const offersStat = document.getElementById('offersStat');
+                if (offersStat) offersStat.textContent = '0';
+                
+                const adsStat = document.getElementById('adsStat');
+                if (adsStat) adsStat.textContent = '0';
+            }
         }
         
         // Back to home function
@@ -2778,6 +2862,7 @@
         window.manageAds = manageAds;
         window.hideAllSections = hideAllSections;
         window.generateMapLink = generateMapLink;
+        window.loadStatistics = loadStatistics;
         
         // Add shake animation
         const style = document.createElement('style');

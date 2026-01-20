@@ -316,6 +316,49 @@
 <script type="module" src="js/api-config-firebase.js"></script>
 <script type="module" src="js/script-firebase-fixed.js"></script>
 
+<script>
+// Track page visits
+document.addEventListener('DOMContentLoaded', function() {
+    trackVisit();
+});
+
+function trackVisit() {
+    try {
+        // Get current visit count from localStorage
+        let visits = JSON.parse(localStorage.getItem('villageVisits') || '{"total": 0, "monthly": {}, "yearly": {}}');
+        
+        // Increment total visits
+        visits.total = (visits.total || 0) + 1;
+        
+        // Update monthly visits
+        const now = new Date();
+        const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        visits.monthly[monthKey] = (visits.monthly[monthKey] || 0) + 1;
+        
+        // Update yearly visits
+        const yearKey = now.getFullYear().toString();
+        visits.yearly[yearKey] = (visits.yearly[yearKey] || 0) + 1;
+        
+        // Save to localStorage
+        localStorage.setItem('villageVisits', JSON.stringify(visits));
+        
+        // Also try to save to Firebase if available
+        if (window.saveData) {
+            window.saveData('visitStats', {
+                type: 'visit',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                referrer: document.referrer
+            }).catch(err => console.log('Could not save visit to Firebase:', err));
+        }
+        
+        console.log('Visit tracked successfully. Total visits:', visits.total);
+    } catch (error) {
+        console.error('Error tracking visit:', error);
+    }
+}
+</script>
+
 
 </body>
 </html>
