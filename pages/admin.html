@@ -1247,14 +1247,16 @@
                 <i class="fas fa-newspaper"></i>
                 <h2 style='border-bottom: none;'>إدارة الأخبار والتنبيهات</h2>
             </div>
-            <button class="add-service-btn" onclick="showAddNewsModal()">
-                <i class="fas fa-plus"></i>
-                <span>إضافة خبر جديد</span>
-            </button>
-            <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
-                <i class="fas fa-arrow-right"></i>
-                <span>العودة للوحة التحكم</span>
-            </button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="add-service-btn" onclick="showAddNewsModal()">
+                    <i class="fas fa-plus"></i>
+                    <span>إضافة خبر جديد</span>
+                </button>
+                <button class="btn btn-info" onclick="testNotification()" style="background: #17a2b8; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-bell"></i>
+                    <span>اختبار الإشعارات</span>
+                </button>
+            </div>
         </div>
 
         <div class="services-filters">
@@ -1827,6 +1829,37 @@
             }, 100);
         }
         
+        // Test notification function
+        function testNotification() {
+            // Create test notification
+            const testTitle = '📰 اختبار الإشعارات';
+            const testMessage = 'هذا إشعار اختباري للتأكد من أن نظام الإشعارات يعمل بشكل صحيح';
+            
+            // Add to notification panel
+            if (window.addNotification) {
+                window.addNotification(testTitle, testMessage, 'test');
+            }
+            
+            // Send browser notification
+            if (window.sendBrowserNotification) {
+                window.sendBrowserNotification(testTitle, {
+                    body: testMessage,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
+                    tag: 'test-notification',
+                    requireInteraction: false,
+                    vibrate: [200, 100, 200]
+                });
+            }
+            
+            // Show success message
+            if (window.showNotification) {
+                window.showNotification('تم إرسال إشعار اختباري بنجاح', 'success');
+            } else {
+                alert('تم إرسال إشعار اختباري بنجاح! تحقق من إشعارات المتصفح.');
+            }
+        }
+
         // Load statistics from Firebase
         async function loadStatistics() {
             try {
@@ -2807,30 +2840,47 @@
                 urgent: document.getElementById('newsUrgent').checked
             };
 
-            try {
                 if (currentNewsId) {
-                    // Edit existing news
+                    // Update existing news
                     await window.updateData('news', currentNewsId, formData);
-                    const index = newsData.findIndex(n => n.id === currentNewsId);
-                    if (index !== -1) {
-                        newsData[index] = { ...newsData[index], ...formData };
-                    }
                     showNotification('تم تحديث الخبر بنجاح', 'success');
                 } else {
                     // Add new news
                     const newNews = await window.saveData('news', formData);
-                    newsData.push(newNews);
-                    showNotification('تم إضافة الخبر بنجاح', 'success');
+                    
+                    // Send notification for new news
+                    if (window.addNotification) {
+                        const urgentText = formData.urgent ? ' ⚠️ عاجل' : '';
+                        window.addNotification('📰 ' + formData.title + urgentText, formData.content?.substring(0, 150) || 'خبر جديد نزل الآن', 'news');
+                    }
+                    
+                    // Send browser notification
+                    if (window.sendBrowserNotification) {
+                        window.sendBrowserNotification('📰 ' + formData.title, {
+                            body: formData.content?.substring(0, 150) || 'خبر جديد نزل الآن',
+                            icon: formData.image || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
+                            badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
+                            tag: 'news-' + newNews.id,
+                            requireInteraction: formData.urgent || false,
+                            vibrate: [200, 100, 200],
+                            data: {
+                                newsId: newNews.id,
+                                newsTitle: formData.title,
+                                url: 'news'
+                            }
+                        });
+                    }
+                    
+                    showNotification('تم نشر الخبر بنجاح', 'success');
                 }
 
-                renderNews();
                 closeNewsModal();
+                loadNews();
             } catch (error) {
                 console.error('Error saving news:', error);
                 showNotification('حدث خطأ في حفظ الخبر', 'error');
             }
         });
-
         // Make functions globally accessible
         window.manageServices = manageServices;
         window.showServicesManagement = showServicesManagement;
@@ -2863,6 +2913,7 @@
         window.hideAllSections = hideAllSections;
         window.generateMapLink = generateMapLink;
         window.loadStatistics = loadStatistics;
+        window.testNotification = testNotification;
         
         // Add shake animation
         const style = document.createElement('style');

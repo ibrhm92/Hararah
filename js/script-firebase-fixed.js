@@ -18,7 +18,7 @@ const CONFIG = {
     BASE_URL: 'https://firestore.googleapis.com/v1',
     CACHE_DURATION: 5 * 60 * 1000, // 5 minutes - 5 دقائق
     OFFLINE_MODE: true,
-    NEWS_CHECK_INTERVAL: 60000 // 1 minute - التحقق من الأخبار كل دقيقة
+    NEWS_CHECK_INTERVAL: 10000 // 10 seconds - التحقق من الأخبار كل 10 ثواني
 };
 
 // =============================================================================
@@ -2208,6 +2208,7 @@ window.closeNotificationsPanel = closeNotificationsPanel;
 window.markNotificationAsRead = markNotificationAsRead;
 window.clearAllNotifications = clearAllNotifications;
 window.addNotification = addNotification;
+window.sendBrowserNotification = sendBrowserNotification;
 window.requestNotificationPermission = requestNotificationPermission;
 window.startNewsMonitoring = startNewsMonitoring;
 window.stopNewsMonitoring = stopNewsMonitoring;
