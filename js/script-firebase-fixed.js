@@ -768,6 +768,28 @@ async function loadPage(page) {
     }
     
     try {
+        // First try to load the HTML file
+        const htmlFilePath = `pages/${page}.html`;
+        try {
+            const response = await fetch(htmlFilePath);
+            if (response.ok) {
+                const htmlContent = await response.text();
+                // Extract the body content from the HTML file
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+                const bodyContent = doc.body.innerHTML;
+                pageContent.innerHTML = bodyContent;
+                
+                // Initialize page-specific functionality if needed
+                initializePageFunctionality(page);
+                hideLoadingOverlay();
+                return;
+            }
+        } catch (error) {
+            console.log(`Could not load ${htmlFilePath}, falling back to dynamic generation`);
+        }
+        
+        // Fallback to dynamic generation if HTML file doesn't exist
         switch (page) {
             case 'craftsmen':
                 await loadCraftsmenPage();
@@ -792,10 +814,10 @@ async function loadPage(page) {
                 break;
             case 'admin':
                 // Redirect to admin page - التوجيه لصفحة الإدارة
-                window.location.href = 'admin.html';
+                window.location.href = 'pages/admin.html';
                 return;
-            case 'add-service':
-                await loadAddServicePage();
+            case 'doctors':
+                await loadDoctorsData();
                 break;
             default:
                 pageContent.innerHTML = '<div class="text-center"><h3>الصفحة غير موجودة</h3></div>';
@@ -809,6 +831,105 @@ async function loadPage(page) {
         pageContent.innerHTML = '<div class="text-center"><h3>حدث خطأ في تحميل الصفحة</h3></div>';
         hideLoadingOverlay();
     }
+}
+
+// Initialize page-specific functionality - تهيئة وظائف الصفحة المحددة
+function initializePageFunctionality(page) {
+    switch (page) {
+        case 'craftsmen':
+            initializeCraftsmenPage();
+            break;
+        case 'machines':
+            initializeMachinesPage();
+            break;
+        case 'shops':
+            initializeShopsPage();
+            break;
+        case 'offers':
+            initializeOffersPage();
+            break;
+        case 'ads':
+            initializeAdsPage();
+            break;
+        case 'news':
+            initializeNewsPage();
+            break;
+        case 'emergency':
+            initializeEmergencyPage();
+            break;
+        case 'add-service':
+            initializeAddServicePage();
+            break;
+        case 'doctors':
+            initializeDoctorsPage();
+            break;
+    }
+}
+
+// Initialize doctors page - تهيئة صفحة الأطباء
+function initializeDoctorsPage() {
+    loadDoctorsData();
+}
+
+// Initialize craftsmen page - تهيئة صفحة الصنايعية
+function initializeCraftsmenPage() {
+    // Load craftsmen data
+    loadCraftsmenData();
+    
+    // Setup search functionality
+    const searchInput = document.getElementById('craftsmenSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterCraftsmen);
+    }
+    
+    // Setup filter functionality
+    const filterSelect = document.getElementById('craftsmenFilter');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', filterCraftsmen);
+    }
+}
+
+// Initialize machines page - تهيئة صفحة الآلات
+function initializeMachinesPage() {
+    loadMachinesData();
+    const searchInput = document.getElementById('machinesSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterMachines);
+    }
+}
+
+// Initialize shops page - تهيئة صفحة المحلات
+function initializeShopsPage() {
+    loadShopsData();
+    const searchInput = document.getElementById('shopsSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterShops);
+    }
+}
+
+// Initialize offers page - تهيئة صفحة العروض
+function initializeOffersPage() {
+    loadOffersData();
+}
+
+// Initialize ads page - تهيئة صفحة الإعلانات
+function initializeAdsPage() {
+    loadAdsData();
+}
+
+// Initialize news page - تهيئة صفحة الأخبار
+function initializeNewsPage() {
+    loadNewsData();
+}
+
+// Initialize emergency page - تهيئة صفحة الطوارئ
+function initializeEmergencyPage() {
+    loadEmergencyData();
+}
+
+// Initialize add-service page - تهيئة صفحة إضافة خدمة
+function initializeAddServicePage() {
+    setupAddServiceForm();
 }
 
 // Load craftsmen page - تحميل صفحة الصنايعية
@@ -1759,6 +1880,295 @@ function showAddShopForm() {
 
 function showAddOfferForm() {
     showInfo('نموذج إضافة عرض قيد التطوير');
+}
+
+// Data loading functions - وظائف تحميل البيانات
+async function loadCraftsmenData() {
+    try {
+        const craftsmen = await getData('craftsmen');
+        displayCraftsmen(craftsmen);
+    } catch (error) {
+        console.error('Error loading craftsmen data:', error);
+    }
+}
+
+async function loadMachinesData() {
+    try {
+        const machines = await getData('machines');
+        displayMachines(machines);
+    } catch (error) {
+        console.error('Error loading machines data:', error);
+    }
+}
+
+async function loadShopsData() {
+    try {
+        const shops = await getData('shops');
+        displayShops(shops);
+    } catch (error) {
+        console.error('Error loading shops data:', error);
+    }
+}
+
+async function loadOffersData() {
+    try {
+        const offers = await getData('offers');
+        displayOffers(offers);
+    } catch (error) {
+        console.error('Error loading offers data:', error);
+    }
+}
+
+async function loadAdsData() {
+    try {
+        const ads = await getData('ads');
+        displayAds(ads);
+    } catch (error) {
+        console.error('Error loading ads data:', error);
+    }
+}
+
+async function loadNewsData() {
+    try {
+        const news = await getData('news');
+        displayNews(news);
+    } catch (error) {
+        console.error('Error loading news data:', error);
+    }
+}
+
+async function loadEmergencyData() {
+    try {
+        const emergency = await getData('emergency');
+        displayEmergency(emergency);
+    } catch (error) {
+        console.error('Error loading emergency data:', error);
+    }
+}
+
+// Display functions - وظائف العرض
+function displayCraftsmen(craftsmen) {
+    const container = document.getElementById('craftsmenList');
+    if (container) {
+        container.innerHTML = craftsmen.map(craftsman => `
+            <div class="craftsman-card">
+                <div class="craftsman-info">
+                    <h4>${craftsman.name}</h4>
+                    <p><i class="fas fa-tools"></i> ${craftsman.profession}</p>
+                    <p><i class="fas fa-phone"></i> ${craftsman.phone}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> ${craftsman.address}</p>
+                </div>
+                <div class="craftsman-actions">
+                    <a href="tel:${craftsman.phone}" class="btn btn-primary">
+                        <i class="fas fa-phone"></i> اتصل
+                    </a>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function displayMachines(machines) {
+    const container = document.getElementById('machinesList');
+    if (container) {
+        container.innerHTML = machines.map(machine => `
+            <div class="machine-card">
+                <div class="machine-info">
+                    <h4>${machine.owner}</h4>
+                    <p><i class="fas fa-tractor"></i> ${machine.type}</p>
+                    <p><i class="fas fa-phone"></i> ${machine.phone}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> ${machine.area}</p>
+                </div>
+                <div class="machine-actions">
+                    <a href="tel:${machine.phone}" class="btn btn-primary">
+                        <i class="fas fa-phone"></i> اتصل
+                    </a>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function displayShops(shops) {
+    const container = document.getElementById('shopsList');
+    if (container) {
+        container.innerHTML = shops.map(shop => `
+            <div class="shop-card">
+                <div class="shop-info">
+                    <h4>${shop.name}</h4>
+                    <p><i class="fas fa-store"></i> ${shop.type}</p>
+                    <p><i class="fas fa-phone"></i> ${shop.phone}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> ${shop.address}</p>
+                </div>
+                <div class="shop-actions">
+                    <a href="tel:${shop.phone}" class="btn btn-primary">
+                        <i class="fas fa-phone"></i> اتصل
+                    </a>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function displayOffers(offers) {
+    const container = document.getElementById('offersList');
+    if (container) {
+        container.innerHTML = offers.map(offer => `
+            <div class="offer-card">
+                <div class="offer-info">
+                    <h4>${offer.title}</h4>
+                    <p><i class="fas fa-store"></i> ${offer.shop}</p>
+                    <p><i class="fas fa-tag"></i> ${offer.description}</p>
+                    <p><i class="fas fa-calendar"></i> ${offer.date}</p>
+                </div>
+                <div class="offer-actions">
+                    <a href="tel:${offer.phone}" class="btn btn-primary">
+                        <i class="fas fa-phone"></i> اتصل
+                    </a>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function displayAds(ads) {
+    const container = document.getElementById('adsList');
+    if (container) {
+        container.innerHTML = ads.map(ad => `
+            <div class="ad-card">
+                <div class="ad-info">
+                    <h4>${ad.title}</h4>
+                    <p>${ad.description}</p>
+                    <p><i class="fas fa-user"></i> ${ad.contact}</p>
+                    <p><i class="fas fa-calendar"></i> ${ad.date}</p>
+                </div>
+                <div class="ad-actions">
+                    <a href="tel:${ad.phone}" class="btn btn-primary">
+                        <i class="fas fa-phone"></i> اتصل
+                    </a>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function displayNews(news) {
+    const container = document.getElementById('newsList');
+    if (container) {
+        // Sort news by date (newest first)
+        const sortedNews = news.sort((a, b) => {
+            const dateA = new Date(a.date || a.createdAt || 0);
+            const dateB = new Date(b.date || b.createdAt || 0);
+            return dateB - dateA;
+        });
+        
+        container.innerHTML = sortedNews.map(item => `
+            <div class="news-card">
+                <div class="news-info">
+                    <h4>${item.title}</h4>
+                    <p>${item.content}</p>
+                    <div class="news-meta">
+                        <span><i class="fas fa-user"></i> ${item.author}</span>
+                        <span><i class="fas fa-calendar"></i> ${formatDate(item.date || item.createdAt)}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function displayEmergency(emergency) {
+    const container = document.getElementById('emergencyList');
+    if (container) {
+        container.innerHTML = emergency.map(item => `
+            <div class="emergency-card">
+                <div class="emergency-info">
+                    <h4>${item.service}</h4>
+                    <p><i class="fas fa-phone"></i> ${item.phone}</p>
+                    <p><i class="fas fa-info-circle"></i> ${item.description}</p>
+                </div>
+                <div class="emergency-actions">
+                    <a href="tel:${item.phone}" class="btn btn-danger">
+                        <i class="fas fa-phone"></i> طوارئ
+                    </a>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// Format date function - تنسيق التاريخ
+function formatDate(dateString) {
+    if (!dateString) return 'تاريخ غير محدد';
+    
+    try {
+        const date = new Date(dateString);
+        const options = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return date.toLocaleDateString('ar-EG', options);
+    } catch (error) {
+        return dateString;
+    }
+}
+
+// Filter functions - وظائف التصفية
+function filterCraftsmen() {
+    const searchTerm = document.getElementById('craftsmenSearch')?.value.toLowerCase() || '';
+    const filterValue = document.getElementById('craftsmenFilter')?.value || '';
+    const cards = document.querySelectorAll('.craftsman-card');
+    
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const matchesSearch = text.includes(searchTerm);
+        const matchesFilter = !filterValue || text.includes(filterValue);
+        
+        card.style.display = matchesSearch && matchesFilter ? 'block' : 'none';
+    });
+}
+
+function filterMachines() {
+    const searchTerm = document.getElementById('machinesSearch')?.value.toLowerCase() || '';
+    const cards = document.querySelectorAll('.machine-card');
+    
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+    });
+}
+
+function filterShops() {
+    const searchTerm = document.getElementById('shopsSearch')?.value.toLowerCase() || '';
+    const cards = document.querySelectorAll('.shop-card');
+    
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+    });
+}
+
+// Form setup function - إعداد النموذج
+function setupAddServiceForm() {
+    const form = document.getElementById('addServiceForm');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                await saveData(data.type, data);
+                showSuccess('تم إضافة الخدمة بنجاح');
+                form.reset();
+            } catch (error) {
+                showError('حدث خطأ في إضافة الخدمة');
+            }
+        });
+    }
 }
 
 // =============================================================================

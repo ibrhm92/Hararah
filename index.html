@@ -84,35 +84,39 @@
             </button>
         </div>
         <ul class="nav-list">
-            <li><a href="pages/craftsmen.html" class="nav-link">
+            <li><a href="pages/craftsmen.html" class="nav-link" data-page="craftsmen">
                 <i class="fas fa-tools"></i>
                 <span>الصنايعية والخدمات</span>
             </a></li>
-            <li><a href="pages/machines.html" class="nav-link">
+            <li><a href="pages/machines.html" class="nav-link" data-page="machines">
                 <i class="fas fa-tractor"></i>
                 <span>أصحاب الآلات الزراعية</span>
             </a></li>
-            <li><a href="pages/shops.html" class="nav-link">
+            <li><a href="pages/shops.html" class="nav-link" data-page="shops">
                 <i class="fas fa-store"></i>
                 <span>المحلات التجارية</span>
             </a></li>
-            <li><a href="pages/offers.html" class="nav-link">
+            <li><a href="pages/offers.html" class="nav-link" data-page="offers">
                 <i class="fas fa-tags"></i>
                 <span>العروض والتخفيضات</span>
             </a></li>
-            <li><a href="pages/ads.html" class="nav-link">
+            <li><a href="pages/ads.html" class="nav-link" data-page="ads">
                 <i class="fas fa-bullhorn"></i>
                 <span>الإعلانات المحلية</span>
             </a></li>
-            <li><a href="pages/emergency.html" class="nav-link">
+            <li><a href="pages/emergency.html" class="nav-link" data-page="emergency">
                 <i class="fas fa-phone-alt"></i>
                 <span>أرقام الطوارئ</span>
             </a></li>
-            <li><a href="pages/news.html" class="nav-link">
+            <li><a href="pages/doctors.html" class="nav-link" data-page="doctors">
+                <i class="fas fa-user-md"></i>
+                <span>العيادات</span>
+            </a></li>
+            <li><a href="pages/news.html" class="nav-link" data-page="news">
                 <i class="fas fa-newspaper"></i>
                 <span>الأخبار والتنبيهات</span>
             </a></li>
-            <li><a href="pages/add-service.html" class="nav-link">
+            <li><a href="pages/add-service.html" class="nav-link" data-page="add-service">
                 <i class="fas fa-plus-circle"></i>
                 <span>أضف خدمة</span>
             </a></li>
@@ -175,22 +179,22 @@
 
             <!-- Actions Grid -->
             <div class="actions-grid">
-                <a href="pages/craftsmen.html" class="action-card">
+                <a href="pages/craftsmen.html" class="action-card" data-page="craftsmen">
                     <i class="fas fa-tools"></i>
                     <h3>الصنايعية</h3>
                     <p>الخدمات والحرف</p>
                 </a>
-                <a href="pages/machines.html" class="action-card">
+                <a href="pages/machines.html" class="action-card" data-page="machines">
                     <i class="fas fa-tractor"></i>
                     <h3>الآلات الزراعية</h3>
                     <p>أصحاب الآلات</p>
                 </a>
-                <a href="pages/shops.html" class="action-card">
+                <a href="pages/shops.html" class="action-card" data-page="shops">
                     <i class="fas fa-store"></i>
                     <h3>المحلات</h3>
                     <p>التجارية</p>
                 </a>
-                <a href="pages/offers.html" class="action-card">
+                <a href="pages/offers.html" class="action-card" data-page="offers">
                     <i class="fas fa-tag"></i>
                     <h3>العروض</h3>
                     <p>والتخفيضات</p>
@@ -200,7 +204,12 @@
                     <h3>الإعلانات</h3>
                     <p>المحلية</p>
                 </a>
-                <a href="pages/emergency.html" class="action-card">
+                <a href="pages/doctors.html" class="action-card" data-page="doctors">
+                    <i class="fas fa-user-md"></i>
+                    <h3>العيادات</h3>
+                    <p>الأطباء والعيادات</p>
+                </a>
+                <a href="pages/emergency.html" class="action-card" data-page="emergency">
                     <i class="fas fa-phone-alt"></i>
                     <h3>الطوارئ</h3>
                     <p>أرقام الطوارئ</p>
@@ -245,7 +254,7 @@
             </style>
 
             <!-- Latest News Section -->
-            <section class="latest-news">
+            <section class="latest-news" onclick="window.location.href='pages/news.html'" style="cursor: pointer;">
                 <h3><i class="fas fa-newspaper"></i> آخر الأخبار</h3>
                 <div id="latestNewsList">
                     <div class="news-item">
@@ -255,7 +264,7 @@
                     </div>
                 </div>
                 <div id="showMoreNews" class="show-more-news" style="display: none; text-align: center; margin-top: 1rem;">
-                    <a href="pages/news.html" class="btn btn-primary">عرض المزيد من الأخبار</a>
+                    <a href="pages/news.html" class="btn btn-primary" data-page="news" onclick="navigateToPage('news'); return false;">عرض المزيد من الأخبار</a>
                 </div>
                 <style>
                     .news-item {

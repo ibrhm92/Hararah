@@ -639,6 +639,26 @@
             min-height: 100px;
         }
         
+        .form-help {
+            display: block;
+            margin-top: var(--space-1);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        
+        .map-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .map-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
         .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
             border-color: var(--primary-color);
@@ -998,6 +1018,16 @@
                         <p class="action-description">التحكم في المحلات التجارية والمعلومات الخاصة بها</p>
                     </div>
                     
+                    <div class="action-card" onclick="manageDoctors()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <h3 class="action-title">إدارة العيادات</h3>
+                        </div>
+                        <p class="action-description">إضافة وتعديل وحذف الأطباء والعيادات في القرية</p>
+                    </div>
+                    
                     <div class="action-card" onclick="manageNews()">
                         <div class="action-header">
                             <div class="action-icon">
@@ -1121,6 +1151,64 @@
                 <i class="fas fa-tools"></i>
                 <h3>لا توجد خدمات حالياً</h3>
                 <p>ابدأ بإضافة أول خدمة أو صنايعي للقرية</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctors Management Section -->
+    <div id="doctors-section" class="management-section" style="display: none;">
+        <div class="section-header">
+            <h2 style="color: var(--text-primary);">
+                <i class="fas fa-user-md"></i>
+                إدارة العيادات
+            </h2>
+            <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                <i class="fas fa-arrow-right"></i>
+                العودة للوحة التحكم
+            </button>
+        </div>
+        
+        <div class="services-container">
+            <div class="services-header">
+                <h3>قائمة الأطباء والعيادات</h3>
+                <div class="search-filter-container">
+                    <input type="text" id="doctorSearchInput" placeholder="بحث عن طبيب..." class="form-input">
+                    <select id="doctorSpecialtyFilter" class="form-select">
+                        <option value="">جميع التخصصات</option>
+                        <option value="طب عام">طب عام</option>
+                        <option value="طب أطفال">طب أطفال</option>
+                        <option value="نساء وتوليد">نساء وتوليد</option>
+                        <option value="قلب">قلب</option>
+                        <option value="عظام">عظام</option>
+                        <option value="جلدية">جلدية</option>
+                        <option value="أنف وأذن">أنف وأذن</option>
+                        <option value="عيون">عيون</option>
+                        <option value="أسنان">أسنان</option>
+                        <option value="نفسية">نفسية</option>
+                        <option value="باطنة">باطنة</option>
+                        <option value="جراحة">جراحة</option>
+                        <option value="أشعة">أشعة</option>
+                        <option value="تحاليل">تحاليل</option>
+                    </select>
+                </div>
+            </div>
+            <button class="add-service-btn" onclick="showAddDoctorModal()">
+                <i class="fas fa-plus"></i>
+                <span>إضافة طبيب جديد</span>
+            </button>
+            <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                <i class="fas fa-arrow-right"></i>
+                العودة للوحة التحكم
+            </button>
+            
+            <div id="doctorsContainer" class="services-grid">
+                <!-- Doctors will be loaded here -->
+            </div>
+            
+            <div id="doctorsEmptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-user-md"></i>
+                <h3>لا يوجد أطباء حالياً</h3>
+                <p>ابدأ بإضافة أول طبيب للقرية</p>
             </div>
         </div>
     </div>
@@ -1312,6 +1400,108 @@
         </div>
     </div>
 
+    <!-- Doctor Modal -->
+    <div id="doctorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-user-md"></i>
+                    <span id="doctorModalTitle">إضافة طبيب جديد</span>
+                </h3>
+                <button class="modal-close" onclick="closeDoctorModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="doctorForm">
+                <div class="modal-body">
+                    <input type="hidden" id="doctorId">
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorName">اسم الطبيب *</label>
+                        <input type="text" id="doctorName" class="form-input" required placeholder="أدخل اسم الطبيب">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorSpecialty">التخصص *</label>
+                        <select id="doctorSpecialty" class="form-select" required>
+                            <option value="">اختر التخصص</option>
+                            <option value="طب عام">طب عام</option>
+                            <option value="طب أطفال">طب أطفال</option>
+                            <option value="نساء وتوليد">نساء وتوليد</option>
+                            <option value="قلب">قلب</option>
+                            <option value="عظام">عظام</option>
+                            <option value="جلدية">جلدية</option>
+                            <option value="أنف وأذن">أنف وأذن</option>
+                            <option value="عيون">عيون</option>
+                            <option value="أسنان">أسنان</option>
+                            <option value="نفسية">نفسية</option>
+                            <option value="باطنة">باطنة</option>
+                            <option value="جراحة">جراحة</option>
+                            <option value="أشعة">أشعة</option>
+                            <option value="تحاليل">تحاليل</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorAddress">العنوان *</label>
+                        <input type="text" id="doctorAddress" class="form-input" required placeholder="أدخل العنوان">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorPhone">رقم الهاتف *</label>
+                        <input type="tel" id="doctorPhone" class="form-input" required placeholder="أدخل رقم الهاتف">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorWhatsApp">رقم الواتساب</label>
+                        <input type="tel" id="doctorWhatsApp" class="form-input" placeholder="أدخل رقم الواتساب">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorEmail">البريد الإلكتروني</label>
+                        <input type="email" id="doctorEmail" class="form-input" placeholder="أدخل البريد الإلكتروني">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorLatitude">إحداثيات GPS (عرض)</label>
+                        <input type="number" id="doctorLatitude" class="form-input" placeholder="مثال: 30.0444" step="0.0001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorLongitude">إحداثيات GPS (طول)</label>
+                        <input type="number" id="doctorLongitude" class="form-input" placeholder="مثال: 31.2357" step="0.0001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorMapLink">رابط الخريطة (اختياري)</label>
+                        <input type="url" id="doctorMapLink" class="form-input" placeholder="https://maps.google.com/...">
+                        <small class="form-help">سيتم إنشاء الرابط تلقائياً من الإحداثيات</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorWorkingHours">مواعيد العمل</label>
+                        <textarea id="doctorWorkingHours" class="form-textarea" placeholder="مثال: السبت - الخميس: 9 ص - 9 م"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="doctorNotes">ملاحظات إضافية</label>
+                        <textarea id="doctorNotes" class="form-textarea" placeholder="أي معلومات إضافية..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeDoctorModal()">
+                        <i class="fas fa-times"></i>
+                        <span>إلغاء</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="module" src="../js/api-config-firebase.js"></script>
     <script type="module" src="../js/script-firebase-fixed.js"></script>
     
@@ -1329,6 +1519,211 @@
         const errorText = document.getElementById('errorText');
         const loginContainer = document.getElementById('loginContainer');
         const dashboardContainer = document.getElementById('dashboardContainer');
+        
+        // Global variables
+        let doctors = [];
+        let currentDoctorId = null;
+
+        // Generate Google Maps link from coordinates
+        function generateMapLink(latitude, longitude) {
+            if (!latitude || !longitude) return '';
+            return `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+        }
+
+        // Hide all sections function
+        function hideAllSections() {
+            // Hide all management sections
+            const managementSections = ['servicesManagement', 'newsManagement', 'reports-section', 'settings-section', 'doctors-section'];
+            managementSections.forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.style.display = 'none';
+                }
+            });
+
+            // Hide main dashboard sections
+            document.getElementById('stats-section').style.display = 'none';
+            document.getElementById('actions-section').style.display = 'none';
+        }
+
+        // Show doctors management
+        function manageDoctors() {
+            hideAllSections();
+            document.getElementById('doctors-section').style.display = 'block';
+            loadDoctors();
+        }
+
+        // Load doctors
+        async function loadDoctors() {
+            try {
+                doctors = await window.getData('doctors') || [];
+                renderDoctors();
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+                showNotification('حدث خطأ في تحميل الأطباء', 'error');
+            }
+        }
+
+        // Render doctors
+        function renderDoctors() {
+            const container = document.getElementById('doctorsContainer');
+            const emptyState = document.getElementById('doctorsEmptyState');
+            const searchTerm = document.getElementById('doctorSearchInput').value.toLowerCase();
+            const specialtyFilter = document.getElementById('doctorSpecialtyFilter').value;
+
+            // Filter doctors
+            let filteredDoctors = doctors.filter(doctor => {
+                const matchesSearch = !searchTerm || 
+                    doctor.name.toLowerCase().includes(searchTerm) ||
+                    doctor.specialty.toLowerCase().includes(searchTerm) ||
+                    doctor.address.toLowerCase().includes(searchTerm);
+                
+                const matchesSpecialty = !specialtyFilter || doctor.specialty === specialtyFilter;
+                
+                return matchesSearch && matchesSpecialty;
+            });
+
+            if (filteredDoctors.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.innerHTML = filteredDoctors.map(doctor => `
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-info">
+                            <h4>${doctor.name}</h4>
+                            <span class="badge badge-primary">${doctor.specialty}</span>
+                        </div>
+                        <div class="service-actions">
+                            <button class="btn btn-sm btn-primary" onclick="editDoctor('${doctor.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDoctor('${doctor.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="service-details">
+                        <p><i class="fas fa-map-marker-alt"></i> ${doctor.address}</p>
+                        <p><i class="fas fa-phone"></i> ${doctor.phone}</p>
+                        ${doctor.whatsapp ? `<p><i class="fab fa-whatsapp"></i> ${doctor.whatsapp}</p>` : ''}
+                        ${doctor.mapLink ? `
+                            <p>
+                                <i class="fas fa-map"></i> 
+                                <a href="${doctor.mapLink}" target="_blank" class="map-link">فتح في خرائط جوجل</a>
+                            </p>
+                        ` : ''}
+                        <p><i class="fas fa-clock"></i> ${doctor.workingHours || 'غير محدد'}</p>
+                        ${doctor.notes ? `<p><i class="fas fa-info-circle"></i> ${doctor.notes}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show add doctor modal
+        function showAddDoctorModal() {
+            currentDoctorId = null;
+            document.getElementById('doctorModalTitle').textContent = 'إضافة طبيب جديد';
+            document.getElementById('doctorForm').reset();
+            document.getElementById('doctorModal').classList.add('active');
+        }
+
+        // Edit doctor
+        function editDoctor(doctorId) {
+            const doctor = doctors.find(d => d.id === doctorId);
+            if (!doctor) return;
+
+            currentDoctorId = doctorId;
+            document.getElementById('doctorModalTitle').textContent = 'تعديل بيانات الطبيب';
+            
+            // Fill form with doctor data
+            document.getElementById('doctorName').value = doctor.name;
+            document.getElementById('doctorSpecialty').value = doctor.specialty;
+            document.getElementById('doctorAddress').value = doctor.address;
+            document.getElementById('doctorPhone').value = doctor.phone;
+            document.getElementById('doctorWhatsApp').value = doctor.whatsapp || '';
+            document.getElementById('doctorEmail').value = doctor.email || '';
+            document.getElementById('doctorLatitude').value = doctor.latitude || '';
+            document.getElementById('doctorLongitude').value = doctor.longitude || '';
+            document.getElementById('doctorMapLink').value = doctor.mapLink || '';
+            document.getElementById('doctorWorkingHours').value = doctor.workingHours || '';
+            document.getElementById('doctorNotes').value = doctor.notes || '';
+            
+            document.getElementById('doctorModal').classList.add('active');
+        }
+
+        // Delete doctor
+        async function deleteDoctor(doctorId) {
+            if (!confirm('هل أنت متأكد من حذف هذا الطبيب؟')) return;
+
+            try {
+                await window.deleteData('doctors', doctorId);
+                doctors = doctors.filter(d => d.id !== doctorId);
+                renderDoctors();
+                showNotification('تم حذف الطبيب بنجاح', 'success');
+            } catch (error) {
+                console.error('Error deleting doctor:', error);
+                showNotification('حدث خطأ في حذف الطبيب', 'error');
+            }
+        }
+
+        // Close doctor modal
+        function closeDoctorModal() {
+            document.getElementById('doctorModal').classList.remove('active');
+            document.getElementById('doctorForm').reset();
+            currentDoctorId = null;
+        }
+
+        // Handle doctor form submission
+        document.getElementById('doctorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('doctorName').value,
+                specialty: document.getElementById('doctorSpecialty').value,
+                address: document.getElementById('doctorAddress').value,
+                phone: document.getElementById('doctorPhone').value,
+                whatsapp: document.getElementById('doctorWhatsApp').value,
+                email: document.getElementById('doctorEmail').value,
+                latitude: document.getElementById('doctorLatitude').value,
+                longitude: document.getElementById('doctorLongitude').value,
+                mapLink: document.getElementById('doctorMapLink').value || generateMapLink(
+                    document.getElementById('doctorLatitude').value,
+                    document.getElementById('doctorLongitude').value
+                ),
+                workingHours: document.getElementById('doctorWorkingHours').value,
+                notes: document.getElementById('doctorNotes').value,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                if (currentDoctorId) {
+                    // Update existing doctor
+                    await window.updateData('doctors', currentDoctorId, formData);
+                    const index = doctors.findIndex(d => d.id === currentDoctorId);
+                    doctors[index] = { ...formData, id: currentDoctorId };
+                    showNotification('تم تحديث بيانات الطبيب بنجاح', 'success');
+                } else {
+                    // Add new doctor
+                    const newDoctor = await window.saveData('doctors', formData);
+                    doctors.push(newDoctor);
+                    showNotification('تم إضافة الطبيب بنجاح', 'success');
+                }
+
+                closeDoctorModal();
+                renderDoctors();
+            } catch (error) {
+                console.error('Error saving doctor:', error);
+                showNotification('حدث خطأ في حفظ بيانات الطبيب', 'error');
+            }
+        });
+
+        // Search and filter doctors
+        document.getElementById('doctorSearchInput').addEventListener('input', renderDoctors);
+        document.getElementById('doctorSpecialtyFilter').addEventListener('change', renderDoctors);
         
         // Check if already logged in
         window.addEventListener('DOMContentLoaded', () => {
@@ -1625,7 +2020,7 @@
         
         function backToDashboard() {
             // Hide all management sections
-            const managementSections = ['servicesManagement', 'newsManagement', 'reports-section', 'settings-section'];
+            const managementSections = ['servicesManagement', 'newsManagement', 'reports-section', 'settings-section', 'doctors-section'];
             managementSections.forEach(sectionId => {
                 const section = document.getElementById(sectionId);
                 if (section) {
@@ -2368,6 +2763,21 @@
         window.deleteNews = deleteNews;
         window.closeNewsModal = closeNewsModal;
         window.filterNews = filterNews;
+        
+        // Add doctors functions to global scope
+        window.manageDoctors = manageDoctors;
+        window.showAddDoctorModal = showAddDoctorModal;
+        window.editDoctor = editDoctor;
+        window.deleteDoctor = deleteDoctor;
+        window.closeDoctorModal = closeDoctorModal;
+        
+        // Add other functions to global scope
+        window.manageUsers = manageUsers;
+        window.manageShops = manageShops;
+        window.manageOffers = manageOffers;
+        window.manageAds = manageAds;
+        window.hideAllSections = hideAllSections;
+        window.generateMapLink = generateMapLink;
         
         // Add shake animation
         const style = document.createElement('style');
