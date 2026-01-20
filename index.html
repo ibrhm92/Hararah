@@ -16,7 +16,7 @@
     <link rel="manifest" href="manifest.json">
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
     <link rel="apple-touch-icon" href="images/icon.jpeg">
     
     <!-- CSS -->
@@ -34,6 +34,8 @@
         <div class="loading-content">
             <i class="fas fa-mosque"></i>
             <h2>قرية حرارة</h2>
+            <h3>صلي على النبي</h3> <br>
+        
             <div class="loading-bar"></div>
         </div>
     </div>
@@ -141,7 +143,7 @@
             <section class="hero-section">
                 <div class="hero-content">
                     <h2>مرحباً بك في قرية حرارة</h2>
-                    <p>منصتك الشاملة لجميع خدمات القرية</p>
+                    <p>منصتك  لخدمات القرية</p>
                 </div>
             </section>
 
@@ -296,7 +298,7 @@
         <div class="footer-content">
             <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
             <div class="footer-links">
-                <a href="pages/admin.html">لوحة التحكم</a>
+                <a href="#" onclick="showLoadingOverlay(); setTimeout(() => window.location.href='pages/admin.html', 100);">لوحة التحكم</a>
                 <a href="pages/add-service.html">أصحاب المحلات</a>
             </div>
         </div>

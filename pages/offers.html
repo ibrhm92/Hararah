@@ -16,7 +16,7 @@
     <link rel="manifest" href="manifest.json">
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
 
     <!-- CSS -->
     <link rel="stylesheet" href="../css/styles.css">
@@ -32,7 +32,7 @@
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
             <i class="fas fa-mosque"></i>
-            <h2>قرية حرارة</h2>
+            <h2 style='border-bottom: none;'>قرية حرارة</h2>
             <div class="loading-bar"></div>
         </div>
     </div>
@@ -77,15 +77,15 @@
             </button>
         </div>
         <ul class="nav-list">
-            <li><a href="craftsmen.html" class="nav-link">
+            <li><a href="craftsmen.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
                 <i class="fas fa-tools"></i>
                 <span>الصنايعية والخدمات</span>
             </a></li>
-            <li><a href="machines.html" class="nav-link">
+            <li><a href="machines.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
                 <i class="fas fa-tractor"></i>
                 <span>أصحاب الآلات الزراعية</span>
             </a></li>
-            <li><a href="shops.html" class="nav-link">
+            <li><a href="shops.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
                 <i class="fas fa-store"></i>
                 <span>المحلات التجارية</span>
             </a></li>
@@ -93,19 +93,19 @@
                 <i class="fas fa-tags"></i>
                 <span>العروض والتخفيضات</span>
             </a></li>
-            <li><a href="ads.html" class="nav-link">
+            <li><a href="ads.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
                 <i class="fas fa-bullhorn"></i>
                 <span>الإعلانات المحلية</span>
             </a></li>
-            <li><a href="emergency.html" class="nav-link">
+            <li><a href="emergency.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
                 <i class="fas fa-phone-alt"></i>
                 <span>أرقام الطوارئ</span>
             </a></li>
-            <li><a href="news.html" class="nav-link">
+            <li><a href="news.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
                 <i class="fas fa-newspaper"></i>
                 <span>الأخبار والتنبيهات</span>
             </a></li>
-            <li><a href="add-service.html" class="nav-link">
+            <li><a href="add-service.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
                 <i class="fas fa-plus-circle"></i>
                 <span>أضف خدمة</span>
             </a></li>
@@ -115,7 +115,7 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="page-header">
-            <h2><i class="fas fa-tags"></i> العروض والتخفيضات</h2>
+            <h2 style='border-bottom: none;'><i class="fas fa-tags"></i> العروض والتخفيضات</h2>
         </div>
         <div class="offers-grid" id="offersGrid">
             <div class="offer-card">
@@ -331,7 +331,7 @@
                 if (loadingScreen) {
                     loadingScreen.style.display = 'none';
                 }
-            }, 3000);
+            }, 1000);
         });
 
         window.showLoadingOverlay = function() {
