@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أضف خدمة - قرية حرارة</title>
+    <meta name="description" content="أضف خدمة جديدة لقرية حرارة">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="قرية حرارة">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-mosque"></i>
+            <h2>قرية حرارة</h2>
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+
+    <!-- Global Page Loading Indicator -->
+    <div id="pageLoadingOverlay" class="page-loading-overlay" style="display: none;">
+        <div class="page-loading-spinner">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="index.html" class="logo-link">
+                    <i class="fas fa-mosque"></i>
+                    <h1>قرية حرارة</h1>
+                </a>
+            </div>
+            <div class="header-actions">
+                <button id="backBtn" class="btn-icon" title="الرئيسية" onclick="window.location.href='index.html'">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button id="refreshBtn" class="btn-icon" title="تحديث">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="menuBtn" class="btn-icon" title="القائمة">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-header">
+            <h3>القائمة الرئيسية</h3>
+            <button id="closeNav" class="btn-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="nav-list">
+            <li><a href="craftsmen.html" class="nav-link">
+                <i class="fas fa-tools"></i>
+                <span>الصنايعية والخدمات</span>
+            </a></li>
+            <li><a href="machines.html" class="nav-link">
+                <i class="fas fa-tractor"></i>
+                <span>أصحاب الآلات الزراعية</span>
+            </a></li>
+            <li><a href="shops.html" class="nav-link">
+                <i class="fas fa-store"></i>
+                <span>المحلات التجارية</span>
+            </a></li>
+            <li><a href="offers.html" class="nav-link">
+                <i class="fas fa-tags"></i>
+                <span>العروض والتخفيضات</span>
+            </a></li>
+            <li><a href="ads.html" class="nav-link">
+                <i class="fas fa-bullhorn"></i>
+                <span>الإعلانات المحلية</span>
+            </a></li>
+            <li><a href="emergency.html" class="nav-link">
+                <i class="fas fa-phone-alt"></i>
+                <span>أرقام الطوارئ</span>
+            </a></li>
+            <li><a href="news.html" class="nav-link">
+                <i class="fas fa-newspaper"></i>
+                <span>الأخبار والتنبيهات</span>
+            </a></li>
+            <li><a href="add-service.html" class="nav-link active">
+                <i class="fas fa-plus-circle"></i>
+                <span>أضف خدمة</span>
+            </a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h2><i class="fas fa-plus-circle"></i> أضف خدمة جديدة</h2>
+        </div>
+        <div class="add-service-form">
+            <div class="service-types">
+                <div class="service-type-card" onclick="showAddCraftsmanForm()">
+                    <i class="fas fa-tools"></i>
+                    <h3>إضافة صنايعي</h3>
+                    <p>أضف صنايعي جديد للقرية</p>
+                </div>
+                <div class="service-type-card" onclick="showAddMachineForm()">
+                    <i class="fas fa-tractor"></i>
+                    <h3>إضافة آلة</h3>
+                    <p>أضف آلة زراعية جديدة</p>
+                </div>
+                <div class="service-type-card" onclick="showAddShopForm()">
+                    <i class="fas fa-store"></i>
+                    <h3>إضافة محل</h3>
+                    <p>أضف محل تجاري جديد</p>
+                </div>
+                <div class="service-type-card" onclick="showAddOfferForm()">
+                    <i class="fas fa-tags"></i>
+                    <h3>إضافة عرض</h3>
+                    <p>أضف عرض أو تخفيض جديد</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
+            <div class="footer-links">
+                <a href="admin.html">لوحة التحكم</a>
+                <a href="add-service.html">أصحاب المحلات</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add Service Modal -->
+    <div id="serviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-tools"></i>
+                    <span id="modalTitle">إضافة صنايعي</span>
+                </h3>
+                <button class="modal-close" onclick="closeServiceModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="serviceForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="serviceName">اسم الصنايعي *</label>
+                        <input type="text" id="serviceName" class="form-input" required placeholder="أدخل اسم الصنايعي">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="serviceSpecialty">التخصص *</label>
+                        <select id="serviceSpecialty" class="form-select" required>
+                            <option value="">اختر التخصص</option>
+                            <option value="نجار">نجار</option>
+                            <option value="كهربائي">كهربائي</option>
+                            <option value="سباك">سباك</option>
+                            <option value="حداد">حداد</option>
+                            <option value="ميكانيكي">ميكانيكي</option>
+                            <option value="نقاش">نقاش</option>
+                            <option value="مبلط">مبلط</option>
+                            <option value="سباكة">سباكة</option>
+                            <option value="تكييف">تكييف</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="servicePhone">رقم الهاتف *</label>
+                        <input type="tel" id="servicePhone" class="form-input" required placeholder="أدخل رقم الهاتف">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="serviceAddress">العنوان</label>
+                        <input type="text" id="serviceAddress" class="form-input" placeholder="أدخل العنوان">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="serviceStatus">الحالة</label>
+                        <select id="serviceStatus" class="form-select">
+                            <option value="متاح">متاح</option>
+                            <option value="مشغول">مشغول</option>
+                            <option value="غير متاح">غير متاح</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="serviceNotes">ملاحظات إضافية</label>
+                        <textarea id="serviceNotes" class="form-textarea" placeholder="أدخل أي ملاحظات إضافية"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">
+                        <i class="fas fa-times"></i>
+                        <span>إلغاء</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="../js/api-config-firebase.js"></script>
+    <script type="module" src="../js/script-firebase-fixed.js"></script>
+
+    <script>
+        let currentServiceType = 'craftsmen';
+
+        function showAddCraftsmanForm() {
+            currentServiceType = 'craftsmen';
+            document.getElementById('modalTitle').textContent = 'إضافة صنايعي';
+            document.getElementById('serviceForm').reset();
+            document.getElementById('serviceModal').classList.add('active');
+        }
+
+        function showAddMachineForm() {
+            currentServiceType = 'machines';
+            document.getElementById('modalTitle').textContent = 'إضافة آلة';
+            document.getElementById('serviceForm').reset();
+            // Change form for machines
+            document.getElementById('serviceSpecialty').innerHTML = `
+                <option value="">اختر النوع</option>
+                <option value="حفار">حفار</option>
+                <option value="رافعة">رافعة</option>
+                <option value="خلاطة">خلاطة</option>
+                <option value="جرار">جرار</option>
+            `;
+            document.getElementById('serviceName').placeholder = 'أدخل اسم المالك';
+            document.getElementById('serviceModal').classList.add('active');
+        }
+
+        function showAddShopForm() {
+            currentServiceType = 'shops';
+            document.getElementById('modalTitle').textContent = 'إضافة محل';
+            document.getElementById('serviceForm').reset();
+            // Change form for shops
+            document.getElementById('serviceSpecialty').innerHTML = `
+                <option value="">اختر النوع</option>
+                <option value="مخبز">مخبز</option>
+                <option value="بقالة">بقالة</option>
+                <option value="صيدلية">صيدلية</option>
+                <option value="مطعم">مطعم</option>
+            `;
+            document.getElementById('serviceName').placeholder = 'أدخل اسم المحل';
+            document.getElementById('serviceModal').classList.add('active');
+        }
+
+        function showAddOfferForm() {
+            currentServiceType = 'offers';
+            document.getElementById('modalTitle').textContent = 'إضافة عرض';
+            document.getElementById('serviceForm').reset();
+            // Change form for offers
+            document.querySelector('.modal-body').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label" for="shopName">اسم المحل *</label>
+                    <input type="text" id="shopName" class="form-input" required placeholder="أدخل اسم المحل">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="offerDescription">وصف العرض *</label>
+                    <textarea id="offerDescription" class="form-textarea" required placeholder="أدخل وصف العرض"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="offerPhone">رقم الهاتف *</label>
+                    <input type="tel" id="offerPhone" class="form-input" required placeholder="أدخل رقم الهاتف">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="offerDiscount">الخصم</label>
+                    <input type="text" id="offerDiscount" class="form-input" placeholder="مثال: 20% خصم">
+                </div>
+            `;
+            document.getElementById('serviceModal').classList.add('active');
+        }
+
+        function closeServiceModal() {
+            document.getElementById('serviceModal').classList.remove('active');
+            document.getElementById('serviceForm').reset();
+        }
+
+        // Handle form submission
+        document.getElementById('serviceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            try {
+                let formData;
+
+                if (currentServiceType === 'offers') {
+                    formData = {
+                        shop_name: document.getElementById('shopName').value.trim(),
+                        description: document.getElementById('offerDescription').value.trim(),
+                        phone: document.getElementById('offerPhone').value.trim(),
+                        discount: document.getElementById('offerDiscount').value.trim(),
+                        approved: false // Needs admin approval
+                    };
+                } else {
+                    formData = {
+                        name: document.getElementById('serviceName').value.trim(),
+                        specialty: document.getElementById('serviceSpecialty').value,
+                        phone: document.getElementById('servicePhone').value.trim(),
+                        address: document.getElementById('serviceAddress').value.trim(),
+                        status: document.getElementById('serviceStatus').value,
+                        notes: document.getElementById('serviceNotes').value.trim()
+                    };
+
+                    // Adjust field names for different types
+                    if (currentServiceType === 'machines') {
+                        formData.type = formData.specialty;
+                        delete formData.specialty;
+                        formData.available = formData.status === 'متاح';
+                        delete formData.status;
+                    } else if (currentServiceType === 'shops') {
+                        formData.type = formData.specialty;
+                        delete formData.specialty;
+                    }
+                }
+
+                const result = await window.saveData(currentServiceType, formData);
+                showSuccess('تم إضافة الخدمة بنجاح');
+                closeServiceModal();
+            } catch (error) {
+                console.error('Error saving service:', error);
+                showError('حدث خطأ في حفظ الخدمة');
+            }
+        });
+
+        function showSuccess(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-success';
+            toast.innerHTML = `<i class="fas fa-check-circle"></i><span>${message}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        function showError(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-error';
+            toast.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation
+            const menuBtn = document.getElementById('menuBtn');
+            if (menuBtn) {
+                menuBtn.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.add('active');
+                });
+            }
+
+            const closeNav = document.getElementById('closeNav');
+            if (closeNav) {
+                closeNav.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.remove('active');
+                });
+            }
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    window.location.reload();
+                });
+            }
+
+            // Hide loading
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+            }, 3000);
+        });
+
+        // CSS for modal and forms
+        const style = document.createElement('style');
+        style.textContent = `
+            .add-service-form {
+                padding: 1rem;
+            }
+
+            .service-types {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+
+            .service-type-card {
+                background: var(--surface, #fff);
+                border: 2px solid var(--border-color, #e0e0e0);
+                border-radius: 12px;
+                padding: 2rem 1.5rem;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .service-type-card:hover {
+                border-color: var(--primary-color, #2c3e50);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            .service-type-card i {
+                font-size: 3rem;
+                color: var(--primary-color, #2c3e50);
+                margin-bottom: 1rem;
+            }
+
+            .service-type-card h3 {
+                margin: 0 0 0.5rem 0;
+                color: var(--text-primary, #333);
+            }
+
+            .service-type-card p {
+                margin: 0;
+                color: var(--text-secondary, #6c757d);
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal.active {
+                display: flex;
+            }
+
+            .modal-content {
+                background: var(--surface, #fff);
+                border-radius: 12px;
+                width: 90%;
+                max-width: 500px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .modal-header {
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--border-color, #e0e0e0);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .modal-title {
+                margin: 0;
+                color: var(--text-primary, #333);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                color: var(--text-muted, #6c757d);
+                cursor: pointer;
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .form-group {
+                margin-bottom: 1.25rem;
+            }
+
+            .form-label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+                color: var(--text-primary, #333);
+            }
+
+            .form-input, .form-select, .form-textarea {
+                width: 100%;
+                padding: 0.75rem;
+                border: 2px solid var(--border-color, #e0e0e0);
+                border-radius: 8px;
+                font-size: 0.875rem;
+                transition: border-color 0.2s;
+            }
+
+            .form-input:focus, .form-select:focus, .form-textarea:focus {
+                outline: none;
+                border-color: var(--primary-color, #2c3e50);
+            }
+
+            .form-textarea {
+                resize: vertical;
+                min-height: 100px;
+            }
+
+            .modal-footer {
+                padding: 1.5rem;
+                border-top: 1px solid var(--border-color, #e0e0e0);
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.75rem;
+            }
+
+            .btn {
+                padding: 0.75rem 1.5rem;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .btn-primary {
+                background: var(--primary-color, #2c3e50);
+                color: white;
+            }
+
+            .btn-secondary {
+                background: var(--surface-alt, #f8f9fa);
+                color: var(--text-primary, #333);
+            }
+
+            .toast {
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1001;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+
+            .toast.show {
+                opacity: 1;
+            }
+
+            .toast-success {
+                background: var(--success, #28a745);
+                color: white;
+            }
+
+            .toast-error {
+                background: var(--error, #dc3545);
+                color: white;
+            }
+
+            @media (max-width: 768px) {
+                .service-types {
+                    grid-template-columns: 1fr;
+                }
+
+                .service-type-card {
+                    padding: 1.5rem 1rem;
+                }
+
+                .modal-content {
+                    width: 95%;
+                    margin: 1rem;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

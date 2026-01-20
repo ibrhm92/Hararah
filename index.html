@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قرية حرارة - خدمات القرية الذكية</title>
+    <meta name="description" content="تطبيق خدمات القرية الذكية - دليل شامل للخدمات والمحلات والأخبار المحلية">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="قرية حرارة">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+    <link rel="apple-touch-icon" href="images/icon.jpeg">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-mosque"></i>
+            <h2>قرية حرارة</h2>
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+
+    <!-- Global Page Loading Indicator -->
+    <div id="pageLoadingOverlay" class="page-loading-overlay" style="display: none;">
+        <div class="page-loading-spinner">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="#" class="logo-link" onclick="navigateToPage('home'); return false;">
+                    <i class="fas fa-mosque"></i>
+                    <h1>قرية حرارة</h1>
+                </a>
+            </div>
+            <div class="header-actions">
+                <button id="notificationBtn" class="btn-icon" title="الإشعارات">
+                    <i class="fas fa-bell"></i>
+                    <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+                </button>
+                <button id="backBtn" class="btn-icon" title="الرئيسية" onclick="navigateToPage('home')">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button id="refreshBtn" class="btn-icon" title="تحديث">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="menuBtn" class="btn-icon" title="القائمة">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-header">
+            <h3>القائمة الرئيسية</h3>
+            <button id="closeNav" class="btn-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="nav-list">
+            <li><a href="#" data-page="craftsmen" class="nav-link">
+                <i class="fas fa-tools"></i>
+                <span>الصنايعية والخدمات</span>
+            </a></li>
+            <li><a href="#" data-page="machines" class="nav-link">
+                <i class="fas fa-tractor"></i>
+                <span>أصحاب الآلات الزراعية</span>
+            </a></li>
+            <li><a href="#" data-page="shops" class="nav-link">
+                <i class="fas fa-store"></i>
+                <span>المحلات التجارية</span>
+            </a></li>
+            <li><a href="#" data-page="offers" class="nav-link">
+                <i class="fas fa-tags"></i>
+                <span>العروض والتخفيضات</span>
+            </a></li>
+            <li><a href="#" data-page="ads" class="nav-link">
+                <i class="fas fa-bullhorn"></i>
+                <span>الإعلانات المحلية</span>
+            </a></li>
+            <li><a href="#" data-page="emergency" class="nav-link">
+                <i class="fas fa-phone-alt"></i>
+                <span>أرقام الطوارئ</span>
+            </a></li>
+            <li><a href="#" data-page="news" class="nav-link">
+                <i class="fas fa-newspaper"></i>
+                <span>الأخبار والتنبيهات</span>
+            </a></li>
+            <li><a href="#" data-page="add-service" class="nav-link">
+                <i class="fas fa-plus-circle"></i>
+                <span>أضف خدمة</span>
+            </a></li>
+        </ul>
+    </nav>
+
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="notifications-panel">
+        <div class="notifications-header">
+            <h3><i class="fas fa-bell"></i> الإشعارات</h3>
+            <button class="notifications-close" onclick="closeNotificationsPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="notifications-list" id="notificationsList">
+            <div class="notifications-empty">
+                <i class="fas fa-inbox"></i>
+                <p>لا توجد إشعارات حالياً</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Page -->
+        <div id="homePage" class="page home-page active">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="hero-content">
+                    <h2>مرحباً بك في قرية حرارة</h2>
+                    <p>منصتك الشاملة لجميع خدمات القرية</p>
+                </div>
+            </section>
+
+            <!-- Village Info Section -->
+            <section class="village-info">
+                <div class="info-card">
+                    <h3><i class="fas fa-info-circle"></i> نبذة عن قريتنا</h3>
+                    <p>قرية حرارة هي قرية مصرية تقع في محافظة البحيرة. تشتهر بالزراعة والطبيعة الخلابة، وتتميز بروح التعاون والتكاتف بين أهلها. تضم القرية العديد من الخدمات والمرافق التي تلبي احتياجات السكان.</p>
+                    <div class="village-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">20,000+</span>
+                            <span class="stat-label">عدد السكان</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">200+</span>
+                            <span class="stat-label">خدمة متوفرة</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">6,500+</span>
+                            <span class="stat-label">صوت انتخابي</span>
+                        </div>
+                         <div class="stat-item">
+                            <span class="stat-number">600+</span>
+                            <span class="stat-label">عائلة</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actions Grid -->
+            <div class="actions-grid">
+                <div class="action-card" data-page="craftsmen">
+                    <i class="fas fa-tools"></i>
+                    <h3>الصنايعية</h3>
+                    <p>الخدمات والحرف</p>
+                </div>
+                <div class="action-card" data-page="machines">
+                    <i class="fas fa-tractor"></i>
+                    <h3>الآلات الزراعية</h3>
+                    <p>أصحاب الآلات</p>
+                </div>
+                <div class="action-card" data-page="shops">
+                    <i class="fas fa-store"></i>
+                    <h3>المحلات</h3>
+                    <p>التجارية</p>
+                </div>
+                <div class="action-card" data-page="offers">
+                    <i class="fas fa-tag"></i>
+                    <h3>العروض</h3>
+                    <p>والتخفيضات</p>
+                </div>
+                <div class="action-card" data-page="ads">
+                    <i class="fas fa-bullhorn"></i>
+                    <h3>الإعلانات</h3>
+                    <p>المحلية</p>
+                </div>
+                <div class="action-card" data-page="emergency">
+                    <i class="fas fa-phone-alt"></i>
+                    <h3>الطوارئ</h3>
+                    <p>أرقام الطوارئ</p>
+                </div>
+            </div>
+
+            <style>
+                .actions-grid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 1rem !important;
+                    max-width: 600px;
+                    margin: 0 auto;
+                }
+                .action-card {
+                    min-height: auto !important;
+                    padding: 1rem !important;
+                }
+                .action-card h3 {
+                    font-size: 1rem !important;
+                    margin-bottom: 0.25rem !important;
+                }
+                .action-card p {
+                    font-size: 0.8rem !important;
+                    margin: 0 !important;
+                }
+                @media (max-width: 768px) {
+                    .actions-grid {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        max-width: none;
+                        gap: 0.75rem !important;
+                    }
+                    .action-card {
+                        padding: 0.75rem !important;
+                    }
+                    .action-card h3 {
+                        font-size: 0.9rem !important;
+                    }
+                    .action-card p {
+                        font-size: 0.75rem !important;
+                    }
+                }
+            </style>
+
+            <!-- Latest News Section -->
+            <section class="latest-news">
+                <h3><i class="fas fa-newspaper"></i> آخر الأخبار</h3>
+                <div id="latestNewsList">
+                    <div class="news-item">
+                        <h4>جاري تحميل الأخبار...</h4>
+                        <div class="news-date">يرجى الانتظار</div>
+                        <p>سيتم عرض الأخبار المعتمدة من الإدارة هنا</p>
+                    </div>
+                </div>
+                <div id="showMoreNews" class="show-more-news" style="display: none; text-align: center; margin-top: 1rem;">
+                    <button onclick="navigateToPage('news')" class="btn btn-primary">عرض المزيد من الأخبار</button>
+                </div>
+                <style>
+                    .news-item {
+                        display: flex;
+                        gap: 1rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                        background: var(--surface, #fff);
+                        border-radius: 8px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                    .news-image {
+                        width: 120px;
+                        height: 120px;
+                        object-fit: cover;
+                        border-radius: 8px;
+                    }
+                    .news-content {
+                        flex: 1;
+                    }
+                    .news-author {
+                        font-size: 0.8rem;
+                        color: var(--text-muted, #6c757d);
+                        margin-top: 0.25rem;
+                    }
+                    .show-more-news .btn {
+                        padding: 0.75rem 1.5rem;
+                        font-size: 1rem;
+                    }
+                </style>
+            </section>
+        </div>
+
+        <!-- Other pages will be loaded dynamically -->
+        <div id="pageContent"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
+            <div class="footer-links">
+                <a href="#" onclick="navigateToPage('admin'); return false;">لوحة التحكم</a>
+                <a href="#" onclick="navigateToPage('shop-owner'); return false;">أصحاب المحلات</a>
+            </div>
+        </div>
+    </footer>
+
+<script type="module" src="js/api-config-firebase.js"></script>
+<script type="module" src="js/script-firebase-fixed.js"></script>
+
+
+</body>
+</html>

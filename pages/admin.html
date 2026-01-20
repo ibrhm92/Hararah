@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - قرية حرارة</title>
+    <meta name="description" content="لوحة تحكم إدارة قرية حرارة">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="إدارة قرية حرارة">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .admin-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+        }
+        
+        .login-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 450px;
+            padding: var(--space-8);
+            transform: translateY(0);
+            transition: var(--transition-slow);
+        }
+        
+        .login-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 30px -10px rgb(0 0 0 / 0.15);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+        
+        .login-header .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        .login-header .logo i {
+            font-size: 3rem;
+            color: var(--primary-color);
+        }
+        
+        .login-header h1 {
+            color: var(--text-primary);
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: var(--space-2);
+        }
+        
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: var(--space-6);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--surface);
+            color: var(--text-primary);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--info-light);
+        }
+        
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .input-icon {
+            position: relative;
+        }
+        
+        .input-icon i {
+            position: absolute;
+            left: var(--space-4);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+        
+        .input-icon .form-input {
+            padding-left: var(--space-12);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: var(--space-4);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        
+        .login-btn.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .login-btn.loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: var(--error-light);
+            color: var(--error);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius);
+            margin-bottom: var(--space-4);
+            display: none;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 0.875rem;
+        }
+        
+        .error-message.show {
+            display: flex;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: var(--space-6);
+            padding-top: var(--space-6);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .back-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .back-link a:hover {
+            color: var(--primary-dark);
+        }
+        
+        .security-notice {
+            background: var(--info-light);
+            color: var(--info);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius);
+            margin-bottom: var(--space-6);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .dashboard-container {
+            display: none;
+            min-height: 100vh;
+            background: var(--background);
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: var(--space-6) var(--space-8);
+            box-shadow: var(--shadow);
+        }
+        
+        .dashboard-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+        
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .dashboard-title h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: 500;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .dashboard-content {
+            padding: var(--space-8);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+        
+        .stat-card {
+            background: var(--surface);
+            padding: var(--space-4);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: var(--radius);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-3);
+            font-size: 1.2rem;
+        }
+        
+        .stat-icon.blue { background: var(--info-light); color: var(--info); }
+        .stat-icon.green { background: var(--success-light); color: var(--success); }
+        .stat-icon.orange { background: var(--warning-light); color: var(--warning); }
+        .stat-icon.red { background: var(--error-light); color: var(--error); }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-6);
+        }
+        
+        .action-card {
+            background: var(--surface);
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+        
+        .services-management {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .services-management.active {
+            display: block;
+        }
+
+        .news-management {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .news-management.active {
+            display: block;
+        }
+        
+        .services-header {
+            background: var(--surface);
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: var(--space-6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+        
+        .services-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            color: var(--text-primary);
+        }
+        
+        .services-title h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .add-service-btn {
+            background: linear-gradient(135deg, var(--success), var(--secondary-light));
+            color: white;
+            border: none;
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: 500;
+        }
+        
+        .add-service-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .services-filters {
+            background: var(--surface);
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: var(--space-6);
+            display: flex;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .filter-input {
+            padding: var(--space-2) var(--space-3);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+        
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--info-light);
+        }
+        
+        .services-table-container {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .services-table th {
+            background: var(--surface-alt);
+            padding: var(--space-4);
+            text-align: right;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .services-table td {
+            padding: var(--space-4);
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-primary);
+        }
+        
+        .services-table tr:hover {
+            background: var(--surface-alt);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-primary {
+            background: var(--info-light);
+            color: var(--info);
+        }
+        
+        .badge-success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+        
+        .badge-warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        .btn-sm {
+            padding: var(--space-1) var(--space-2);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+        
+        .btn-edit {
+            background: var(--info-light);
+            color: var(--info);
+        }
+        
+        .btn-edit:hover {
+            background: var(--info);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: var(--error-light);
+            color: var(--error);
+        }
+        
+        .btn-delete:hover {
+            background: var(--error);
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: var(--z-modal);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .modal-header {
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            padding: var(--space-1);
+        }
+        
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        
+        .modal-body {
+            padding: var(--space-6);
+        }
+        
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: var(--space-3);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: var(--transition);
+            background: var(--surface);
+            color: var(--text-primary);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--info-light);
+        }
+        
+        .modal-footer {
+            padding: var(--space-6);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-3);
+        }
+        
+        .btn {
+            padding: var(--space-2) var(--space-4);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--surface-alt);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--space-12);
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--space-4);
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: var(--space-2);
+            color: var(--text-secondary);
+        }
+        
+        .empty-state p {
+            font-size: 0.875rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .services-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .services-filters {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .services-table-container {
+                overflow-x: auto;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        .action-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-light);
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .action-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .action-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: var(--space-2);
+            }
+            
+            .login-card {
+                padding: var(--space-6);
+            }
+            
+            .dashboard-header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-3);
+            }
+            
+            .stat-card {
+                padding: var(--space-3);
+            }
+            
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+                margin-bottom: var(--space-2);
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+            
+            .stat-label {
+                font-size: 0.7rem;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Page Loading Indicator -->
+    <div id="pageLoadingOverlay" class="page-loading-overlay" style="display: none;">
+        <div class="page-loading-spinner">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- Login Container -->
+    <div id="loginContainer" class="admin-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-mosque"></i>
+                    <h1>قرية حرارة</h1>
+                </div>
+                <p>لوحة تحكم الإدارة</p>
+            </div>
+            
+            <div class="security-notice">
+                <i class="fas fa-shield-alt"></i>
+                <span>هذه المنطقة مخصصة للمسؤولين المعتمدين فقط</span>
+            </div>
+            
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorText">بيانات الدخول غير صحيحة</span>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">اسم المستخدم</label>
+                    <div class="input-icon">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            class="form-input" 
+                            placeholder="أدخل اسم المستخدم"
+                            required
+                            autocomplete="username"
+                        >
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">كلمة المرور</label>
+                    <div class="input-icon">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-input" 
+                            placeholder="أدخل كلمة المرور"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <i class="fas fa-lock"></i>
+                    </div>
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>دخول</span>
+                </button>
+            </form>
+            
+            <div class="back-link">
+                <a href="index.html">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>العودة للصفحة الرئيسية</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard Container -->
+    <div id="dashboardContainer" class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="dashboard-header-content">
+                <div class="dashboard-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h1>لوحة التحكم</h1>
+                </div>
+                <div class="user-info">
+                    <span id="adminName">المسؤول</span>
+                    <button class="back-btn" onclick="backToHome()" style="background: rgba(34, 197, 94, 0.2); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <i class="fas fa-home"></i>
+                        <span>العودة للرئيسية</span>
+                    </button>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>تسجيل الخروج</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <main class="dashboard-content">
+            <!-- Statistics Section -->
+            <section id="stats-section" class="stats-section">
+                <h2 style="margin-bottom: var(--space-6); color: var(--text-primary);">
+                    <i class="fas fa-chart-bar"></i>
+                    إحصائيات النظام
+                </h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="stat-value" id="totalVisitsStat">جاري التحميل...</div>
+                        <div class="stat-label">إجمالي الزيارات</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-value" id="craftsmenStat">جاري التحميل...</div>
+                        <div class="stat-label">الصنايعية</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div class="stat-value" id="shopsStat">جاري التحميل...</div>
+                        <div class="stat-label">المحلات التجارية</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <div class="stat-value" id="newsStat">جاري التحميل...</div>
+                        <div class="stat-label">الأخبار المنشورة</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Actions Section -->
+            <section id="actions-section" class="actions-section">
+                <h2 style="margin-bottom: var(--space-6); color: var(--text-primary);">
+                    <i class="fas fa-cogs"></i>
+                    إدارة المحتوى
+                </h2>
+                <div class="actions-grid">
+                    <div class="action-card" onclick="manageUsers()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-users-cog"></i>
+                            </div>
+                            <h3 class="action-title">إدارة المستخدمين</h3>
+                        </div>
+                        <p class="action-description">عرض وإدارة حسابات المستخدمين وصلاحياتهم في النظام</p>
+                    </div>
+                    
+                    <div class="action-card" onclick="manageServices()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-concierge-bell"></i>
+                            </div>
+                            <h3 class="action-title">إدارة الخدمات</h3>
+                        </div>
+                        <p class="action-description">إضافة وتعديل وحذف الخدمات والصنايعية في القرية</p>
+                    </div>
+                    
+                    <div class="action-card" onclick="manageShops()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-store-alt"></i>
+                            </div>
+                            <h3 class="action-title">إدارة المحلات</h3>
+                        </div>
+                        <p class="action-description">التحكم في المحلات التجارية والمعلومات الخاصة بها</p>
+                    </div>
+                    
+                    <div class="action-card" onclick="manageNews()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                            <h3 class="action-title">إدارة الأخبار</h3>
+                        </div>
+                        <p class="action-description">نشر وتعديل الأخبار والتنبيهات الهامة للقرية</p>
+                    </div>
+                    
+                    <div class="action-card" onclick="manageOffers()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            <h3 class="action-title">إدارة العروض</h3>
+                        </div>
+                        <p class="action-description">التحكم في العروض والتخفيضات المعتمدة من الإدارة</p>
+                    </div>
+                    
+                    <div class="action-card" onclick="manageAds()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <h3 class="action-title">إدارة الإعلانات</h3>
+                        </div>
+                        <p class="action-description">مراجعة ونشر الإعلانات المحلية المعتمدة</p>
+                    </div>
+                    
+                    <div class="action-card" onclick="manageSettings()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <h3 class="action-title">إعدادات النظام</h3>
+                        </div>
+                        <p class="action-description">تكوين إعدادات النظام والتحكم في الميزات المتاحة</p>
+                    </div>
+                    
+                    <div class="action-card" onclick="viewReports()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3 class="action-title">التقارير والإحصائيات</h3>
+                        </div>
+                        <p class="action-description">عرض تقارير مفصلة عن استخدام النظام والنشاط</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Services Management Section -->
+    <div id="servicesManagement" class="services-management">
+        <div class="services-header">
+            <div class="services-title">
+                <i class="fas fa-concierge-bell"></i>
+                <h2>إدارة الخدمات والصنايعية</h2>
+            </div>
+            <button class="add-service-btn" onclick="showAddServiceModal()">
+                <i class="fas fa-plus"></i>
+                <span>إضافة خدمة جديدة</span>
+            </button>
+            <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                <i class="fas fa-arrow-right"></i>
+                <span>العودة للوحة التحكم</span>
+            </button>
+        </div>
+
+        <div class="services-filters">
+            <div class="filter-group">
+                <label class="filter-label">البحث</label>
+                <input type="text" id="serviceSearch" class="filter-input" placeholder="ابحث عن صنايعي أو خدمة..." onkeyup="filterServices()">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">التخصص</label>
+                <select id="specialtyFilter" class="filter-input" onchange="filterServices()">
+                    <option value="">جميع التخصصات</option>
+                    <option value="نجار">نجار</option>
+                    <option value="كهربائي">كهربائي</option>
+                    <option value="سباك">سباك</option>
+                    <option value="حداد">حداد</option>
+                    <option value="ميكانيكي">ميكانيكي</option>
+                    <option value="نقاش">نقاش</option>
+                    <option value="مبلط">مبلط</option>
+                    <option value="سباكة">سباكة</option>
+                    <option value="تكييف">تكييف</option>
+                    <option value="أخرى">أخرى</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">الحالة</label>
+                <select id="statusFilter" class="filter-input" onchange="filterServices()">
+                    <option value="">جميع الحالات</option>
+                    <option value="متاح">متاح</option>
+                    <option value="مشغول">مشغول</option>
+                    <option value="غير متاح">غير متاح</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="services-table-container">
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>التخصص</th>
+                        <th>رقم الهاتف</th>
+                        <th>العنوان</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="servicesTableBody">
+                    <!-- Services will be loaded here -->
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-tools"></i>
+                <h3>لا توجد خدمات حالياً</h3>
+                <p>ابدأ بإضافة أول خدمة أو صنايعي للقرية</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Management Section -->
+    <div id="newsManagement" class="news-management">
+        <div class="services-header">
+            <div class="services-title">
+                <i class="fas fa-newspaper"></i>
+                <h2>إدارة الأخبار والتنبيهات</h2>
+            </div>
+            <button class="add-service-btn" onclick="showAddNewsModal()">
+                <i class="fas fa-plus"></i>
+                <span>إضافة خبر جديد</span>
+            </button>
+            <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                <i class="fas fa-arrow-right"></i>
+                <span>العودة للوحة التحكم</span>
+            </button>
+        </div>
+
+        <div class="services-filters">
+            <div class="filter-group">
+                <label class="filter-label">البحث</label>
+                <input type="text" id="newsSearch" class="filter-input" placeholder="ابحث عن خبر..." onkeyup="filterNews()">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">النوع</label>
+                <select id="newsTypeFilter" class="filter-input" onchange="filterNews()">
+                    <option value="">جميع الأنواع</option>
+                    <option value="عادي">عادي</option>
+                    <option value="عاجل">عاجل</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="services-table-container">
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>العنوان</th>
+                        <th>المحتوى</th>
+                        <th>التاريخ</th>
+                        <th>النوع</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="newsTableBody">
+                    <!-- News will be loaded here -->
+                </tbody>
+            </table>
+            <div id="newsEmptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-newspaper"></i>
+                <h3>لا توجد أخبار حالياً</h3>
+                <p>ابدأ بإضافة أول خبر للقرية</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Service Modal -->
+    <div id="serviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-concierge-bell"></i>
+                    <span id="modalTitle">إضافة خدمة جديدة</span>
+                </h3>
+                <button class="modal-close" onclick="closeServiceModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="serviceForm">
+                <div class="modal-body">
+                    <input type="hidden" id="serviceId">
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="serviceName">اسم الصنايعي *</label>
+                        <input type="text" id="serviceName" class="form-input" required placeholder="أدخل اسم الصنايعي">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="serviceSpecialty">التخصص *</label>
+                        <select id="serviceSpecialty" class="form-select" required>
+                            <option value="">اختر التخصص</option>
+                            <option value="نجار">نجار</option>
+                            <option value="كهربائي">كهربائي</option>
+                            <option value="سباك">سباك</option>
+                            <option value="حداد">حداد</option>
+                            <option value="ميكانيكي">ميكانيكي</option>
+                            <option value="نقاش">نقاش</option>
+                            <option value="مبلط">مبلط</option>
+                            <option value="سباكة">سباكة</option>
+                            <option value="تكييف">تكييف</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="servicePhone">رقم الهاتف *</label>
+                        <input type="tel" id="servicePhone" class="form-input" required placeholder="أدخل رقم الهاتف">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="serviceAddress">العنوان</label>
+                        <input type="text" id="serviceAddress" class="form-input" placeholder="أدخل العنوان">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="serviceStatus">الحالة</label>
+                        <select id="serviceStatus" class="form-select">
+                            <option value="متاح">متاح</option>
+                            <option value="مشغول">مشغول</option>
+                            <option value="غير متاح">غير متاح</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="serviceNotes">ملاحظات إضافية</label>
+                        <textarea id="serviceNotes" class="form-textarea" placeholder="أدخل أي ملاحظات إضافية"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">
+                        <i class="fas fa-times"></i>
+                        <span>إلغاء</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit News Modal -->
+    <div id="newsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-newspaper"></i>
+                    <span id="newsModalTitle">إضافة خبر جديد</span>
+                </h3>
+                <button class="modal-close" onclick="closeNewsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newsForm">
+                <div class="modal-body">
+                    <input type="hidden" id="newsId">
+
+                    <div class="form-group">
+                        <label class="form-label" for="newsTitle">عنوان الخبر *</label>
+                        <input type="text" id="newsTitle" class="form-input" required placeholder="أدخل عنوان الخبر">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newsContent">محتوى الخبر *</label>
+                        <textarea id="newsContent" class="form-textarea" required placeholder="أدخل محتوى الخبر"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newsImage">الصورة (اختياري)</label>
+                        <input type="file" id="newsImage" class="form-input" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newsAuthor">الكاتب</label>
+                        <input type="text" id="newsAuthor" class="form-input" placeholder="أدخل اسم الكاتب">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="newsUrgent"> خبر عاجل
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeNewsModal()">
+                        <i class="fas fa-times"></i>
+                        <span>إلغاء</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="../js/api-config-firebase.js"></script>
+    <script type="module" src="../js/script-firebase-fixed.js"></script>
+    
+    <script>
+        // Default admin credentials (in real app, these should be securely stored)
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123'
+        };
+        
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const loginContainer = document.getElementById('loginContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+            if (isLoggedIn === 'true') {
+                showDashboard();
+            }
+        });
+        
+        // Login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            // Show loading state
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+            errorMessage.classList.remove('show');
+
+            // Check credentials
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Successful login
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                sessionStorage.setItem('adminUsername', username);
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+                showDashboard();
+            } else {
+                // Failed login
+                errorText.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                errorMessage.classList.add('show');
+
+                // Shake animation
+                loginForm.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    loginForm.style.animation = '';
+                }, 500);
+
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }
+        });
+        
+        // Show dashboard
+        function showDashboard() {
+            const username = sessionStorage.getItem('adminUsername') || 'المسؤول';
+            adminName.textContent = username;
+
+            // Update visitor statistics
+            const visits = JSON.parse(localStorage.getItem('villageVisits') || '{"total": 0, "monthly": {}, "yearly": {}}');
+            const now = new Date();
+            const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            const yearKey = now.getFullYear().toString();
+
+          
+          
+
+            loginContainer.style.display = 'none';
+            dashboardContainer.style.display = 'block';
+
+            // Animate dashboard appearance
+            dashboardContainer.style.opacity = '0';
+            dashboardContainer.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                dashboardContainer.style.transition = 'all 0.5s ease';
+                dashboardContainer.style.opacity = '1';
+                dashboardContainer.style.transform = 'translateY(0)';
+            }, 100);
+        }
+        
+        // Back to home function
+        function backToHome() {
+            window.location.href = 'index.html';
+        }
+
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            sessionStorage.removeItem('adminUsername');
+
+            dashboardContainer.style.transition = 'all 0.3s ease';
+            dashboardContainer.style.opacity = '0';
+            dashboardContainer.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                dashboardContainer.style.display = 'none';
+                loginContainer.style.display = 'flex';
+
+                // Reset form
+                loginForm.reset();
+                errorMessage.classList.remove('show');
+
+                loginContainer.style.opacity = '0';
+                setTimeout(() => {
+                    loginContainer.style.transition = 'all 0.3s ease';
+                    loginContainer.style.opacity = '1';
+                }, 100);
+            }, 300);
+        }
+        
+        // Action functions (placeholders for future implementation)
+        let services = [];
+        let currentEditId = null;
+        
+        function manageUsers() {
+            alert('صفحة إدارة المستخدمين - قيد التطوير');
+        }
+        
+        function manageServices() {
+            showServicesManagement();
+        }
+        
+        function showServicesManagement() {
+            const dashboard = document.getElementById('dashboardContainer');
+            const servicesMgmt = document.getElementById('servicesManagement');
+            
+            if (dashboard) {
+                dashboard.style.display = 'none';
+            }
+            if (servicesMgmt) {
+                servicesMgmt.classList.add('active');
+            }
+            loadServices();
+        }
+        
+        async function loadServices() {
+            try {
+                // Load services from Firebase database
+                services = await window.getData('craftsmen');
+                if (!services || services.length === 0) {
+                    // If no data in database, show empty state
+                    services = [];
+                }
+                renderServices();
+            } catch (error) {
+                console.error('Error loading services:', error);
+                showNotification('حدث خطأ في تحميل البيانات', 'error');
+                services = [];
+                renderServices();
+            }
+        }
+        
+        function renderServices(filteredServices = null) {
+            const tbody = document.getElementById('servicesTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const servicesToRender = filteredServices || services;
+            
+            if (servicesToRender.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            tbody.innerHTML = servicesToRender.map(service => `
+                <tr>
+                    <td>${service.name}</td>
+                    <td><span class="badge badge-primary">${service.specialty}</span></td>
+                    <td>${service.phone}</td>
+                    <td>${service.address || 'غير محدد'}</td>
+                    <td>
+                        <span class="badge ${getStatusBadgeClass(service.status)}">
+                            ${service.status}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-sm btn-edit" onclick="editService('${service.id}')">
+                                <i class="fas fa-edit"></i>
+                                تعديل
+                            </button>
+                            <button class="btn-sm btn-delete" onclick="deleteService('${service.id}')">
+                                <i class="fas fa-trash"></i>
+                                حذف
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'متاح': return 'badge-success';
+                case 'مشغول': return 'badge-warning';
+                case 'غير متاح': return 'badge-primary';
+                default: return 'badge-primary';
+            }
+        }
+        
+        function filterServices() {
+            const searchTerm = document.getElementById('serviceSearch').value.toLowerCase();
+            const specialtyFilter = document.getElementById('specialtyFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const filtered = services.filter(service => {
+                const matchesSearch = service.name.toLowerCase().includes(searchTerm) ||
+                                     service.specialty.toLowerCase().includes(searchTerm) ||
+                                     (service.phone && service.phone.includes(searchTerm));
+                const matchesSpecialty = !specialtyFilter || service.specialty === specialtyFilter;
+                const matchesStatus = !statusFilter || service.status === statusFilter;
+                
+                return matchesSearch && matchesSpecialty && matchesStatus;
+            });
+            
+            renderServices(filtered);
+        }
+        
+        function showAddServiceModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'إضافة خدمة جديدة';
+            document.getElementById('serviceForm').reset();
+            document.getElementById('serviceModal').classList.add('active');
+        }
+        
+        function editService(id) {
+            const service = services.find(s => s.id === id);
+            if (!service) return;
+            
+            currentEditId = id;
+            document.getElementById('modalTitle').textContent = 'تعديل الخدمة';
+            document.getElementById('serviceId').value = service.id;
+            document.getElementById('serviceName').value = service.name;
+            document.getElementById('serviceSpecialty').value = service.specialty;
+            document.getElementById('servicePhone').value = service.phone;
+            document.getElementById('serviceAddress').value = service.address || '';
+            document.getElementById('serviceStatus').value = service.status;
+            document.getElementById('serviceNotes').value = service.notes || '';
+            document.getElementById('serviceModal').classList.add('active');
+        }
+        
+        function closeServiceModal() {
+            document.getElementById('serviceModal').classList.remove('active');
+            document.getElementById('serviceForm').reset();
+            currentEditId = null;
+        }
+        
+        async function deleteService(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الخدمة؟')) {
+                try {
+                    await window.deleteData('craftsmen', id);
+                    services = services.filter(s => s.id !== id);
+                    renderServices();
+                    showNotification('تم حذف الخدمة بنجاح', 'success');
+                } catch (error) {
+                    console.error('Error deleting service:', error);
+                    showNotification('حدث خطأ في حذف الخدمة', 'error');
+                }
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            // Add styles
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)'};
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: var(--radius);
+                box-shadow: var(--shadow-lg);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                animation: slideDown 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideUp 0.3s ease';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        function backToDashboard() {
+            // Hide all management sections
+            const managementSections = ['servicesManagement', 'newsManagement', 'reports-section', 'settings-section'];
+            managementSections.forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.style.display = 'none';
+                }
+            });
+
+            // Show main dashboard sections
+            document.getElementById('stats-section').style.display = 'block';
+            document.getElementById('actions-section').style.display = 'block';
+        }
+        
+        // Service form submission handler
+        document.getElementById('serviceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('serviceName').value.trim(),
+                specialty: document.getElementById('serviceSpecialty').value,
+                phone: document.getElementById('servicePhone').value.trim(),
+                address: document.getElementById('serviceAddress').value.trim(),
+                status: document.getElementById('serviceStatus').value,
+                notes: document.getElementById('serviceNotes').value.trim()
+            };
+            
+            try {
+                if (currentEditId) {
+                    // Edit existing service
+                    await window.updateData('craftsmen', currentEditId, formData);
+                    const index = services.findIndex(s => s.id === currentEditId);
+                    if (index !== -1) {
+                        services[index] = { ...services[index], ...formData };
+                    }
+                    showNotification('تم تحديث الخدمة بنجاح', 'success');
+                } else {
+                    // Add new service
+                    const newService = await window.saveData('craftsmen', formData);
+                    services.push(newService);
+                    showNotification('تم إضافة الخدمة بنجاح', 'success');
+                }
+                
+                renderServices();
+                closeServiceModal();
+            } catch (error) {
+                console.error('Error saving service:', error);
+                showNotification('حدث خطأ في حفظ الخدمة', 'error');
+            }
+        });
+        
+        function manageShops() {
+            alert('صفحة إدارة المحلات - قيد التطوير');
+        }
+        
+        function manageNews() {
+            showNewsManagement();
+        }
+
+        function showNewsManagement() {
+            const dashboard = document.getElementById('dashboardContainer');
+            const newsMgmt = document.getElementById('newsManagement');
+
+            if (dashboard) {
+                dashboard.style.display = 'none';
+            }
+            if (newsMgmt) {
+                newsMgmt.classList.add('active');
+            }
+            loadNews();
+        }
+
+        async function loadNews() {
+            try {
+                newsData = await window.getData('news');
+                renderNews();
+            } catch (error) {
+                console.error('Error loading news:', error);
+                showNotification('حدث خطأ في تحميل الأخبار', 'error');
+                newsData = [];
+                renderNews();
+            }
+        }
+
+        function renderNews(filteredNews = null) {
+            const tbody = document.getElementById('newsTableBody');
+            const emptyState = document.getElementById('newsEmptyState');
+            const newsToRender = filteredNews || newsData;
+
+            if (newsToRender.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = newsToRender.map(news => `
+                <tr>
+                    <td>${news.title}</td>
+                    <td>${news.content ? news.content.substring(0, 50) + '...' : ''}</td>
+                    <td>${news.created_at ? new Date(news.created_at).toLocaleDateString('ar-SA') : 'غير محدد'}</td>
+                    <td>
+                        <span class="badge ${news.urgent ? 'badge-warning' : 'badge-primary'}">
+                            ${news.urgent ? 'عاجل' : 'عادي'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-sm btn-edit" onclick="editNews('${news.id}')">
+                                <i class="fas fa-edit"></i>
+                                تعديل
+                            </button>
+                            <button class="btn-sm btn-delete" onclick="deleteNews('${news.id}')">
+                                <i class="fas fa-trash"></i>
+                                حذف
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterNews() {
+            const searchTerm = document.getElementById('newsSearch').value.toLowerCase();
+            const typeFilter = document.getElementById('newsTypeFilter').value;
+
+            const filtered = newsData.filter(news => {
+                const matchesSearch = news.title.toLowerCase().includes(searchTerm) ||
+                                    (news.content && news.content.toLowerCase().includes(searchTerm));
+                const matchesType = !typeFilter || (typeFilter === 'عاجل' ? news.urgent : !news.urgent);
+
+                return matchesSearch && matchesType;
+            });
+
+            renderNews(filtered);
+        }
+
+        function showAddNewsModal() {
+            currentNewsId = null;
+            document.getElementById('newsModalTitle').textContent = 'إضافة خبر جديد';
+            document.getElementById('newsForm').reset();
+            document.getElementById('newsModal').classList.add('active');
+        }
+
+        function editNews(id) {
+            const news = newsData.find(n => n.id === id);
+            if (!news) return;
+
+            currentNewsId = id;
+            document.getElementById('newsModalTitle').textContent = 'تعديل الخبر';
+            document.getElementById('newsId').value = news.id;
+            document.getElementById('newsTitle').value = news.title;
+            document.getElementById('newsContent').value = news.content;
+            document.getElementById('newsImage').value = news.image || '';
+            document.getElementById('newsAuthor').value = news.author || '';
+            document.getElementById('newsUrgent').checked = news.urgent || false;
+            document.getElementById('newsModal').classList.add('active');
+        }
+
+        function closeNewsModal() {
+            document.getElementById('newsModal').classList.remove('active');
+            document.getElementById('newsForm').reset();
+            currentNewsId = null;
+        }
+
+        async function deleteNews(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الخبر؟')) {
+                try {
+                    await window.deleteData('news', id);
+                    newsData = newsData.filter(n => n.id !== id);
+                    renderNews();
+                    showNotification('تم حذف الخبر بنجاح', 'success');
+                } catch (error) {
+                    console.error('Error deleting news:', error);
+                    showNotification('حدث خطأ في حذف الخبر', 'error');
+                }
+            }
+        }
+        
+        function manageOffers() {
+            alert('صفحة إدارة العروض - قيد التطوير');
+        }
+        
+        function manageAds() {
+            alert('صفحة إدارة الإعلانات - قيد التطوير');
+        }
+        
+        function manageSettings() {
+            alert('صفحة إعدادات النظام - قيد التطوير');
+        }
+        
+        function viewReports() {
+            showReportsPage();
+        }
+
+        async function showReportsPage() {
+            const dashboard = document.getElementById('dashboardContainer');
+            const mainContent = document.querySelector('.dashboard-content');
+
+            if (!mainContent) return;
+
+            // Hide other sections
+            document.getElementById('stats-section').style.display = 'none';
+            document.getElementById('actions-section').style.display = 'none';
+
+            // Check if reports section already exists
+            let reportsSection = document.getElementById('reports-section');
+            if (!reportsSection) {
+                reportsSection = document.createElement('section');
+                reportsSection.id = 'reports-section';
+                reportsSection.className = 'reports-section';
+                reportsSection.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+                        <h2 style="margin: 0; color: var(--text-primary);">
+                            <i class="fas fa-chart-bar"></i>
+                            التقارير والإحصائيات
+                        </h2>
+                        <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                            <i class="fas fa-arrow-right"></i>
+                            <span>العودة للوحة التحكم</span>
+                        </button>
+                    </div>
+
+                    <!-- Visit Counter Section -->
+                    <div class="reports-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-eye"></i>
+                            إحصائيات الزيارات
+                        </h3>
+                        <div class="visit-stats" style="display: flex; gap: var(--space-4); align-items: center;">
+                            <div class="stat-card" style="flex: 1; text-align: center; padding: var(--space-4);">
+                                <i class="fas fa-eye" style="font-size: 2rem; color: var(--primary-color); margin-bottom: var(--space-2);"></i>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--secondary-color);" id="totalVisits">جاري التحميل...</div>
+                                <div style="color: var(--text-secondary);">إجمالي الزيارات</div>
+                                <button class="btn btn-warning btn-sm" onclick="resetVisitCount()" style="margin-top: var(--space-2);">
+                                    <i class="fas fa-refresh"></i> إعادة تعيين
+                                </button>
+                            </div>
+                            <div class="stat-card" style="flex: 1; text-align: center; padding: var(--space-4);">
+                                <i class="fas fa-calendar-day" style="font-size: 2rem; color: var(--primary-color); margin-bottom: var(--space-2);"></i>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--secondary-color);" id="todayVisits">جاري التحميل...</div>
+                                <div style="color: var(--text-secondary);">زيارات اليوم</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Database Statistics -->
+                    <div class="reports-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-database"></i>
+                            إحصائيات قاعدة البيانات
+                        </h3>
+                        <div class="stats-grid" id="dbStats">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-value" id="craftsmenCount">جاري التحميل...</div>
+                                <div class="stat-label">الصنايعية</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <div class="stat-value" id="shopsCount">جاري التحميل...</div>
+                                <div class="stat-label">المحلات</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <div class="stat-value" id="machinesCount">جاري التحميل...</div>
+                                <div class="stat-label">الآلات</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon red">
+                                    <i class="fas fa-newspaper"></i>
+                                </div>
+                                <div class="stat-value" id="newsCount">جاري التحميل...</div>
+                                <div class="stat-label">الأخبار</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Reports -->
+                    <div class="reports-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-chart-line"></i>
+                            تقارير إضافية
+                        </h3>
+                        <div class="additional-reports" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                            <div class="report-item" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius); border: 1px solid var(--border-light);">
+                                <i class="fas fa-bell" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                <div>
+                                    <h4 style="margin: 0 0 var(--space-2) 0; color: var(--text-primary);">نظام الإشعارات</h4>
+                                    <p style="margin: 0; color: var(--text-secondary);">يعمل بشكل طبيعي - يرسل إشعارات فورية للأخبار الجديدة</p>
+                                </div>
+                            </div>
+                            <div class="report-item" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius); border: 1px solid var(--border-light);">
+                                <i class="fas fa-mobile-alt" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                <div>
+                                    <h4 style="margin: 0 0 var(--space-2) 0; color: var(--text-primary);">التطبيق المحمول</h4>
+                                    <p style="margin: 0; color: var(--text-secondary);">متوفر للتحميل - يدعم جميع الميزات الأساسية</p>
+                                </div>
+                            </div>
+                            <div class="report-item" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius); border: 1px solid var(--border-light);">
+                                <i class="fas fa-calendar-alt" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                <div>
+                                    <h4 style="margin: 0 0 var(--space-2) 0; color: var(--text-primary);">آخر تحديث</h4>
+                                    <p style="margin: 0; color: var(--text-secondary);" id="lastUpdate">${new Date().toLocaleDateString('ar-SA')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                mainContent.appendChild(reportsSection);
+            }
+
+            reportsSection.style.display = 'block';
+
+            // Load real statistics
+            await loadReportsData();
+        }
+
+        async function loadReportsData() {
+            try {
+                // Load visit statistics
+                const totalVisits = await getVisitCount();
+                const todayVisits = await getTodayVisitCount();
+
+                document.getElementById('totalVisits').textContent = totalVisits;
+                document.getElementById('todayVisits').textContent = todayVisits;
+
+                // Load database statistics
+                const stats = await getStats();
+
+                document.getElementById('craftsmenCount').textContent = stats.craftsmen || 0;
+                document.getElementById('shopsCount').textContent = stats.shops || 0;
+                document.getElementById('machinesCount').textContent = stats.machines || 0;
+                document.getElementById('newsCount').textContent = stats.news || 0;
+
+            } catch (error) {
+                console.error('Error loading reports data:', error);
+                showNotification('حدث خطأ في تحميل البيانات', 'error');
+            }
+        }
+
+        async function getVisitCount() {
+            try {
+                const visitStats = await window.getData('visitStats');
+                if (visitStats && visitStats.length > 0) {
+                    return visitStats.reduce((total, stat) => total + (stat.count || 0), 0);
+                }
+                return 0;
+            } catch (error) {
+                console.error('Error getting visit count from Firebase:', error);
+                try {
+                    return parseInt(localStorage.getItem('visitCount') || '0');
+                } catch (localError) {
+                    return 0;
+                }
+            }
+        }
+
+        async function getTodayVisitCount() {
+            try {
+                const visitStats = await window.getData('visitStats');
+                const today = new Date().toISOString().split('T')[0];
+                const todayStats = visitStats.find(stat => stat.date === today);
+                return todayStats ? todayStats.count || 0 : 0;
+            } catch (error) {
+                console.error('Error getting today visit count:', error);
+                return 0;
+            }
+        }
+
+        async function getStats() {
+            try {
+                const stats = {};
+                const collections = ['craftsmen', 'machines', 'shops', 'offers', 'ads', 'news', 'emergency'];
+
+                for (const collection of collections) {
+                    try {
+                        const data = await window.getData(collection);
+                        stats[collection] = data ? data.length : 0;
+                    } catch (error) {
+                        console.error(`Error loading ${collection}:`, error);
+                        stats[collection] = 0;
+                    }
+                }
+
+                return stats;
+            } catch (error) {
+                console.error('Error getting stats:', error);
+                return {};
+            }
+        }
+
+        async function resetVisitCount() {
+            if (confirm('هل أنت متأكد من إعادة تعيين عداد الزيارات؟ سيتم حذف جميع إحصائيات الزيارات.')) {
+                try {
+                    // Clear all visit stats from Firebase
+                    const visitStats = await window.getData('visitStats');
+                    if (visitStats && visitStats.length > 0) {
+                        for (const stat of visitStats) {
+                            await window.deleteData('visitStats', stat.id);
+                        }
+                    }
+                    localStorage.removeItem('visitCount');
+                    showNotification('تم إعادة تعيين عداد الزيارات بنجاح', 'success');
+
+                    // Reload the data
+                    await loadReportsData();
+                } catch (error) {
+                    console.error('Error resetting visit count:', error);
+                    showNotification('حدث خطأ في إعادة تعيين العداد', 'error');
+                }
+            }
+        }
+
+        // Load real statistics for dashboard
+        async function loadDashboardStats() {
+            try {
+                // Load visit count
+                const totalVisits = await getVisitCount();
+                document.getElementById('totalVisitsStat').textContent = totalVisits;
+
+                // Load other statistics
+                const stats = await getStats();
+                document.getElementById('craftsmenStat').textContent = stats.craftsmen || 0;
+                document.getElementById('shopsStat').textContent = stats.shops || 0;
+                document.getElementById('machinesStat').textContent = stats.machines || 0;
+                document.getElementById('newsStat').textContent = stats.news || 0;
+
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+                showNotification('حدث خطأ في تحميل الإحصائيات', 'error');
+            }
+        }
+
+        function manageSettings() {
+            showSettingsPage();
+        }
+
+        async function showSettingsPage() {
+            const dashboard = document.getElementById('dashboardContainer');
+            const mainContent = document.querySelector('.dashboard-content');
+
+            if (!mainContent) return;
+
+            // Hide other sections
+            document.getElementById('stats-section').style.display = 'none';
+            document.getElementById('actions-section').style.display = 'none';
+
+            // Check if settings section already exists
+            let settingsSection = document.getElementById('settings-section');
+            if (!settingsSection) {
+                settingsSection = document.createElement('section');
+                settingsSection.id = 'settings-section';
+                settingsSection.className = 'settings-section';
+                settingsSection.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+                        <h2 style="margin: 0; color: var(--text-primary);">
+                            <i class="fas fa-cog"></i>
+                            إعدادات النظام
+                        </h2>
+                        <button class="btn btn-secondary" onclick="backToDashboard()" style="background: var(--surface-alt); color: var(--text-primary);">
+                            <i class="fas fa-arrow-right"></i>
+                            <span>العودة للوحة التحكم</span>
+                        </button>
+                    </div>
+
+                    <!-- System Settings -->
+                    <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-globe"></i>
+                            إعدادات عامة
+                        </h3>
+                        <div class="settings-grid" style="display: grid; gap: var(--space-4);">
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">لغة النظام</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">اللغة المستخدمة في واجهة النظام</p>
+                                </div>
+                                <select style="padding: var(--space-2) var(--space-3); border: 1px solid var(--border-color); border-radius: var(--radius);">
+                                    <option value="ar">العربية</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">الوضع المظلم</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تفعيل الوضع المظلم للواجهة</p>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: 0.4s; border-radius: 24px;"></span>
+                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-bell"></i>
+                            إعدادات الإشعارات
+                        </h3>
+                        <div class="settings-grid" style="display: grid; gap: var(--space-4);">
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">إشعارات المتصفح</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">عرض إشعارات المتصفح للأخبار الجديدة</p>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--success); transition: 0.4s; border-radius: 24px;"></span>
+                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 29px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">الاهتزاز</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تفعيل الاهتزاز للإشعارات على الهواتف</p>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--success); transition: 0.4s; border-radius: 24px;"></span>
+                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 29px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div>
+                                    <label style="font-weight: 600; color: var(--text-primary);">أصوات الإشعارات</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تشغيل أصوات للإشعارات الجديدة</p>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--error); transition: 0.4s; border-radius: 24px;"></span>
+                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cache and Performance -->
+                    <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-tachometer-alt"></i>
+                            الأداء والتخزين
+                        </h3>
+                        <div class="settings-grid" style="display: grid; gap: var(--space-4);">
+                            <div class="setting-item" style="padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <label style="font-weight: 600; color: var(--text-primary);">مسح التخزين المؤقت</label>
+                                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">مسح البيانات المخزنة محلياً لتوفير المساحة</p>
+                                    </div>
+                                    <button class="btn btn-warning btn-sm" onclick="clearCache()">
+                                        <i class="fas fa-trash"></i> مسح
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="setting-item" style="padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <label style="font-weight: 600; color: var(--text-primary);">تصدير البيانات</label>
+                                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تصدير جميع البيانات إلى ملف JSON</p>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="exportData()">
+                                        <i class="fas fa-download"></i> تصدير
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Information -->
+                    <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
+                            <i class="fas fa-info-circle"></i>
+                            معلومات النظام
+                        </h3>
+                        <div class="system-info" style="display: grid; gap: var(--space-3);">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">إصدار النظام:</span>
+                                <span style="font-weight: 600;">2.0.0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">تاريخ آخر تحديث:</span>
+                                <span style="font-weight: 600;">${new Date().toLocaleDateString('ar-SA')}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">حالة قاعدة البيانات:</span>
+                                <span style="font-weight: 600; color: var(--success);">متصلة</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">مساحة التخزين المستخدمة:</span>
+                                <span style="font-weight: 600;">~2.5 MB</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                mainContent.appendChild(settingsSection);
+            }
+
+            settingsSection.style.display = 'block';
+        }
+
+        async function clearCache() {
+            if (confirm('هل أنت متأكد من مسح التخزين المؤقت؟ سيتم إعادة تحميل البيانات من الإنترنت.')) {
+                try {
+                    // Clear local cache
+                    for (let i = localStorage.length - 1; i >= 0; i--) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith('cache_')) {
+                            localStorage.removeItem(key);
+                        }
+                    }
+                    showNotification('تم مسح التخزين المؤقت بنجاح', 'success');
+                } catch (error) {
+                    console.error('Error clearing cache:', error);
+                    showNotification('حدث خطأ في مسح التخزين المؤقت', 'error');
+                }
+            }
+        }
+
+        async function exportData() {
+            try {
+                showNotification('جاري تصدير البيانات...', 'info');
+
+                const exportData = {};
+                const collections = ['craftsmen', 'machines', 'shops', 'offers', 'ads', 'news', 'emergency'];
+
+                for (const collection of collections) {
+                    try {
+                        const data = await window.getData(collection);
+                        exportData[collection] = data || [];
+                    } catch (error) {
+                        console.error(`Error exporting ${collection}:`, error);
+                        exportData[collection] = [];
+                    }
+                }
+
+                // Add metadata
+                exportData.metadata = {
+                    exportDate: new Date().toISOString(),
+                    version: '2.0.0',
+                    collections: collections
+                };
+
+                // Create and download file
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+                const exportFileDefaultName = `village-data-export-${new Date().toISOString().split('T')[0]}.json`;
+
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+
+                showNotification('تم تصدير البيانات بنجاح', 'success');
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showNotification('حدث خطأ في تصدير البيانات', 'error');
+            }
+        }
+
+        
+        let newsData = [];
+        let currentNewsId = null;
+
+        // News form submission handler
+        document.getElementById('newsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const imageFile = document.getElementById('newsImage').files[0];
+            let imageUrl = '';
+
+            if (imageFile) {
+                showNotification('جاري رفع الصورة...', 'info');
+                try {
+                    imageUrl = await window.uploadImage(imageFile);
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    showNotification('حدث خطأ في رفع الصورة', 'error');
+                    return;
+                }
+            } else if (currentNewsId) {
+                // Keep old image if editing and no new file
+                const oldNews = newsData.find(n => n.id === currentNewsId);
+                imageUrl = oldNews ? oldNews.image || '' : '';
+            }
+
+            const formData = {
+                title: document.getElementById('newsTitle').value.trim(),
+                content: document.getElementById('newsContent').value.trim(),
+                image: imageUrl,
+                author: document.getElementById('newsAuthor').value.trim(),
+                urgent: document.getElementById('newsUrgent').checked
+            };
+
+            try {
+                if (currentNewsId) {
+                    // Edit existing news
+                    await window.updateData('news', currentNewsId, formData);
+                    const index = newsData.findIndex(n => n.id === currentNewsId);
+                    if (index !== -1) {
+                        newsData[index] = { ...newsData[index], ...formData };
+                    }
+                    showNotification('تم تحديث الخبر بنجاح', 'success');
+                } else {
+                    // Add new news
+                    const newNews = await window.saveData('news', formData);
+                    newsData.push(newNews);
+                    showNotification('تم إضافة الخبر بنجاح', 'success');
+                }
+
+                renderNews();
+                closeNewsModal();
+            } catch (error) {
+                console.error('Error saving news:', error);
+                showNotification('حدث خطأ في حفظ الخبر', 'error');
+            }
+        });
+
+        // Make functions globally accessible
+        window.manageServices = manageServices;
+        window.showServicesManagement = showServicesManagement;
+        window.backToDashboard = backToDashboard;
+        window.showAddServiceModal = showAddServiceModal;
+        window.editService = editService;
+        window.deleteService = deleteService;
+        window.closeServiceModal = closeServiceModal;
+        window.filterServices = filterServices;
+        window.manageNews = manageNews;
+        window.showNewsManagement = showNewsManagement;
+        window.showAddNewsModal = showAddNewsModal;
+        window.editNews = editNews;
+        window.deleteNews = deleteNews;
+        window.closeNewsModal = closeNewsModal;
+        window.filterNews = filterNews;
+        
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
