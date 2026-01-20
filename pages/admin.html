@@ -1252,10 +1252,6 @@
                     <i class="fas fa-plus"></i>
                     <span>إضافة خبر جديد</span>
                 </button>
-                <button class="btn btn-info" onclick="testNotification()" style="background: #17a2b8; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer;">
-                    <i class="fas fa-bell"></i>
-                    <span>اختبار الإشعارات</span>
-                </button>
             </div>
         </div>
 
@@ -1829,38 +1825,65 @@
             }, 100);
         }
         
-        // Test notification function
-        function testNotification() {
-            // Create test notification
-            const testTitle = '📰 اختبار الإشعارات';
-            const testMessage = 'هذا إشعار اختباري للتأكد من أن نظام الإشعارات يعمل بشكل صحيح';
-            
-            // Add to notification panel
-            if (window.addNotification) {
-                window.addNotification(testTitle, testMessage, 'test');
-            }
-            
-            // Send browser notification
-            if (window.sendBrowserNotification) {
-                window.sendBrowserNotification(testTitle, {
-                    body: testMessage,
-                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
-                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📰</text></svg>',
-                    tag: 'test-notification',
-                    requireInteraction: false,
-                    vibrate: [200, 100, 200]
-                });
-            }
-            
-            // Show success message
-            if (window.showNotification) {
-                window.showNotification('تم إرسال إشعار اختباري بنجاح', 'success');
-            } else {
-                alert('تم إرسال إشعار اختباري بنجاح! تحقق من إشعارات المتصفح.');
+        // Load statistics from Firebase
+        async function loadStatistics() {
+            try {
+                // Load craftsmen count
+                const craftsmen = await window.getData('craftsmen') || [];
+                document.getElementById('craftsmenStat').textContent = craftsmen.length;
+                
+                // Load shops count
+                const shops = await window.getData('shops') || [];
+                document.getElementById('shopsStat').textContent = shops.length;
+                
+                // Load news count
+                const news = await window.getData('news') || [];
+                document.getElementById('newsStat').textContent = news.length;
+                
+                // Load doctors count
+                const doctors = await window.getData('doctors') || [];
+                const doctorsStat = document.getElementById('doctorsStat');
+                if (doctorsStat) {
+                    doctorsStat.textContent = doctors.length;
+                }
+                
+                // Load offers count
+                const offers = await window.getData('offers') || [];
+                const offersStat = document.getElementById('offersStat');
+                if (offersStat) {
+                    offersStat.textContent = offers.length;
+                }
+                
+                // Load ads count
+                const ads = await window.getData('ads') || [];
+                const adsStat = document.getElementById('adsStat');
+                if (adsStat) {
+                    adsStat.textContent = ads.length;
+                }
+                
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                // Set default values on error
+                document.getElementById('craftsmenStat').textContent = '0';
+                document.getElementById('shopsStat').textContent = '0';
+                document.getElementById('newsStat').textContent = '0';
+                
+                const doctorsStat = document.getElementById('doctorsStat');
+                if (doctorsStat) {
+                    doctorsStat.textContent = '0';
+                }
+                
+                const offersStat = document.getElementById('offersStat');
+                if (offersStat) {
+                    offersStat.textContent = '0';
+                }
+                
+                const adsStat = document.getElementById('adsStat');
+                if (adsStat) {
+                    adsStat.textContent = '0';
+                }
             }
         }
-
-        // Load statistics from Firebase
         async function loadStatistics() {
             try {
                 // Load craftsmen count
@@ -2428,10 +2451,10 @@
                         </h3>
                         <div class="additional-reports" style="display: flex; flex-direction: column; gap: var(--space-4);">
                             <div class="report-item" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius); border: 1px solid var(--border-light);">
-                                <i class="fas fa-bell" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                <i class="fas fa-chart-line" style="font-size: 1.5rem; color: var(--primary-color);"></i>
                                 <div>
-                                    <h4 style="margin: 0 0 var(--space-2) 0; color: var(--text-primary);">نظام الإشعارات</h4>
-                                    <p style="margin: 0; color: var(--text-secondary);">يعمل بشكل طبيعي - يرسل إشعارات فورية للأخبار الجديدة</p>
+                                    <h4 style="margin: 0 0 var(--space-2) 0; color: var(--text-primary);">تقارير إضافية</h4>
+                                    <p style="margin: 0; color: var(--text-secondary);">عرض إحصائيات وتقارير مفصلة عن استخدام النظام</p>
                                 </div>
                             </div>
                             <div class="report-item" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius); border: 1px solid var(--border-light);">
@@ -2642,14 +2665,14 @@
                     <!-- Notification Settings -->
                     <div class="settings-subsection" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-6); box-shadow: var(--shadow);">
                         <h3 style="margin-bottom: var(--space-4); color: var(--text-primary);">
-                            <i class="fas fa-bell"></i>
-                            إعدادات الإشعارات
+                            <i class="fas fa-cog"></i>
+                            إعدادات النظام
                         </h3>
                         <div class="settings-grid" style="display: grid; gap: var(--space-4);">
                             <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
                                 <div>
-                                    <label style="font-weight: 600; color: var(--text-primary);">إشعارات المتصفح</label>
-                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">عرض إشعارات المتصفح للأخبار الجديدة</p>
+                                    <label style="font-weight: 600; color: var(--text-primary);">الوضع الليلي</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تغيير شكل الموقع للوضع الليلي</p>
                                 </div>
                                 <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
                                     <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
@@ -2659,25 +2682,13 @@
                             </div>
                             <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
                                 <div>
-                                    <label style="font-weight: 600; color: var(--text-primary);">الاهتزاز</label>
-                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تفعيل الاهتزاز للإشعارات على الهواتف</p>
+                                    <label style="font-weight: 600; color: var(--text-primary);">اللغة</label>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تغيير لغة الواجهة</p>
                                 </div>
-                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
-                                    <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
-                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--success); transition: 0.4s; border-radius: 24px;"></span>
-                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 29px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
-                                </label>
-                            </div>
-                            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius);">
-                                <div>
-                                    <label style="font-weight: 600; color: var(--text-primary);">أصوات الإشعارات</label>
-                                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">تشغيل أصوات للإشعارات الجديدة</p>
-                                </div>
-                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
-                                    <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
-                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--error); transition: 0.4s; border-radius: 24px;"></span>
-                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%;"></span>
-                                </label>
+                                <select style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius); background: var(--surface); color: var(--text-primary);">
+                                    <option value="ar" selected>العربية</option>
+                                    <option value="en">English</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -2806,7 +2817,29 @@
             }
         }
 
-        
+        // Back to home function
+        function backToHome() {
+            window.location.href = '../index.html';
+        }
+
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            sessionStorage.removeItem('adminUsername');
+
+            dashboardContainer.style.transition = 'all 0.3s ease';
+            dashboardContainer.style.opacity = '0';
+            dashboardContainer.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                dashboardContainer.style.display = 'none';
+                loginContainer.style.display = 'flex';
+
+                // Reset form
+                loginForm.reset();
+            }, 300);
+        }
+
         let newsData = [];
         let currentNewsId = null;
 
@@ -2840,6 +2873,7 @@
                 urgent: document.getElementById('newsUrgent').checked
             };
 
+            try {
                 if (currentNewsId) {
                     // Update existing news
                     await window.updateData('news', currentNewsId, formData);
@@ -2847,13 +2881,13 @@
                 } else {
                     // Add new news
                     const newNews = await window.saveData('news', formData);
-                    
+
                     // Send notification for new news
                     if (window.addNotification) {
                         const urgentText = formData.urgent ? ' ⚠️ عاجل' : '';
                         window.addNotification('📰 ' + formData.title + urgentText, formData.content?.substring(0, 150) || 'خبر جديد نزل الآن', 'news');
                     }
-                    
+
                     // Send browser notification
                     if (window.sendBrowserNotification) {
                         window.sendBrowserNotification('📰 ' + formData.title, {
@@ -2870,7 +2904,7 @@
                             }
                         });
                     }
-                    
+
                     showNotification('تم نشر الخبر بنجاح', 'success');
                 }
 
@@ -2881,50 +2915,100 @@
                 showNotification('حدث خطأ في حفظ الخبر', 'error');
             }
         });
-        // Make functions globally accessible
-        window.manageServices = manageServices;
-        window.showServicesManagement = showServicesManagement;
-        window.backToDashboard = backToDashboard;
-        window.showAddServiceModal = showAddServiceModal;
-        window.editService = editService;
-        window.deleteService = deleteService;
-        window.closeServiceModal = closeServiceModal;
-        window.filterServices = filterServices;
-        window.manageNews = manageNews;
-        window.showNewsManagement = showNewsManagement;
-        window.showAddNewsModal = showAddNewsModal;
-        window.editNews = editNews;
-        window.deleteNews = deleteNews;
-        window.closeNewsModal = closeNewsModal;
-        window.filterNews = filterNews;
-        
-        // Add doctors functions to global scope
-        window.manageDoctors = manageDoctors;
-        window.showAddDoctorModal = showAddDoctorModal;
-        window.editDoctor = editDoctor;
-        window.deleteDoctor = deleteDoctor;
-        window.closeDoctorModal = closeDoctorModal;
-        
-        // Add other functions to global scope
-        window.manageUsers = manageUsers;
-        window.manageShops = manageShops;
-        window.manageOffers = manageOffers;
-        window.manageAds = manageAds;
-        window.hideAllSections = hideAllSections;
-        window.generateMapLink = generateMapLink;
-        window.loadStatistics = loadStatistics;
-        window.testNotification = testNotification;
-        
-        // Add shake animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                20%, 40%, 60%, 80% { transform: translateX(5px); }
+
+        // Load news function
+        async function loadNews() {
+            try {
+                newsData = await window.getData('news') || [];
+                const newsTableBody = document.getElementById('newsTableBody');
+
+                if (newsData.length === 0) {
+                    newsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                <i class="fas fa-newspaper"></i>
+                                <p>لا توجد أخبار حالياً</p>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    newsTableBody.innerHTML = newsData.map(news => `
+                        <tr>
+                            <td>${news.title || 'غير محدد'}</td>
+                            <td>${news.content ? news.content.substring(0, 100) + '...' : 'لا يوجد محتوى'}</td>
+                            <td>${news.created_at ? (news.created_at.toDate ? news.created_at.toDate() : new Date(news.created_at)).toLocaleDateString('ar-SA') : 'غير محدد'}</td>
+                            <td>${news.urgent ? '<span style="color: var(--error);">عاجل</span>' : '<span style="color: var(--success);">عادي</span>'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="editNews('${news.id}')">
+                                    <i class="fas fa-edit"></i> تعديل
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteNews('${news.id}')">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading news:', error);
             }
-        `;
-        document.head.appendChild(style);
+        }
+
+        // Show add news modal
+        function showAddNewsModal() {
+            currentNewsId = null;
+            document.getElementById('newsModalTitle').textContent = 'إضافة خبر جديد';
+            document.getElementById('newsForm').reset();
+            document.getElementById('newsModal').style.display = 'flex';
+        }
+
+        // Edit news
+        function editNews(id) {
+            const news = newsData.find(n => n.id === id);
+            if (news) {
+                currentNewsId = id;
+                document.getElementById('newsModalTitle').textContent = 'تعديل خبر';
+                document.getElementById('newsTitle').value = news.title || '';
+                document.getElementById('newsContent').value = news.content || '';
+                document.getElementById('newsAuthor').value = news.author || '';
+                document.getElementById('newsUrgent').checked = news.urgent || false;
+                document.getElementById('newsModal').style.display = 'flex';
+            }
+        }
+
+        // Delete news
+        async function deleteNews(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الخبر؟')) {
+                try {
+                    await window.deleteData('news', id);
+                    showNotification('تم حذف الخبر بنجاح', 'success');
+                    loadNews();
+                } catch (error) {
+                    console.error('Error deleting news:', error);
+                    showNotification('حدث خطأ في حذف الخبر', 'error');
+                }
+            }
+        }
+
+        // Close news modal
+        function closeNewsModal() {
+            document.getElementById('newsModal').style.display = 'none';
+        }
+
+        // Filter news
+        function filterNews() {
+            const searchTerm = document.getElementById('newsSearch')?.value.toLowerCase() || '';
+            const filterType = document.getElementById('newsTypeFilter')?.value || '';
+            const newsRows = document.querySelectorAll('#newsTableBody tr');
+
+            newsRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const matchesSearch = !searchTerm || text.includes(searchTerm);
+                const matchesFilter = !filterType || text.includes(filterType);
+
+                row.style.display = matchesSearch && matchesFilter ? '' : 'none';
+            });
+        }
     </script>
 </body>
 </html>

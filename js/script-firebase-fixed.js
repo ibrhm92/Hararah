@@ -1672,15 +1672,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize navigation - تهيئة التنقل
     initializeNavigation();
 
-    // Load notifications from storage - تحميل الإشعارات من التخزين
-    loadNotificationsFromStorage();
-
-    // Request notification permission - طلب إذن الإشعارات
-    requestNotificationPermission();
-
-    // Start monitoring for new news - بدء مراقبة الأخبار الجديدة
-    startNewsMonitoring();
-
     // Load initial data - تحميل البيانات الأولية
     loadInitialData();
 
@@ -1732,64 +1723,17 @@ function initializeNavigation() {
         closeNav.addEventListener('click', () => {
             const mainNav = document.getElementById('mainNav');
             if (mainNav) {
-                mainNav.classList.remove('active');
             }
         });
     }
-    
-    // Navigation links - روابط التنقل
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const page = link.dataset.page;
-            if (page) {
-                navigateToPage(page);
-            }
-        });
-    });
-    
-    // Action cards - بطاقات الإجراءات
-    document.querySelectorAll('.action-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const page = card.dataset.page;
-            if (page) {
-                navigateToPage(page);
-            }
-        });
-    });
-    
-    // Refresh button - زر التحديث
+
+    // Handle refresh button
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
-            showLoadingOverlay();
-            clearCache();
-            loadPage(currentPage);
+            location.reload();
         });
     }
-    
-    // Notification button - زر الإشعارات
-    const notificationBtn = document.getElementById('notificationBtn');
-    if (notificationBtn) {
-        notificationBtn.addEventListener('click', () => {
-            toggleNotificationsPanel();
-        });
-    }
-    
-    // Close notifications panel on outside click - إغلاق لوحة الإشعارات عند النقر خارجها
-    const notificationsPanel = document.getElementById('notificationsPanel');
-    if (notificationsPanel) {
-        document.addEventListener('click', (e) => {
-            if (notificationsPanel.classList.contains('show') && 
-                !notificationsPanel.contains(e.target) && 
-                !notificationBtn.contains(e.target)) {
-                closeNotificationsPanel();
-            }
-        });
-    }
-    
-    // Setup global link and button handlers - إعداد معالجات عامة للأزرار والروابط
-    setupGlobalLoadingHandlers();
 }
 
 // Setup global loading handlers for all links and buttons - إعداد معالجات التحميل العامة
@@ -2203,18 +2147,9 @@ window.showAddCraftsmanForm = showAddCraftsmanForm;
 window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;
 
 // Export notification functions - تصدير وظائف الإشعارات
-window.toggleNotificationsPanel = toggleNotificationsPanel;
-window.closeNotificationsPanel = closeNotificationsPanel;
-window.markNotificationAsRead = markNotificationAsRead;
-window.clearAllNotifications = clearAllNotifications;
-window.addNotification = addNotification;
-window.sendBrowserNotification = sendBrowserNotification;
-window.requestNotificationPermission = requestNotificationPermission;
-window.startNewsMonitoring = startNewsMonitoring;
-window.stopNewsMonitoring = stopNewsMonitoring;
-window.updateLatestNewsDisplay = updateLatestNewsDisplay;
-window.showLoadingOverlay = showLoadingOverlay;
-window.hideLoadingOverlay = hideLoadingOverlay;
-window.showAddMachineForm = showAddMachineForm;
-window.showAddShopForm = showAddShopForm;
-window.showAddOfferForm = showAddOfferForm;
+// Removed notification functions from global scope
+
+// Export functions - تصدير الوظائف
+window.logoutAdmin = logoutAdmin;
+window.showAddCraftsmanForm = showAddCraftsmanForm;
+window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;

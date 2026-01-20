@@ -3,8 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="قرية حرارة - منصة خدمات القرية الذكية">
+    <meta name="keywords" content="قرية حرارة, خدمات, محلات, أخبار, البحيرة">
+    <meta name="author" content="قرية حرارة">
+    
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Force Update -->
+    <meta name="version" content="2.0.1">
+    
     <title>قرية حرارة - خدمات القرية الذكية</title>
-    <meta name="description" content="تطبيق خدمات القرية الذكية - دليل شامل للخدمات والمحلات والأخبار المحلية">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#2c3e50">
@@ -12,7 +23,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="قرية حرارة">
 
-    <!-- Web App Manifest -->
+    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
 
     <!-- Icons -->
@@ -27,6 +38,47 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Version Check Script -->
+    <script>
+        // Check for version updates
+        (function() {
+            const currentVersion = '2.0.1';
+            const storedVersion = localStorage.getItem('appVersion');
+            const lastVersionCheck = localStorage.getItem('lastVersionCheck');
+            const now = Date.now();
+            
+            // Force update if version changed or more than 1 day since last check
+            if (storedVersion !== currentVersion || !lastVersionCheck || (now - parseInt(lastVersionCheck)) > 86400000) {
+                console.log('Version check - forcing update');
+                localStorage.setItem('appVersion', currentVersion);
+                localStorage.setItem('lastVersionCheck', now.toString());
+                
+                // Clear all caches
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        names.forEach(function(name) {
+                            caches.delete(name);
+                        });
+                    });
+                }
+                
+                // Clear localStorage except essential data
+                const keysToKeep = ['villageVisits', 'adminLoggedIn', 'adminUsername'];
+                const allKeys = Object.keys(localStorage);
+                allKeys.forEach(key => {
+                    if (!keysToKeep.includes(key)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                // Force reload
+                if (storedVersion && storedVersion !== currentVersion) {
+                    window.location.reload(true);
+                }
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Loading Screen -->
@@ -58,13 +110,6 @@
                 </a>
             </div>
             <div class="header-actions">
-                <button id="notificationBtn" class="btn-icon" title="الإشعارات">
-                    <i class="fas fa-bell"></i>
-                    <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
-                </button>
-                <button id="testNotificationBtn" class="btn-icon" title="اختبار الإشعارات" onclick="testNotificationSystem()" style="background: #17a2b8; color: white;">
-                    <i class="fas fa-bell-slash"></i>
-                </button>
                 <button id="backBtn" class="btn-icon" title="الرئيسية" onclick="navigateToPage('home')">
                     <i class="fas fa-home"></i>
                 </button>
@@ -125,22 +170,6 @@
             </a></li>
         </ul>
     </nav>
-
-    <!-- Notifications Panel -->
-    <div id="notificationsPanel" class="notifications-panel">
-        <div class="notifications-header">
-            <h3><i class="fas fa-bell"></i> الإشعارات</h3>
-            <button class="notifications-close" onclick="closeNotificationsPanel()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="notifications-list" id="notificationsList">
-            <div class="notifications-empty">
-                <i class="fas fa-inbox"></i>
-                <p>لا توجد إشعارات حالياً</p>
-            </div>
-        </div>
-    </div>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -322,12 +351,10 @@
 <script>
 // Track page visits
 document.addEventListener('DOMContentLoaded', function() {
-    trackVisit();
+    // Force cache refresh check
+    forceCacheRefresh();
     
-    // Test notification system
-    setTimeout(() => {
-        testNotificationSystem();
-    }, 3000);
+    trackVisit();
 });
 
 function trackVisit() {
@@ -366,120 +393,63 @@ function trackVisit() {
     }
 }
 
-// Test notification system
-function testNotificationSystem() {
-    console.log('Testing notification system...');
+// Force cache refresh function
+function forceCacheRefresh() {
+    console.log('Checking for cache refresh...');
     
-    // Request notification permission manually
-    if ('Notification' in window) {
-        console.log('🔔 Browser supports notifications');
-        console.log('📱 Current permission status:', Notification.permission);
+    // Add random parameter to prevent caching
+    const url = new URL(window.location.href);
+    url.searchParams.set('v', Date.now());
+    
+    // Check if we need to force refresh
+    const lastRefresh = localStorage.getItem('lastCacheRefresh');
+    const now = Date.now();
+    
+    // Force refresh if more than 1 hour ago or first visit
+    if (!lastRefresh || (now - parseInt(lastRefresh)) > 3600000) {
+        console.log('Forcing cache refresh...');
+        localStorage.setItem('lastCacheRefresh', now.toString());
         
-        if (Notification.permission === 'default') {
-            console.log('📱 Requesting notification permission...');
-            Notification.requestPermission().then(permission => {
-                console.log('📱 Permission result:', permission);
-                if (permission === 'granted') {
-                    console.log('✅ Notification permission granted!');
-                    sendTestNotification();
-                } else {
-                    console.log('❌ Notification permission denied');
-                    alert('تم رفض إذن الإشعارات. لن تتمكن من تلقي إشعارات المتصفح.');
+        // Update version in meta
+        const versionMeta = document.querySelector('meta[name="version"]');
+        if (versionMeta) {
+            versionMeta.content = '2.0.1.' + now;
+        }
+        
+        // Optional: Force reload if we detect old cache
+        if (performance.navigation.type === 1) {
+            // Page is being reloaded, don't force again
+            return;
+        }
+        
+        // Check if page is from cache
+        if (performance.getEntriesByType) {
+            const entries = performance.getEntriesByType('navigation');
+            if (entries.length > 0) {
+                const navigation = entries[0];
+                if (navigation.transferSize === 0 && navigation.decodedBodySize === 0) {
+                    console.log('Detected cached page, forcing refresh...');
+                    // Only force refresh if it's been more than 30 minutes
+                    if (!lastRefresh || (now - parseInt(lastRefresh)) > 1800000) {
+                        window.location.reload(true);
+                    }
                 }
-            });
-        } else if (Notification.permission === 'granted') {
-            console.log('✅ Already have notification permission');
-            sendTestNotification();
-        } else {
-            console.log('❌ Notification permission was previously denied');
-            alert('تم رفض إذن الإشعارات مسبقاً. يرجى تفعيل الإشعارات من إعدادات المتصفح.');
+            }
         }
-    } else {
-        console.log('❌ Browser does not support notifications');
-        alert('متصفحك لا يدعم الإشعارات. يرجى استخدام متصفح حديث.');
-    }
-    
-    // Check if notification functions are available
-    checkNotificationFunctions();
-    
-    // Check if notification panel exists
-    const panel = document.getElementById('notificationsPanel');
-    if (panel) {
-        console.log('✅ Notification panel exists');
-    } else {
-        console.log('❌ Notification panel not found');
-    }
-    
-    // Check if notification button exists
-    const btn = document.getElementById('notificationBtn');
-    if (btn) {
-        console.log('✅ Notification button exists');
-    } else {
-        console.log('❌ Notification button not found');
     }
 }
 
-// Check notification functions availability
-function checkNotificationFunctions() {
-    if (window.addNotification && window.sendBrowserNotification) {
-        console.log('✅ All notification functions are available');
-        
-        // Add test notification to panel
-        window.addNotification('🔔 اختبار الإشعارات', 'هذا إشعار اختباري للتأكد من أن النظام يعمل', 'test');
-        
-        // Send browser notification if permission granted
-        if (Notification.permission === 'granted') {
-            sendTestNotification();
-        }
-    } else {
-        console.log('❌ Some notification functions are NOT available');
-        console.log('addNotification available:', !!window.addNotification);
-        console.log('sendBrowserNotification available:', !!window.sendBrowserNotification);
-        
-        // Wait for script to load and try again
-        console.log('Waiting for script to load...');
-        setTimeout(() => {
-            checkNotificationFunctions();
-        }, 2000);
-    }
-}
-
-// Send test browser notification
-function sendTestNotification() {
-    if (window.sendBrowserNotification) {
-        window.sendBrowserNotification('🔔 اختبار الإشعارات', {
-            body: 'هذا إشعار اختباري للتأكد من أن النظام يعمل',
-            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
-            tag: 'test-notification',
-            requireInteraction: true
+// Add refresh button functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            console.log('Manual refresh triggered');
+            localStorage.setItem('lastCacheRefresh', '0');
+            window.location.reload(true);
         });
-        console.log('✅ Test browser notification sent');
-    } else {
-        console.log('❌ sendBrowserNotification function not available');
-        
-        // Fallback to native notification
-        if (Notification.permission === 'granted') {
-            const notification = new Notification('🔔 اختبار الإشعارات', {
-                body: 'هذا إشعار اختباري للتأكد من أن النظام يعمل',
-                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
-                tag: 'test-notification',
-                requireInteraction: true
-            });
-            
-            notification.addEventListener('click', () => {
-                window.focus();
-                notification.close();
-            });
-            
-            console.log('✅ Fallback notification sent');
-        }
     }
-}
-
-// Make functions globally available
-window.testNotificationSystem = testNotificationSystem;
-window.sendTestNotification = sendTestNotification;
-window.checkNotificationFunctions = checkNotificationFunctions;
+});
 </script>
 
 
