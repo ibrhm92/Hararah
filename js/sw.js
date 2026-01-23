@@ -13,9 +13,9 @@ const urlsToCache = [
     '/emergency.html',
     '/add-service.html',
     '/manifest.json',
-    '/styles.css',
-    '/script-firebase-fixed.js',
-    '/api-config-firebase.js',
+    '/css/styles.css',
+    '/js/script-firebase-fixed.js',
+    '/js/api-config-firebase.js',
     '/icon.jpeg',
     'https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
@@ -60,8 +60,8 @@ self.addEventListener('fetch', event => {
                     // Cache successful responses for pages and scripts to make them independent
                     if (networkResponse.ok &&
                         (event.request.url.includes('.html') ||
-                         event.request.url.includes('.js') ||
-                         event.request.url.includes('.css'))) {
+                            event.request.url.includes('.js') ||
+                            event.request.url.includes('.css'))) {
                         const responseClone = networkResponse.clone();
                         caches.open(CACHE_NAME).then(cache => {
                             cache.put(event.request, responseClone);

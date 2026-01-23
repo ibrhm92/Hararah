@@ -26,6 +26,7 @@ const CONFIG = {
 // =============================================================================
 
 // Show loading overlay - إظهار مؤشر التحميل
+// Show loading overlay - إظهار مؤشر التحميل
 function showLoadingOverlay() {
     const overlay = document.getElementById('pageLoadingOverlay');
     if (overlay) {
@@ -34,6 +35,8 @@ function showLoadingOverlay() {
         overlay.style.display = 'flex';
     }
 }
+// Expose to global scope
+window.showLoadingOverlay = showLoadingOverlay;
 
 // Hide loading overlay - إخفاء مؤشر التحميل
 function hideLoadingOverlay() {
@@ -46,6 +49,8 @@ function hideLoadingOverlay() {
         }, 300);
     }
 }
+// Expose to global scope
+window.hideLoadingOverlay = hideLoadingOverlay;
 
 // Auto hide loading after timeout - إخفاء مؤشر التحميل تلقائياً بعد انتظار
 function autoHideLoading(duration = 3000) {
@@ -67,11 +72,11 @@ async function requestNotificationPermission() {
         console.log('المتصفح لا يدعم الإشعارات');
         return false;
     }
-    
+
     if (Notification.permission === 'granted') {
         return true;
     }
-    
+
     if (Notification.permission !== 'denied') {
         try {
             const permission = await Notification.requestPermission();
@@ -81,7 +86,7 @@ async function requestNotificationPermission() {
             return false;
         }
     }
-    
+
     return false;
 }
 
@@ -95,13 +100,13 @@ function sendBrowserNotification(title, options = {}) {
             requireInteraction: false,
             ...options
         });
-        
+
         notification.addEventListener('click', () => {
             window.focus();
             navigateToPage('news');
             notification.close();
         });
-        
+
         return notification;
     }
 }
@@ -116,7 +121,7 @@ function addNotification(title, message, type = 'news') {
         time: new Date(),
         read: false
     };
-    
+
     notifications.unshift(notification);
     notificationCount++;
     updateNotificationBadge();
@@ -128,7 +133,7 @@ function addNotification(title, message, type = 'news') {
 function updateNotificationBadge() {
     const unreadCount = notifications.filter(n => !n.read).length;
     const badge = document.getElementById('notificationBadge');
-    
+
     if (badge) {
         if (unreadCount > 0) {
             badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
@@ -142,9 +147,9 @@ function updateNotificationBadge() {
 // Render notifications - عرض الإشعارات
 function renderNotifications() {
     const notificationsList = document.getElementById('notificationsList');
-    
+
     if (!notificationsList) return;
-    
+
     if (notifications.length === 0) {
         notificationsList.innerHTML = `
             <div class="notifications-empty">
@@ -154,11 +159,11 @@ function renderNotifications() {
         `;
         return;
     }
-    
+
     notificationsList.innerHTML = notifications.map(notif => {
         const timeAgo = getTimeAgoArabic(notif.time);
         const icon = notif.type === 'news' ? 'fa-newspaper' : 'fa-bell';
-        
+
         return `
             <div class="notification-item ${!notif.read ? 'unread' : ''}" onclick="markNotificationAsRead(${notif.id})">
                 <div class="notification-icon">
@@ -199,7 +204,7 @@ function toggleNotificationsPanel() {
     const panel = document.getElementById('notificationsPanel');
     if (panel) {
         panel.classList.toggle('show');
-        
+
         if (panel.classList.contains('show')) {
             notifications.forEach(n => n.read = true);
             updateNotificationBadge();
@@ -248,12 +253,12 @@ function getTimeAgoArabic(date) {
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
+
     if (seconds < 60) return 'الآن';
     if (minutes < 60) return `قبل ${minutes} دقيقة`;
     if (hours < 24) return `قبل ${hours} ساعة`;
     if (days < 30) return `قبل ${days} يوم`;
-    
+
     return new Date(date).toLocaleDateString('ar-SA');
 }
 
@@ -261,29 +266,29 @@ function getTimeAgoArabic(date) {
 async function checkForNewNews() {
     try {
         const news = await getData('news');
-        
+
         if (!lastNewsCheckTime) {
             lastNewsCheckTime = Date.now();
             return;
         }
-        
+
         const newNews = news.filter(item => {
             const itemTime = new Date(item.created_at).getTime();
             return itemTime > lastNewsCheckTime;
         });
-        
+
         if (newNews.length > 0) {
             // عكس الترتيب لأخذ أحدث خبر أولاً
             newNews.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            
+
             newNews.forEach(newsItem => {
                 const title = newsItem.title || 'خبر جديد';
                 const message = newsItem.content?.substring(0, 150) || 'خبر جديد نزل الآن';
                 const urgentText = newsItem.urgent ? ' ⚠️ عاجل' : '';
-                
+
                 // إضافة الإشعار لللوحة الداخلية
                 addNotification(title + urgentText, message, 'news');
-                
+
                 // إرسال إشعار المتصفح/الهاتف الخارجي
                 sendBrowserNotification('📰 ' + title, {
                     body: message,
@@ -299,13 +304,13 @@ async function checkForNewNews() {
                     }
                 });
             });
-            
+
             // تحديث الأخبار على الصفحة الرئيسية إذا كنا عليها
             if (currentPage === 'home' || currentPage === 'news') {
                 updateLatestNewsDisplay(news);
             }
         }
-        
+
         lastNewsCheckTime = Date.now();
     } catch (error) {
         console.error('Error checking for new news:', error);
@@ -316,16 +321,16 @@ async function checkForNewNews() {
 function updateLatestNewsDisplay(allNews) {
     try {
         const latestNewsList = document.getElementById('latestNewsList');
-        
+
         if (latestNewsList && allNews && allNews.length > 0) {
             // ترتيب الأخبار حسب التاريخ تنازلياً (أحدث أولاً)
-            const sortedNews = allNews.sort((a, b) => 
+            const sortedNews = allNews.sort((a, b) =>
                 new Date(b.created_at || 0) - new Date(a.created_at || 0)
             );
-            
+
             // أخذ أحدث 3 أخبار
             const latestNews = sortedNews.slice(0, 3);
-            
+
             // تحديث HTML
             latestNewsList.innerHTML = latestNews.map(item => `
                 <div class="news-item ${item.urgent ? 'urgent' : ''}">
@@ -338,7 +343,7 @@ function updateLatestNewsDisplay(allNews) {
                     </div>
                 </div>
             `).join('');
-            
+
             // إظهار زر عرض المزيد إذا كان هناك أكثر من 3 أخبار
             const showMoreBtn = document.getElementById('showMoreNews');
             if (showMoreBtn) {
@@ -355,7 +360,7 @@ function startNewsMonitoring() {
     if (newsCheckInterval) {
         clearInterval(newsCheckInterval);
     }
-    
+
     checkForNewNews();
     newsCheckInterval = setInterval(checkForNewNews, CONFIG.NEWS_CHECK_INTERVAL);
 }
@@ -431,6 +436,15 @@ async function getData(type) {
         console.log('Current domain:', window.location.origin);
         const data = await firebaseClient.getCollection(type);
         console.log('Successfully fetched data for', type, 'count:', data.length);
+
+        // Special handling for settings singleton
+        if (type === 'settings' && Array.isArray(data)) {
+            const siteConfig = data.find(d => d.id === 'site_config') || data[0] || {};
+            const result = { site_config: siteConfig };
+            setCache(type, result);
+            return result;
+        }
+
         setCache(type, data);
 
         // Merge with local data - دمج مع البيانات المحلية
@@ -468,12 +482,21 @@ async function getData(type) {
         return localData;
     }
 }
+window.getData = getData;
 
 // Save data to Firebase - حفظ البيانات في Firebase
-async function saveData(type, data) {
+async function saveData(type, data, id = null) {
     try {
-        console.log('Saving data to Firebase for', type, data);
-        const result = await firebaseClient.addDocument(type, data);
+        console.log('Saving data to Firebase for', type, data, id ? `with ID: ${id}` : '');
+
+        let result;
+        if (id) {
+            // Use setDocument if ID is provided (e.g., singleton settings)
+            result = await firebaseClient.setDocument(type, id, data);
+        } else {
+            // Standard addDocument for collections
+            result = await firebaseClient.addDocument(type, data);
+        }
 
         if (result) {
             clearCache(type);
@@ -508,6 +531,7 @@ async function saveData(type, data) {
         return localItem;
     }
 }
+window.saveData = saveData;
 
 // Update data in Firebase - تحديث البيانات في Firebase
 async function updateData(type, id, data) {
@@ -558,6 +582,7 @@ async function updateData(type, id, data) {
         return { id, ...data };
     }
 }
+window.updateData = updateData;
 
 // Delete data from Firebase - حذف البيانات من Firebase
 async function deleteData(type, id) {
@@ -593,6 +618,7 @@ async function deleteData(type, id) {
         return true;
     }
 }
+window.deleteData = deleteData;
 
 // =============================================================================
 // UTILITY FUNCTIONS - وظائف مساعدة
@@ -601,21 +627,21 @@ async function deleteData(type, id) {
 // Format Egyptian phone number for WhatsApp - تنسيق رقم الهاتف المصري لواتساب
 function formatEgyptianWhatsApp(phone) {
     if (!phone) return '';
-    
+
     // Remove all non-digit characters - إزالة جميع الأحرف غير الرقمية
     let digits = phone.replace(/\D/g, '');
-    
+
     // If number starts with 0, remove it (Egyptian local format) - إذا بدأ الرقم بـ 0، إزالته
     if (digits.startsWith('0')) {
         digits = digits.substring(1);
     }
-    
+
     // If number already has country code (20 followed by valid length), use as is
     // إذا بدأ الرقم بـ 20 مع الطول الصحيح (كود الدولة موجود بالفعل)، استخدمه كما هو
     if (digits.startsWith('20') && digits.length >= 12) {
         return digits;
     }
-    
+
     // Add Egyptian country code (+20) - إضافة كود مصر
     return '20' + digits;
 }
@@ -631,10 +657,10 @@ function showSuccess(message) {
         <span>${message}</span>
     `;
     document.body.appendChild(toast);
-    
+
     // Show toast - عرض الإشعار
     setTimeout(() => toast.classList.add('show'), 100);
-    
+
     // Hide toast after 3 seconds - إخفاء الإشعار بعد 3 ثواني
     setTimeout(() => {
         toast.classList.remove('show');
@@ -653,10 +679,10 @@ function showError(message) {
         <span>${message}</span>
     `;
     document.body.appendChild(toast);
-    
+
     // Show toast - عرض الإشعار
     setTimeout(() => toast.classList.add('show'), 100);
-    
+
     // Hide toast after 3 seconds - إخفاء الإشعار بعد 3 ثواني
     setTimeout(() => {
         toast.classList.remove('show');
@@ -723,7 +749,7 @@ function navigateToPage(page) {
     // Show loading overlay - إظهار مؤشر التحميل
     showLoadingOverlay();
     autoHideLoading(5000);
-    
+
     currentPage = page;
 
     // Hide all pages - إخفاء جميع الصفحات
@@ -760,13 +786,13 @@ function navigateToPage(page) {
 // Load page dynamically - تحميل الصفحة ديناميكياً
 async function loadPage(page) {
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) {
         console.error('pageContent element not found');
         hideLoadingOverlay();
         return;
     }
-    
+
     try {
         // First try to load the HTML file
         const htmlFilePath = `pages/${page}.html`;
@@ -779,7 +805,7 @@ async function loadPage(page) {
                 const doc = parser.parseFromString(htmlContent, 'text/html');
                 const bodyContent = doc.body.innerHTML;
                 pageContent.innerHTML = bodyContent;
-                
+
                 // Initialize page-specific functionality if needed
                 initializePageFunctionality(page);
                 hideLoadingOverlay();
@@ -788,7 +814,7 @@ async function loadPage(page) {
         } catch (error) {
             console.log(`Could not load ${htmlFilePath}, falling back to dynamic generation`);
         }
-        
+
         // Fallback to dynamic generation if HTML file doesn't exist
         switch (page) {
             case 'craftsmen':
@@ -822,10 +848,10 @@ async function loadPage(page) {
             default:
                 pageContent.innerHTML = '<div class="text-center"><h3>الصفحة غير موجودة</h3></div>';
         }
-        
+
         // Hide loading overlay after content is loaded - إخفاء مؤشر التحميل
         hideLoadingOverlay();
-        
+
     } catch (error) {
         console.error('Error loading page:', error);
         pageContent.innerHTML = '<div class="text-center"><h3>حدث خطأ في تحميل الصفحة</h3></div>';
@@ -875,13 +901,13 @@ function initializeDoctorsPage() {
 function initializeCraftsmenPage() {
     // Load craftsmen data
     loadCraftsmenData();
-    
+
     // Setup search functionality
     const searchInput = document.getElementById('craftsmenSearch');
     if (searchInput) {
         searchInput.addEventListener('input', filterCraftsmen);
     }
-    
+
     // Setup filter functionality
     const filterSelect = document.getElementById('craftsmenFilter');
     if (filterSelect) {
@@ -1349,9 +1375,9 @@ async function loadOffersPage() {
     const offers = await getData('offers');
     const approvedOffers = offers.filter(offer => offer.approved !== false);
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page offers-page active">
             <div class="page-header">
@@ -1385,9 +1411,9 @@ async function loadAdsPage() {
     const ads = await getData('ads');
     const approvedAds = ads.filter(ad => ad.approved !== false);
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page ads-page active">
             <div class="page-header">
@@ -1420,9 +1446,9 @@ async function loadAdsPage() {
 async function loadNewsPage() {
     const news = await getData('news');
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page news-page active">
             <div class="page-header">
@@ -1507,9 +1533,9 @@ async function loadEmergencyPage() {
 // Load admin page - تحميل صفحة الإدارة
 async function loadAdminPage() {
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     // Check if admin is logged in - التحقق من تسجيل دخول الإدارة
     if (!adminLoggedIn) {
         pageContent.innerHTML = `
@@ -1534,7 +1560,7 @@ async function loadAdminPage() {
                 </div>
             </div>
         `;
-        
+
         // Add form submit handler - إضافة معالج إرسال النموذج
         document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
     } else {
@@ -1546,9 +1572,9 @@ async function loadAdminPage() {
 // Load admin dashboard - تحميل لوحة تحكم الإدارة
 async function loadAdminDashboard() {
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page admin-page active">
             <div class="admin-header">
@@ -1573,9 +1599,9 @@ async function loadAdminDashboard() {
 // Load add service page - تحميل صفحة إضافة خدمة
 async function loadAddServicePage() {
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page add-service-page active">
             <div class="page-header">
@@ -1616,10 +1642,10 @@ async function loadAddServicePage() {
 // Handle admin login - معالجة تسجيل دخول الإدارة
 async function handleAdminLogin(e) {
     e.preventDefault();
-    
+
     const username = document.getElementById('adminUsername').value;
     const password = document.getElementById('adminPassword').value;
-    
+
     // Simple authentication - مصادقة بسيطة
     if (username === 'admin' && password === '123') {
         adminLoggedIn = true;
@@ -1652,7 +1678,8 @@ function checkAdminLoginStatus() {
 // Register Service Worker - تسجيل Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        const swPath = window.location.pathname.includes('/pages/') ? '../js/sw.js' : 'js/sw.js';
+        navigator.serviceWorker.register(swPath)
             .then(registration => {
                 console.log('Service Worker registered successfully:', registration);
             })
@@ -1663,7 +1690,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // Initialize app - تهيئة التطبيق
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('Harara Village App initialized with Firebase');
 
     // Check admin login status - التحقق من حالة تسجيل دخول الإدارة
@@ -1686,7 +1713,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (loadingScreen) {
             loadingScreen.style.display = 'none';
         }
-    }, 5000);
+    }, 2500);
 });
 
 // Test connection - اختبار الاتصال
@@ -1716,13 +1743,14 @@ function initializeNavigation() {
             }
         });
     }
-    
+
     // Close navigation - إغلاق التنقل
     const closeNav = document.getElementById('closeNav');
     if (closeNav) {
         closeNav.addEventListener('click', () => {
             const mainNav = document.getElementById('mainNav');
             if (mainNav) {
+                mainNav.classList.remove('active');
             }
         });
     }
@@ -1746,7 +1774,7 @@ function setupGlobalLoadingHandlers() {
             autoHideLoading(5000);
         }
     }, true);
-    
+
     // All buttons - جميع الأزرار
     document.addEventListener('click', (e) => {
         const button = e.target.closest('button');
@@ -1764,7 +1792,7 @@ function setupGlobalLoadingHandlers() {
 async function loadInitialData() {
     try {
         console.log('Loading initial data...');
-        
+
         // Load latest news - تحميل آخر الأخبار
         const news = await getData('news');
         const latestNewsList = document.getElementById('latestNewsList');
@@ -2005,7 +2033,7 @@ function displayNews(news) {
             const dateB = new Date(b.date || b.createdAt || 0);
             return dateB - dateA;
         });
-        
+
         container.innerHTML = sortedNews.map(item => `
             <div class="news-card">
                 <div class="news-info">
@@ -2044,12 +2072,12 @@ function displayEmergency(emergency) {
 // Format date function - تنسيق التاريخ
 function formatDate(dateString) {
     if (!dateString) return 'تاريخ غير محدد';
-    
+
     try {
         const date = new Date(dateString);
-        const options = { 
-            year: 'numeric', 
-            month: 'long', 
+        const options = {
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
@@ -2065,12 +2093,12 @@ function filterCraftsmen() {
     const searchTerm = document.getElementById('craftsmenSearch')?.value.toLowerCase() || '';
     const filterValue = document.getElementById('craftsmenFilter')?.value || '';
     const cards = document.querySelectorAll('.craftsman-card');
-    
+
     cards.forEach(card => {
         const text = card.textContent.toLowerCase();
         const matchesSearch = text.includes(searchTerm);
         const matchesFilter = !filterValue || text.includes(filterValue);
-        
+
         card.style.display = matchesSearch && matchesFilter ? 'block' : 'none';
     });
 }
@@ -2078,7 +2106,7 @@ function filterCraftsmen() {
 function filterMachines() {
     const searchTerm = document.getElementById('machinesSearch')?.value.toLowerCase() || '';
     const cards = document.querySelectorAll('.machine-card');
-    
+
     cards.forEach(card => {
         const text = card.textContent.toLowerCase();
         card.style.display = text.includes(searchTerm) ? 'block' : 'none';
@@ -2088,7 +2116,7 @@ function filterMachines() {
 function filterShops() {
     const searchTerm = document.getElementById('shopsSearch')?.value.toLowerCase() || '';
     const cards = document.querySelectorAll('.shop-card');
-    
+
     cards.forEach(card => {
         const text = card.textContent.toLowerCase();
         card.style.display = text.includes(searchTerm) ? 'block' : 'none';
@@ -2103,7 +2131,7 @@ function setupAddServiceForm() {
             e.preventDefault();
             const formData = new FormData(form);
             const data = Object.fromEntries(formData);
-            
+
             try {
                 await saveData(data.type, data);
                 showSuccess('تم إضافة الخدمة بنجاح');
@@ -2129,6 +2157,68 @@ async function uploadImage(file) {
     }
 }
 
+// Suggestion Functions - وظائف الاقتراحات
+function showSuggestionModal() {
+    const modal = document.getElementById('suggestionModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeSuggestionModal() {
+    const modal = document.getElementById('suggestionModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        document.getElementById('suggestionForm').reset();
+    }
+}
+
+// Handle suggestion form submission
+async function handleSuggestionSubmit(e) {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('sugSubmitBtn');
+    const originalBtnText = submitBtn.innerHTML;
+
+    const suggestionData = {
+        name: document.getElementById('sugName').value.trim(),
+        phone: document.getElementById('sugPhone').value.trim(),
+        type: document.getElementById('sugType').value,
+        message: document.getElementById('sugMessage').value.trim(),
+        createdAt: new Date().toISOString(),
+        status: 'جديد'
+    };
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+
+        await saveData('suggestions', suggestionData);
+
+        showSuccess('تم إرسال اقتراحك/شكواك بنجاح. شكراً لك!');
+        closeSuggestionModal();
+    } catch (error) {
+        console.error('Error submitting suggestion:', error);
+        showError('حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    }
+}
+
+// Initialize suggestion form listener
+function initializeSuggestionForm() {
+    const form = document.getElementById('suggestionForm');
+    if (form) {
+        form.addEventListener('submit', handleSuggestionSubmit);
+    }
+}
+
+// Call initialization
+document.addEventListener('DOMContentLoaded', initializeSuggestionForm);
+
 // Export functions for use in HTML - تصدير الوظائف للاستخدام في HTML
 window.getData = getData;
 window.saveData = saveData;
@@ -2145,6 +2235,8 @@ window.handleAdminLogin = handleAdminLogin;
 window.logoutAdmin = logoutAdmin;
 window.showAddCraftsmanForm = showAddCraftsmanForm;
 window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;
+window.showSuggestionModal = showSuggestionModal;
+window.closeSuggestionModal = closeSuggestionModal;
 
 // Export notification functions - تصدير وظائف الإشعارات
 // Removed notification functions from global scope

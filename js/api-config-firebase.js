@@ -1,19 +1,19 @@
 // Firebase Configuration - إعدادات Firebase
 // Import Firebase modules - استيراد وحدات Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, serverTimestamp, increment, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
 
 // Firebase Configuration - إعدادات Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyAh5R1TODbL_0xCdg7Nr93ypOozePFb86Q",
-  authDomain: "hararah-34d17.firebaseapp.com",
-  projectId: "hararah-34d17",
-  storageBucket: "hararah-34d17.firebasestorage.app",
-  messagingSenderId: "953969843610",
-  appId: "1:953969843610:web:53b5b1789f4fd547b36e23",
-  measurementId: "G-DEL89WT7VX"
+    apiKey: "AIzaSyAh5R1TODbL_0xCdg7Nr93ypOozePFb86Q",
+    authDomain: "hararah-34d17.firebaseapp.com",
+    projectId: "hararah-34d17",
+    storageBucket: "hararah-34d17.firebasestorage.app",
+    messagingSenderId: "953969843610",
+    appId: "1:953969843610:web:53b5b1789f4fd547b36e23",
+    measurementId: "G-DEL89WT7VX"
 };
 
 // Initialize Firebase - تهيئة Firebase
@@ -79,14 +79,14 @@ class FirebaseApiClient {
             const collectionRef = collection(this.db, collectionName);
             const querySnapshot = await getDocs(collectionRef);
             const documents = [];
-            
+
             querySnapshot.forEach((doc) => {
                 documents.push({
                     id: doc.id,
                     ...doc.data()
                 });
             });
-            
+
             return documents;
         } catch (error) {
             console.error(`Error getting collection ${collectionName}:`, error);
@@ -99,7 +99,7 @@ class FirebaseApiClient {
         try {
             const docRef = doc(this.db, collectionName, docId);
             const docSnapshot = await getDoc(docRef);
-            
+
             if (docSnapshot.exists()) {
                 return {
                     id: docSnapshot.id,
@@ -123,7 +123,7 @@ class FirebaseApiClient {
                 created_at: serverTimestamp(),
                 updated_at: serverTimestamp()
             });
-            
+
             return {
                 id: docRef.id,
                 ...data,
@@ -136,6 +136,26 @@ class FirebaseApiClient {
         }
     }
 
+    // Set document (create or overwrite with specific ID) - إضافة أو تحديث وثيقة بمعرف محدد
+    async setDocument(collectionName, docId, data) {
+        try {
+            const docRef = doc(this.db, collectionName, docId);
+            await setDoc(docRef, {
+                ...data,
+                updated_at: serverTimestamp()
+            }, { merge: true });
+
+            return {
+                id: docId,
+                ...data,
+                updated_at: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error(`Error setting document ${docId} in ${collectionName}:`, error);
+            throw error;
+        }
+    }
+
     // Update document - تحديث وثيقة
     async updateDocument(collectionName, docId, data) {
         try {
@@ -144,7 +164,7 @@ class FirebaseApiClient {
                 ...data,
                 updated_at: serverTimestamp()
             });
-            
+
             return {
                 id: docId,
                 ...data,
@@ -172,33 +192,33 @@ class FirebaseApiClient {
     async queryDocuments(collectionName, conditions = [], orderByField = null, limitCount = null) {
         try {
             let q = collection(this.db, collectionName);
-            
+
             // Add where conditions - إضافة شروط where
             conditions.forEach(condition => {
                 const { field, operator, value } = condition;
                 q = query(q, where(field, operator, value));
             });
-            
+
             // Add order by - إضافة ترتيب
             if (orderByField) {
                 q = query(q, orderBy(orderByField, 'desc'));
             }
-            
+
             // Add limit - إضافة حد
             if (limitCount) {
                 q = query(q, limit(limitCount));
             }
-            
+
             const querySnapshot = await getDocs(q);
             const documents = [];
-            
+
             querySnapshot.forEach((doc) => {
                 documents.push({
                     id: doc.id,
                     ...doc.data()
                 });
             });
-            
+
             return documents;
         } catch (error) {
             console.error(`Error querying documents from ${collectionName}:`, error);
@@ -212,24 +232,24 @@ class FirebaseApiClient {
             const collectionRef = collection(this.db, collectionName);
             const querySnapshot = await getDocs(collectionRef);
             const documents = [];
-            
+
             querySnapshot.forEach((doc) => {
                 const docData = {
                     id: doc.id,
                     ...doc.data()
                 };
-                
+
                 // Check if search term matches any field - التحقق من تطبيق مصطلح البحث مع أي حقل
                 const matches = searchFields.some(field => {
                     const fieldValue = docData[field];
                     return fieldValue && fieldValue.toString().toLowerCase().includes(searchTerm.toLowerCase());
                 });
-                
+
                 if (matches) {
                     documents.push(docData);
                 }
             });
-            
+
             return documents;
         } catch (error) {
             console.error(`Error searching documents in ${collectionName}:`, error);
@@ -285,10 +305,29 @@ class FirebaseApiClient {
             throw error;
         }
     }
+    // Increment visit count - زيادة عداد الزيارات
+    async incrementVisitCount() {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const docRef = doc(this.db, 'visit_stats', today);
+
+            await setDoc(docRef, {
+                date: today,
+                count: increment(1),
+                updated_at: serverTimestamp()
+            }, { merge: true });
+
+            return true;
+        } catch (error) {
+            console.error('Error incrementing visit count:', error);
+            return false;
+        }
+    }
 }
 
 // Create Firebase API client - إنشاء عميل Firebase API
 const firebaseClient = new FirebaseApiClient();
+window.firebaseClient = firebaseClient;
 
 // Export for use in other modules - تصدير للاستخدام في الوحدات الأخرى
 export {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +17,8 @@
     <link rel="manifest" href="manifest.json">
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
 
     <!-- CSS -->
     <link rel="stylesheet" href="../css/styles.css">
@@ -25,8 +27,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
 <body>
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
@@ -77,38 +81,45 @@
             </button>
         </div>
         <ul class="nav-list">
-            <li><a href="craftsmen.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-tools"></i>
-                <span>الصنايعية والخدمات</span>
-            </a></li>
-            <li><a href="machines.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-tractor"></i>
-                <span>أصحاب الآلات الزراعية</span>
-            </a></li>
-            <li><a href="shops.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-store"></i>
-                <span>المحلات التجارية</span>
-            </a></li>
-            <li><a href="offers.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-tags"></i>
-                <span>العروض والتخفيضات</span>
-            </a></li>
-            <li><a href="ads.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-bullhorn"></i>
-                <span>الإعلانات المحلية</span>
-            </a></li>
-            <li><a href="emergency.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-phone-alt"></i>
-                <span>أرقام الطوارئ</span>
-            </a></li>
-            <li><a href="news.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-newspaper"></i>
-                <span>الأخبار والتنبيهات</span>
-            </a></li>
+            <li><a href="craftsmen.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tools"></i>
+                    <span>الصنايعية والخدمات</span>
+                </a></li>
+            <li><a href="machines.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tractor"></i>
+                    <span>أصحاب الآلات الزراعية</span>
+                </a></li>
+            <li><a href="shops.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-store"></i>
+                    <span>المحلات التجارية</span>
+                </a></li>
+            <li><a href="offers.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tags"></i>
+                    <span>العروض والتخفيضات</span>
+                </a></li>
+            <li><a href="ads.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>الإعلانات المحلية</span>
+                </a></li>
+            <li><a href="emergency.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>أرقام الطوارئ</span>
+                </a></li>
+            <li><a href="news.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-newspaper"></i>
+                    <span>الأخبار والتنبيهات</span>
+                </a></li>
             <li><a href="add-service.html" class="nav-link active">
-                <i class="fas fa-plus-circle"></i>
-                <span>أضف خدمة</span>
-            </a></li>
+                    <i class="fas fa-plus-circle"></i>
+                    <span>أضف خدمة</span>
+                </a></li>
         </ul>
     </nav>
 
@@ -149,7 +160,10 @@
             <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
             <div class="footer-links">
                 <a href="admin.html">لوحة التحكم</a>
-                <a href="add-service.html">أصحاب المحلات</a>
+                <a href="#" onclick="showSuggestionModal(); return false;" class="suggestion-btn">
+                    <i class="fas fa-comment-dots"></i>
+                    اقتراح أو شكوى
+                </a>
             </div>
         </div>
     </footer>
@@ -211,7 +225,8 @@
 
                     <div class="form-group">
                         <label class="form-label" for="serviceNotes">ملاحظات إضافية</label>
-                        <textarea id="serviceNotes" class="form-textarea" placeholder="أدخل أي ملاحظات إضافية"></textarea>
+                        <textarea id="serviceNotes" class="form-textarea"
+                            placeholder="أدخل أي ملاحظات إضافية"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -308,7 +323,7 @@
         }
 
         // Handle form submission
-        document.getElementById('serviceForm').addEventListener('submit', async function(e) {
+        document.getElementById('serviceForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
             try {
@@ -377,7 +392,7 @@
             }, 1000);
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Navigation
             const menuBtn = document.getElementById('menuBtn');
             if (menuBtn) {
@@ -409,210 +424,52 @@
             }, 1000);
         });
 
-        // CSS for modal and forms
-        const style = document.createElement('style');
-        style.textContent = `
-            .add-service-form {
-                padding: 1rem;
-            }
-
-            .service-types {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1rem;
-            }
-
-            .service-type-card {
-                background: var(--surface, #fff);
-                border: 2px solid var(--border-color, #e0e0e0);
-                border-radius: 12px;
-                padding: 2rem 1.5rem;
-                text-align: center;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .service-type-card:hover {
-                border-color: var(--primary-color, #2c3e50);
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            }
-
-            .service-type-card i {
-                font-size: 3rem;
-                color: var(--primary-color, #2c3e50);
-                margin-bottom: 1rem;
-            }
-
-            .service-type-card h3 {
-                margin: 0 0 0.5rem 0;
-                color: var(--text-primary, #333);
-            }
-
-            .service-type-card p {
-                margin: 0;
-                color: var(--text-secondary, #6c757d);
-            }
-
-            .modal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1000;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .modal.active {
-                display: flex;
-            }
-
-            .modal-content {
-                background: var(--surface, #fff);
-                border-radius: 12px;
-                width: 90%;
-                max-width: 500px;
-                max-height: 90vh;
-                overflow-y: auto;
-            }
-
-            .modal-header {
-                padding: 1.5rem;
-                border-bottom: 1px solid var(--border-color, #e0e0e0);
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .modal-title {
-                margin: 0;
-                color: var(--text-primary, #333);
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-
-            .modal-close {
-                background: none;
-                border: none;
-                font-size: 1.5rem;
-                color: var(--text-muted, #6c757d);
-                cursor: pointer;
-            }
-
-            .modal-body {
-                padding: 1.5rem;
-            }
-
-            .form-group {
-                margin-bottom: 1.25rem;
-            }
-
-            .form-label {
-                display: block;
-                margin-bottom: 0.5rem;
-                font-weight: 500;
-                color: var(--text-primary, #333);
-            }
-
-            .form-input, .form-select, .form-textarea {
-                width: 100%;
-                padding: 0.75rem;
-                border: 2px solid var(--border-color, #e0e0e0);
-                border-radius: 8px;
-                font-size: 0.875rem;
-                transition: border-color 0.2s;
-            }
-
-            .form-input:focus, .form-select:focus, .form-textarea:focus {
-                outline: none;
-                border-color: var(--primary-color, #2c3e50);
-            }
-
-            .form-textarea {
-                resize: vertical;
-                min-height: 100px;
-            }
-
-            .modal-footer {
-                padding: 1.5rem;
-                border-top: 1px solid var(--border-color, #e0e0e0);
-                display: flex;
-                justify-content: flex-end;
-                gap: 0.75rem;
-            }
-
-            .btn {
-                padding: 0.75rem 1.5rem;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: 500;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-
-            .btn-primary {
-                background: var(--primary-color, #2c3e50);
-                color: white;
-            }
-
-            .btn-secondary {
-                background: var(--surface-alt, #f8f9fa);
-                color: var(--text-primary, #333);
-            }
-
-            .toast {
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                padding: 1rem 2rem;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 1001;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                opacity: 0;
-                transition: opacity 0.3s;
-            }
-
-            .toast.show {
-                opacity: 1;
-            }
-
-            .toast-success {
-                background: var(--success, #28a745);
-                color: white;
-            }
-
-            .toast-error {
-                background: var(--error, #dc3545);
-                color: white;
-            }
-
-            @media (max-width: 768px) {
-                .service-types {
-                    grid-template-columns: 1fr;
-                }
-
-                .service-type-card {
-                    padding: 1.5rem 1rem;
-                }
-
-                .modal-content {
-                    width: 95%;
-                    margin: 1rem;
-                }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
+    <!-- Suggestion Modal -->
+    <div id="suggestionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-comment-alt"></i>
+                    تقديم اقتراح أو شكوى
+                </h3>
+                <button class="modal-close" onclick="closeSuggestionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="suggestionForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" id="sugName" class="form-input" required placeholder="أدخل اسمك الكريم">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="sugPhone" class="form-input" required placeholder="رقم الجوال للتواصل">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">نوع الطلب</label>
+                        <select id="sugType" class="form-select" required>
+                            <option value="اقتراح">اقتراح</option>
+                            <option value="شكوى">شكوى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الرسالة</label>
+                        <textarea id="sugMessage" class="form-textarea" required
+                            placeholder="اكتب تفاصيل اقتراحك أو شكواك هنا..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSuggestionModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="sugSubmitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>إرسال</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
+
 </html>

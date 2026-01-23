@@ -130,7 +130,7 @@ function addNotification(title, message, type = 'news') {
         time: new Date(),
         read: false
     };
-    
+
     notifications.unshift(notification);
     notificationCount++;
     updateNotificationBadge();
@@ -142,7 +142,7 @@ function addNotification(title, message, type = 'news') {
 function updateNotificationBadge() {
     const unreadCount = notifications.filter(n => !n.read).length;
     const badge = document.getElementById('notificationBadge');
-    
+
     if (badge) {
         if (unreadCount > 0) {
             badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
@@ -156,9 +156,9 @@ function updateNotificationBadge() {
 // Render notifications - عرض الإشعارات
 function renderNotifications() {
     const notificationsList = document.getElementById('notificationsList');
-    
+
     if (!notificationsList) return;
-    
+
     if (notifications.length === 0) {
         notificationsList.innerHTML = `
             <div class="notifications-empty">
@@ -168,11 +168,11 @@ function renderNotifications() {
         `;
         return;
     }
-    
+
     notificationsList.innerHTML = notifications.map(notif => {
         const timeAgo = getTimeAgoArabic(notif.time);
         const icon = notif.type === 'news' ? 'fa-newspaper' : 'fa-bell';
-        
+
         return `
             <div class="notification-item ${!notif.read ? 'unread' : ''}" onclick="markNotificationAsRead(${notif.id})">
                 <div class="notification-icon">
@@ -213,7 +213,7 @@ function toggleNotificationsPanel() {
     const panel = document.getElementById('notificationsPanel');
     if (panel) {
         panel.classList.toggle('show');
-        
+
         if (panel.classList.contains('show')) {
             notifications.forEach(n => n.read = true);
             updateNotificationBadge();
@@ -354,24 +354,24 @@ function addReportsToNavigation() {
 async function incrementVisitCount() {
     try {
         // Get current visit stats from Firebase - جلب إحصائيات الزيارات من Firebase
-        const visitStats = await getData('visitStats');
+        const visit_stats = await getData('visit_stats');
         let currentCount = 0;
 
-        if (visitStats && visitStats.length > 0) {
+        if (visit_stats && visit_stats.length > 0) {
             // Assuming we store as a single document - بافتراض حفظ كمستند واحد
             const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-            const todayStats = visitStats.find(stat => stat.date === today);
+            const todayStats = visit_stats.find(stat => stat.date === today);
 
             if (todayStats) {
                 currentCount = (todayStats.count || 0) + 1;
-                await updateData('visitStats', todayStats.id, {
+                await updateData('visit_stats', todayStats.id, {
                     ...todayStats,
                     count: currentCount,
                     lastVisit: new Date().toISOString()
                 });
             } else {
                 currentCount = 1;
-                await saveData('visitStats', {
+                await saveData('visit_stats', {
                     date: today,
                     count: currentCount,
                     lastVisit: new Date().toISOString()
@@ -381,7 +381,7 @@ async function incrementVisitCount() {
             // First visit ever - أول زيارة على الإطلاق
             const today = new Date().toISOString().split('T')[0];
             currentCount = 1;
-            await saveData('visitStats', {
+            await saveData('visit_stats', {
                 date: today,
                 count: currentCount,
                 lastVisit: new Date().toISOString()
@@ -405,10 +405,10 @@ async function incrementVisitCount() {
 
 async function getVisitCount() {
     try {
-        const visitStats = await getData('visitStats');
-        if (visitStats && visitStats.length > 0) {
+        const visit_stats = await getData('visit_stats');
+        if (visit_stats && visit_stats.length > 0) {
             // Sum all daily counts - جمع جميع الزيارات اليومية
-            return visitStats.reduce((total, stat) => total + (stat.count || 0), 0);
+            return visit_stats.reduce((total, stat) => total + (stat.count || 0), 0);
         }
         return 0;
     } catch (error) {
@@ -425,10 +425,10 @@ async function getVisitCount() {
 async function resetVisitCount() {
     try {
         // Clear all visit stats from Firebase - مسح جميع إحصائيات الزيارات من Firebase
-        const visitStats = await getData('visitStats');
-        if (visitStats && visitStats.length > 0) {
-            for (const stat of visitStats) {
-                await deleteData('visitStats', stat.id);
+        const visit_stats = await getData('visit_stats');
+        if (visit_stats && visit_stats.length > 0) {
+            for (const stat of visit_stats) {
+                await deleteData('visit_stats', stat.id);
             }
         }
         localStorage.removeItem('visitCount');
@@ -442,9 +442,9 @@ async function resetVisitCount() {
 
 async function getTodayVisitCount() {
     try {
-        const visitStats = await getData('visitStats');
+        const visit_stats = await getData('visit_stats');
         const today = new Date().toISOString().split('T')[0];
-        const todayStats = visitStats.find(stat => stat.date === today);
+        const todayStats = visit_stats.find(stat => stat.date === today);
         return todayStats ? todayStats.count || 0 : 0;
     } catch (error) {
         console.error('Error getting today visit count:', error);
@@ -477,15 +477,15 @@ async function checkForNewNews() {
         if (newNews.length > 0) {
             // عكس الترتيب لأخذ أحدث خبر أولاً
             newNews.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            
+
             newNews.forEach(newsItem => {
                 const title = newsItem.title || 'خبر جديد';
                 const message = newsItem.content?.substring(0, 150) || 'خبر جديد نزل الآن';
                 const urgentText = newsItem.urgent ? ' ⚠️ عاجل' : '';
-                
+
                 // إضافة الإشعار لللوحة الداخلية
                 addNotification(title + urgentText, message, 'news');
-                
+
                 // إرسال إشعار المتصفح/الهاتف الخارجي
                 sendBrowserNotification('📰 ' + title, {
                     body: message,
@@ -501,13 +501,13 @@ async function checkForNewNews() {
                     }
                 });
             });
-            
+
             // تحديث الأخبار على الصفحة الرئيسية إذا كنا عليها
             if (currentPage === 'home' || currentPage === 'news') {
                 updateLatestNewsDisplay(news);
             }
         }
-        
+
         lastNewsCheckTime = Date.now();
     } catch (error) {
         console.error('Error checking for new news:', error);
@@ -567,7 +567,7 @@ function startNewsMonitoring() {
     if (newsCheckInterval) {
         clearInterval(newsCheckInterval);
     }
-    
+
     checkForNewNews();
     newsCheckInterval = setInterval(checkForNewNews, CONFIG.NEWS_CHECK_INTERVAL);
 }
@@ -636,25 +636,48 @@ async function getData(type) {
         const cached = getFromCache(type);
         if (cached) {
             console.log('Using cached data for', type);
+            // Handle singleton settings in cache
+            if (type === 'settings' && Array.isArray(cached)) {
+                const siteConfig = cached.find(s => s.id === 'site_config');
+                if (siteConfig) return { site_config: siteConfig };
+            }
             return cached;
         }
-        
+
         console.log('Fetching data from Firebase for', type);
         const data = await firebaseClient.getCollection(type);
         setCache(type, data);
+
+        // Handle singleton settings from Firebase
+        if (type === 'settings' && Array.isArray(data)) {
+            const siteConfig = data.find(s => s.id === 'site_config');
+            return { site_config: siteConfig || {} };
+        }
+
         return data;
-        
+
     } catch (error) {
         console.error('Error fetching data:', error);
-        return getFromCache(type) || [];
+        const cached = getFromCache(type);
+        if (type === 'settings' && Array.isArray(cached)) {
+            const siteConfig = cached.find(s => s.id === 'site_config');
+            return { site_config: siteConfig || {} };
+        }
+        return cached || [];
     }
 }
 
 // Save data to Firebase - حفظ البيانات في Firebase
-async function saveData(type, data) {
+async function saveData(type, data, id = null) {
     try {
         console.log('Saving data to Firebase for', type, data);
-        const result = await firebaseClient.addDocument(type, data);
+        let result;
+
+        if (id) {
+            result = await firebaseClient.setDocument(type, id, data);
+        } else {
+            result = await firebaseClient.addDocument(type, data);
+        }
 
         if (result) {
             clearCache(type);
@@ -690,7 +713,7 @@ async function updateData(type, id, data) {
     try {
         console.log('Updating data in Firebase for', type, id, data);
         const result = await firebaseClient.updateDocument(type, id, data);
-        
+
         if (result) {
             clearCache(type);
             showSuccess('تم تحديث البيانات بنجاح');
@@ -711,7 +734,7 @@ async function deleteData(type, id) {
     try {
         console.log('Deleting data from Firebase for', type, id);
         const result = await firebaseClient.deleteDocument(type, id);
-        
+
         if (result) {
             clearCache(type);
             showSuccess('تم حذف البيانات بنجاح');
@@ -732,7 +755,7 @@ async function approveItem(type, id, approved) {
     try {
         console.log('Approving item in Firebase for', type, id, approved);
         const result = await firebaseClient.approveItem(type, id, approved);
-        
+
         if (result) {
             clearCache(type);
             showSuccess(approved ? 'تمت الموافقة بنجاح' : 'تم الرفض بنجاح');
@@ -766,11 +789,11 @@ async function getStats() {
         console.log('Getting statistics from Firebase');
         const stats = {};
         const collections = ['craftsmen', 'machines', 'shops', 'offers', 'ads', 'news', 'emergency'];
-        
+
         for (const collection of collections) {
             stats[collection] = await firebaseClient.getCollectionStats(collection);
         }
-        
+
         return stats;
     } catch (error) {
         console.error('Error getting stats:', error);
@@ -785,21 +808,21 @@ async function getStats() {
 // Format Egyptian phone number for WhatsApp - تنسيق رقم الهاتف المصري لواتساب
 function formatEgyptianWhatsApp(phone) {
     if (!phone) return '';
-    
+
     // Remove all non-digit characters - إزالة جميع الأحرف غير الرقمية
     let digits = phone.replace(/\D/g, '');
-    
+
     // If number starts with 0, remove it (Egyptian local format) - إذا بدأ الرقم بـ 0، إزالته
     if (digits.startsWith('0')) {
         digits = digits.substring(1);
     }
-    
+
     // If number already has country code (20 followed by valid length), use as is
     // إذا بدأ الرقم بـ 20 مع الطول الصحيح (كود الدولة موجود بالفعل)، استخدمه كما هو
     if (digits.startsWith('20') && digits.length >= 12) {
         return digits;
     }
-    
+
     // Add Egyptian country code (+20) - إضافة كود مصر
     return '20' + digits;
 }
@@ -815,10 +838,10 @@ function showSuccess(message) {
         <span>${message}</span>
     `;
     document.body.appendChild(toast);
-    
+
     // Show toast - عرض الإشعار
     setTimeout(() => toast.classList.add('show'), 100);
-    
+
     // Hide toast after 3 seconds - إخفاء الإشعار بعد 3 ثواني
     setTimeout(() => {
         toast.classList.remove('show');
@@ -837,10 +860,10 @@ function showError(message) {
         <span>${message}</span>
     `;
     document.body.appendChild(toast);
-    
+
     // Show toast - عرض الإشعار
     setTimeout(() => toast.classList.add('show'), 100);
-    
+
     // Hide toast after 3 seconds - إخفاء الإشعار بعد 3 ثواني
     setTimeout(() => {
         toast.classList.remove('show');
@@ -859,10 +882,10 @@ function showInfo(message) {
         <span>${message}</span>
     `;
     document.body.appendChild(toast);
-    
+
     // Show toast - عرض الإشعار
     setTimeout(() => toast.classList.add('show'), 100);
-    
+
     // Hide toast after 3 seconds - إخفاء الإشعار بعد 3 ثواني
     setTimeout(() => {
         toast.classList.remove('show');
@@ -879,12 +902,12 @@ function navigateToPage(page) {
     // Show loading overlay - إظهار مؤشر التحميل
     showLoadingOverlay();
     autoHideLoading(5000);
-    
+
     currentPage = page;
-    
+
     // Hide all pages - إخفاء جميع الصفحات
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    
+
     // Show target page - إظهار الصفحة المستهدفة
     const targetPage = document.getElementById(page + 'Page');
     if (targetPage) {
@@ -894,10 +917,10 @@ function navigateToPage(page) {
         // Load page dynamically - تحميل الصفحة ديناميكياً
         loadPage(page);
     }
-    
+
     // Close navigation - إغلاق القائمة
     document.getElementById('mainNav').classList.remove('active');
-    
+
     // Update active nav - تحديث القائمة النشطة
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
@@ -910,13 +933,13 @@ function navigateToPage(page) {
 // Load page dynamically - تحميل الصفحة ديناميكياً
 async function loadPage(page) {
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) {
         console.error('pageContent element not found');
         hideLoadingOverlay();
         return;
     }
-    
+
     try {
         switch (page) {
             case 'craftsmen':
@@ -955,10 +978,10 @@ async function loadPage(page) {
             default:
                 pageContent.innerHTML = '<div class="text-center"><h3>الصفحة غير موجودة</h3></div>';
         }
-        
+
         // Hide loading overlay after content is loaded - إخفاء مؤشر التحميل
         hideLoadingOverlay();
-        
+
     } catch (error) {
         console.error('Error loading page:', error);
         pageContent.innerHTML = '<div class="text-center"><h3>حدث خطأ في تحميل الصفحة</h3></div>';
@@ -970,9 +993,9 @@ async function loadPage(page) {
 async function loadCraftsmenPage() {
     const craftsmen = await getData('craftsmen');
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page craftsmen-page active">
             <div class="page-header">
@@ -1020,9 +1043,9 @@ async function loadCraftsmenPage() {
 async function loadMachinesPage() {
     const machines = await getData('machines');
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page machines-page active">
             <div class="page-header">
@@ -1068,9 +1091,9 @@ async function loadMachinesPage() {
 async function loadShopsPage() {
     const shops = await getData('shops');
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page shops-page active">
             <div class="page-header">
@@ -1115,9 +1138,9 @@ async function loadOffersPage() {
     const offers = await getData('offers');
     const approvedOffers = offers.filter(offer => offer.approved !== false);
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page offers-page active">
             <div class="page-header">
@@ -1151,9 +1174,9 @@ async function loadAdsPage() {
     const ads = await getData('ads');
     const approvedAds = ads.filter(ad => ad.approved !== false);
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page ads-page active">
             <div class="page-header">
@@ -1356,9 +1379,9 @@ async function loadNewsDetailPage() {
 async function loadEmergencyPage() {
     const emergency = await getData('emergency');
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page emergency-page active">
             <div class="page-header">
@@ -1390,9 +1413,9 @@ async function loadEmergencyPage() {
 // Load admin page - تحميل صفحة الإدارة
 async function loadAdminPage() {
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     // Check if admin is logged in - التحقق من تسجيل دخول الإدارة
     if (!adminLoggedIn) {
         pageContent.innerHTML = `
@@ -1417,7 +1440,7 @@ async function loadAdminPage() {
                 </div>
             </div>
         `;
-        
+
         // Add form submit handler - إضافة معالج إرسال النموذج
         document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
     } else {
@@ -1596,9 +1619,9 @@ async function loadReportsPage() {
 // Load add service page - تحميل صفحة إضافة خدمة
 async function loadAddServicePage() {
     const pageContent = document.getElementById('pageContent');
-    
+
     if (!pageContent) return;
-    
+
     pageContent.innerHTML = `
         <div class="page add-service-page active">
             <div class="page-header">
@@ -1639,10 +1662,10 @@ async function loadAddServicePage() {
 // Handle admin login - معالجة تسجيل دخول الإدارة
 async function handleAdminLogin(e) {
     e.preventDefault();
-    
+
     const username = document.getElementById('adminUsername').value;
     const password = document.getElementById('adminPassword').value;
-    
+
     // Simple authentication - مصادقة بسيطة
     if (username === 'admin' && password === '123') {
         adminLoggedIn = true;
@@ -1673,9 +1696,9 @@ function checkAdminLoginStatus() {
 // =============================================================================
 
 // Initialize app - تهيئة التطبيق
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('Harara Village App initialized with Firebase');
-    
+
     // Hide loading screen immediately - إخفاء شاشة التحميل فوراً
     setTimeout(() => {
         const loadingScreen = document.getElementById('loadingScreen');
@@ -1683,7 +1706,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingScreen.style.display = 'none';
         }
     }, 500);
-    
+
     // Increment visit count - زيادة عداد الزيارات
     incrementVisitCount();
 
@@ -1736,7 +1759,7 @@ function initializeNavigation() {
             }
         });
     }
-    
+
     // Close navigation - إغلاق التنقل
     const closeNav = document.getElementById('closeNav');
     if (closeNav) {
@@ -1747,7 +1770,7 @@ function initializeNavigation() {
             }
         });
     }
-    
+
     // Navigation links - روابط التنقل
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -1758,7 +1781,7 @@ function initializeNavigation() {
             }
         });
     });
-    
+
     // Action cards - بطاقات الإجراءات
     document.querySelectorAll('.action-card').forEach(card => {
         card.addEventListener('click', () => {
@@ -1768,7 +1791,7 @@ function initializeNavigation() {
             }
         });
     });
-    
+
     // Refresh button - زر التحديث
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
@@ -1778,7 +1801,7 @@ function initializeNavigation() {
             loadPage(currentPage);
         });
     }
-    
+
     // Notification button - زر الإشعارات
     const notificationBtn = document.getElementById('notificationBtn');
     if (notificationBtn) {
@@ -1786,19 +1809,19 @@ function initializeNavigation() {
             toggleNotificationsPanel();
         });
     }
-    
+
     // Close notifications panel when clicking outside - إغلاق لوحة الإشعارات عند الضغط خارجها
     document.addEventListener('click', (e) => {
         const panel = document.getElementById('notificationsPanel');
         const notificationBtn = document.getElementById('notificationBtn');
-        
-        if (panel && notificationBtn && 
-            !panel.contains(e.target) && 
+
+        if (panel && notificationBtn &&
+            !panel.contains(e.target) &&
             !notificationBtn.contains(e.target)) {
             closeNotificationsPanel();
         }
     });
-    
+
     // Add reports link to navigation if admin - إضافة رابط التقارير للقائمة إذا كان إدارة
     if (adminLoggedIn) {
         addReportsToNavigation();
@@ -1818,7 +1841,7 @@ function setupGlobalLoadingHandlers() {
             autoHideLoading(5000);
         }
     }, true);
-    
+
     // All buttons - جميع الأزرار
     document.addEventListener('click', (e) => {
         const button = e.target.closest('button');
@@ -1836,7 +1859,7 @@ function setupGlobalLoadingHandlers() {
 async function loadInitialData() {
     try {
         console.log('Loading initial data...');
-        
+
         // Load latest news - تحميل آخر الأخبار
         const news = await getData('news');
         const latestNewsList = document.getElementById('latestNewsList');

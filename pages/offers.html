@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +17,8 @@
     <link rel="manifest" href="manifest.json">
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
 
     <!-- CSS -->
     <link rel="stylesheet" href="../css/styles.css">
@@ -25,8 +27,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
 <body>
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
@@ -77,38 +81,40 @@
             </button>
         </div>
         <ul class="nav-list">
-            <li><a href="craftsmen.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-tools"></i>
-                <span>الصنايعية والخدمات</span>
-            </a></li>
-            <li><a href="machines.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-tractor"></i>
-                <span>أصحاب الآلات الزراعية</span>
-            </a></li>
-            <li><a href="shops.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-store"></i>
-                <span>المحلات التجارية</span>
-            </a></li>
+            <li><a href="craftsmen.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tools"></i>
+                    <span>الصنايعية والخدمات</span>
+                </a></li>
+            <li><a href="machines.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tractor"></i>
+                    <span>أصحاب الآلات الزراعية</span>
+                </a></li>
+            <li><a href="shops.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-store"></i>
+                    <span>المحلات التجارية</span>
+                </a></li>
             <li><a href="offers.html" class="nav-link active">
-                <i class="fas fa-tags"></i>
-                <span>العروض والتخفيضات</span>
-            </a></li>
-            <li><a href="ads.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-bullhorn"></i>
-                <span>الإعلانات المحلية</span>
-            </a></li>
-            <li><a href="emergency.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-phone-alt"></i>
-                <span>أرقام الطوارئ</span>
-            </a></li>
-            <li><a href="news.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-newspaper"></i>
-                <span>الأخبار والتنبيهات</span>
-            </a></li>
-            <li><a href="add-service.html" class="nav-link" onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
-                <i class="fas fa-plus-circle"></i>
-                <span>أضف خدمة</span>
-            </a></li>
+                    <i class="fas fa-tags"></i>
+                    <span>العروض والتخفيضات</span>
+                </a></li>
+            <li><a href="ads.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>الإعلانات المحلية</span>
+                </a></li>
+            <li><a href="emergency.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>أرقام الطوارئ</span>
+                </a></li>
+            <li><a href="news.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-newspaper"></i>
+                    <span>الأخبار والتنبيهات</span>
+                </a></li>
         </ul>
     </nav>
 
@@ -132,7 +138,10 @@
             <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
             <div class="footer-links">
                 <a href="admin.html">لوحة التحكم</a>
-                <a href="add-service.html">أصحاب المحلات</a>
+                <a href="#" onclick="showSuggestionModal(); return false;" class="suggestion-btn">
+                    <i class="fas fa-comment-dots"></i>
+                    اقتراح أو شكوى
+                </a>
             </div>
         </div>
     </footer>
@@ -297,7 +306,7 @@
             document.head.appendChild(style);
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Navigation
             const menuBtn = document.getElementById('menuBtn');
             if (menuBtn) {
@@ -334,7 +343,7 @@
             }, 1000);
         });
 
-        window.showLoadingOverlay = function() {
+        window.showLoadingOverlay = function () {
             const overlay = document.getElementById('pageLoadingOverlay');
             if (overlay) {
                 overlay.classList.remove('hide');
@@ -343,7 +352,7 @@
             }
         };
 
-        window.hideLoadingOverlay = function() {
+        window.hideLoadingOverlay = function () {
             const overlay = document.getElementById('pageLoadingOverlay');
             if (overlay) {
                 overlay.classList.add('hide');
@@ -354,5 +363,51 @@
             }
         };
     </script>
+    <!-- Suggestion Modal -->
+    <div id="suggestionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-comment-alt"></i>
+                    تقديم اقتراح أو شكوى
+                </h3>
+                <button class="modal-close" onclick="closeSuggestionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="suggestionForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" id="sugName" class="form-input" required placeholder="أدخل اسمك الكريم">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="sugPhone" class="form-input" required placeholder="رقم الجوال للتواصل">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">نوع الطلب</label>
+                        <select id="sugType" class="form-select" required>
+                            <option value="اقتراح">اقتراح</option>
+                            <option value="شكوى">شكوى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الرسالة</label>
+                        <textarea id="sugMessage" class="form-textarea" required
+                            placeholder="اكتب تفاصيل اقتراحك أو شكواك هنا..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSuggestionModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="sugSubmitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>إرسال</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
+
 </html>

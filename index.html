@@ -1,68 +1,78 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="قرية حرارة - منصة خدمات القرية الذكية">
     <meta name="keywords" content="قرية حرارة, خدمات, محلات, أخبار, البحيرة">
     <meta name="author" content="قرية حرارة">
-    
+
     <!-- Cache Control -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
+
     <!-- Force Update -->
     <meta name="version" content="2.0.1">
-    
+
     <title>قرية حرارة - خدمات القرية الذكية</title>
-    
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#2c3e50">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="قرية حرارة">
+    <meta name="apple-mobile-web-app-title" id="metaAppTitle" content="قرية حرارة">
+
+    <!-- SEO Meta Tags (Dynamic) -->
+    <meta name="description" id="metaDescription" content="قرية حرارة - منصة خدمات القرية الذكية">
+    <meta name="keywords" id="metaKeywords" content="قرية حرارة, خدمات, محلات, أخبار, البحيرة">
+
+    <!-- Dynamic Styles -->
+    <style id="dynamicStyles"></style>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
     <link rel="apple-touch-icon" href="images/icon.jpeg">
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <!-- Version Check Script -->
     <script>
         // Check for version updates
-        (function() {
+        (function () {
             const currentVersion = '2.0.1';
             const storedVersion = localStorage.getItem('appVersion');
             const lastVersionCheck = localStorage.getItem('lastVersionCheck');
             const now = Date.now();
-            
+
             // Force update if version changed or more than 1 day since last check
             if (storedVersion !== currentVersion || !lastVersionCheck || (now - parseInt(lastVersionCheck)) > 86400000) {
                 console.log('Version check - forcing update');
                 localStorage.setItem('appVersion', currentVersion);
                 localStorage.setItem('lastVersionCheck', now.toString());
-                
+
                 // Clear all caches
                 if ('caches' in window) {
-                    caches.keys().then(function(names) {
-                        names.forEach(function(name) {
+                    caches.keys().then(function (names) {
+                        names.forEach(function (name) {
                             caches.delete(name);
                         });
                     });
                 }
-                
+
                 // Clear localStorage except essential data
                 const keysToKeep = ['villageVisits', 'adminLoggedIn', 'adminUsername'];
                 const allKeys = Object.keys(localStorage);
@@ -71,7 +81,7 @@
                         localStorage.removeItem(key);
                     }
                 });
-                
+
                 // Force reload
                 if (storedVersion && storedVersion !== currentVersion) {
                     window.location.reload(true);
@@ -80,14 +90,30 @@
         })();
     </script>
 </head>
+
 <body>
+    <!-- Global Information Banner -->
+    <div id="globalBanner" class="global-banner"
+        style="display: none; background: #2563eb; color: white; padding: 10px 20px; text-align: center; position: sticky; top: 0; z-index: 2000; font-size: 0.95rem; font-weight: 500;">
+        <div id="bannerText"></div>
+    </div>
+
+    <!-- Maintenance Overlay -->
+    <div id="maintenanceOverlay" class="maintenance-overlay"
+        style="display: none; position: fixed; inset: 0; background: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;">
+        <i class="fas fa-tools" style="font-size: 4rem; color: #ef4444; margin-bottom: 20px;"></i>
+        <h1 id="maintenanceTitle" style="margin-bottom: 15px;">نحن نحدث الموقع حالياً</h1>
+        <p id="maintenanceMessage" style="font-size: 1.2rem; color: #666; max-width: 500px;"></p>
+        <div style="margin-top: 30px; font-size: 0.9rem; color: #999;">يرجى العودة لاحقاً - إدارة الموقع</div>
+    </div>
+
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
             <i class="fas fa-mosque"></i>
             <h2>قرية حرارة</h2>
             <h3>صلي على النبي</h3> <br>
-        
+
             <div class="loading-bar"></div>
         </div>
     </div>
@@ -133,41 +159,37 @@
         </div>
         <ul class="nav-list">
             <li><a href="pages/craftsmen.html" class="nav-link" data-page="craftsmen">
-                <i class="fas fa-tools"></i>
-                <span>الصنايعية والخدمات</span>
-            </a></li>
+                    <i class="fas fa-tools"></i>
+                    <span>الصنايعية والخدمات</span>
+                </a></li>
             <li><a href="pages/machines.html" class="nav-link" data-page="machines">
-                <i class="fas fa-tractor"></i>
-                <span>أصحاب الآلات الزراعية</span>
-            </a></li>
+                    <i class="fas fa-tractor"></i>
+                    <span>أصحاب الآلات الزراعية</span>
+                </a></li>
             <li><a href="pages/shops.html" class="nav-link" data-page="shops">
-                <i class="fas fa-store"></i>
-                <span>المحلات التجارية</span>
-            </a></li>
+                    <i class="fas fa-store"></i>
+                    <span>المحلات التجارية</span>
+                </a></li>
             <li><a href="pages/offers.html" class="nav-link" data-page="offers">
-                <i class="fas fa-tags"></i>
-                <span>العروض والتخفيضات</span>
-            </a></li>
+                    <i class="fas fa-tags"></i>
+                    <span>العروض والتخفيضات</span>
+                </a></li>
             <li><a href="pages/ads.html" class="nav-link" data-page="ads">
-                <i class="fas fa-bullhorn"></i>
-                <span>الإعلانات المحلية</span>
-            </a></li>
+                    <i class="fas fa-bullhorn"></i>
+                    <span>الإعلانات المحلية</span>
+                </a></li>
             <li><a href="pages/emergency.html" class="nav-link" data-page="emergency">
-                <i class="fas fa-phone-alt"></i>
-                <span>أرقام الطوارئ</span>
-            </a></li>
+                    <i class="fas fa-phone-alt"></i>
+                    <span>أرقام الطوارئ</span>
+                </a></li>
             <li><a href="pages/doctors.html" class="nav-link" data-page="doctors">
-                <i class="fas fa-user-md"></i>
-                <span>العيادات</span>
-            </a></li>
+                    <i class="fas fa-user-md"></i>
+                    <span>العيادات</span>
+                </a></li>
             <li><a href="pages/news.html" class="nav-link" data-page="news">
-                <i class="fas fa-newspaper"></i>
-                <span>الأخبار والتنبيهات</span>
-            </a></li>
-            <li><a href="pages/add-service.html" class="nav-link" data-page="add-service">
-                <i class="fas fa-plus-circle"></i>
-                <span>أضف خدمة</span>
-            </a></li>
+                    <i class="fas fa-newspaper"></i>
+                    <span>الأخبار والتنبيهات</span>
+                </a></li>
         </ul>
     </nav>
 
@@ -179,7 +201,7 @@
             <section class="hero-section">
                 <div class="hero-content">
                     <h2>مرحباً بك في قرية حرارة</h2>
-                    <p>منصتك  لخدمات القرية</p>
+                    <p>منصتك لخدمات القرية</p>
                 </div>
             </section>
 
@@ -187,7 +209,8 @@
             <section class="village-info">
                 <div class="info-card">
                     <h3><i class="fas fa-info-circle"></i> نبذة عن قريتنا</h3>
-                    <p>قرية حرارة هي قرية مصرية تقع في محافظة البحيرة. تشتهر بالزراعة والطبيعة الخلابة، وتتميز بروح التعاون والتكاتف بين أهلها. تضم القرية العديد من الخدمات والمرافق التي تلبي احتياجات السكان.</p>
+                    <p>قرية حرارة هي قرية مصرية تقع في محافظة البحيرة. تشتهر بالزراعة والطبيعة الخلابة، وتتميز بروح
+                        التعاون والتكاتف بين أهلها. تضم القرية العديد من الخدمات والمرافق التي تلبي احتياجات السكان.</p>
                     <div class="village-stats">
                         <div class="stat-item">
                             <span class="stat-number">20,000+</span>
@@ -201,7 +224,7 @@
                             <span class="stat-number">6,500+</span>
                             <span class="stat-label">صوت انتخابي</span>
                         </div>
-                         <div class="stat-item">
+                        <div class="stat-item">
                             <span class="stat-number">600+</span>
                             <span class="stat-label">عائلة</span>
                         </div>
@@ -216,70 +239,97 @@
                     <h3>الصنايعية</h3>
                     <p>الخدمات والحرف</p>
                 </a>
-                <a href="pages/machines.html" class="action-card" data-page="machines">
-                    <i class="fas fa-tractor"></i>
-                    <h3>الآلات الزراعية</h3>
-                    <p>أصحاب الآلات</p>
-                </a>
+
                 <a href="pages/shops.html" class="action-card" data-page="shops">
                     <i class="fas fa-store"></i>
                     <h3>المحلات</h3>
                     <p>التجارية</p>
                 </a>
-                <a href="pages/offers.html" class="action-card" data-page="offers">
-                    <i class="fas fa-tag"></i>
-                    <h3>العروض</h3>
-                    <p>والتخفيضات</p>
-                </a>
-                <a href="pages/ads.html" class="action-card">
-                    <i class="fas fa-bullhorn"></i>
-                    <h3>الإعلانات</h3>
-                    <p>المحلية</p>
-                </a>
+
                 <a href="pages/doctors.html" class="action-card" data-page="doctors">
                     <i class="fas fa-user-md"></i>
                     <h3>العيادات</h3>
                     <p>الأطباء والعيادات</p>
                 </a>
-                <a href="pages/emergency.html" class="action-card" data-page="emergency">
-                    <i class="fas fa-phone-alt"></i>
-                    <h3>الطوارئ</h3>
-                    <p>أرقام الطوارئ</p>
-                </a>
+
             </div>
 
             <style>
                 .actions-grid {
-                    grid-template-columns: repeat(2, 1fr) !important;
-                    gap: 1rem !important;
-                    max-width: 600px;
+                    grid-template-columns: repeat(3, 1fr) !important;
+                    gap: 0.75rem !important;
+                    max-width: 800px;
                     margin: 0 auto;
+                    padding: 0.5rem;
                 }
+
                 .action-card {
                     min-height: auto !important;
-                    padding: 1rem !important;
+                    padding: 0.75rem 0.5rem !important;
+                    background: rgba(255, 255, 255, 0.8) !important;
+                    backdrop-filter: blur(10px) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    border-radius: 12px !important;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+                    transition: all 0.2s ease !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    text-align: center !important;
+                    text-decoration: none !important;
+                    color: var(--text-primary) !important;
                 }
+
+                .action-card:hover {
+                    transform: translateY(-3px) !important;
+                    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+                    background: #fff !important;
+                    border-color: var(--primary-color) !important;
+                }
+
+                .action-card i {
+                    font-size: 1.25rem !important;
+                    margin-bottom: 0.5rem !important;
+                    color: var(--primary-color) !important;
+                    background: var(--primary-light-rgba, rgba(30, 58, 138, 0.1));
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 10px;
+                }
+
                 .action-card h3 {
-                    font-size: 1rem !important;
-                    margin-bottom: 0.25rem !important;
-                }
-                .action-card p {
-                    font-size: 0.8rem !important;
+                    font-size: 0.85rem !important;
+                    font-weight: 600 !important;
                     margin: 0 !important;
                 }
-                @media (max-width: 768px) {
+
+                .action-card p {
+                    display: none !important;
+                    /* Hide descriptions to save space */
+                }
+
+                @media (max-width: 480px) {
                     .actions-grid {
-                        grid-template-columns: repeat(2, 1fr) !important;
-                        max-width: none;
-                        gap: 0.75rem !important;
+                        grid-template-columns: repeat(3, 1fr) !important;
+                        gap: 0.5rem !important;
                     }
+
                     .action-card {
-                        padding: 0.75rem !important;
+                        padding: 0.6rem 0.4rem !important;
                     }
+
+                    .action-card i {
+                        font-size: 1.1rem !important;
+                        margin-bottom: 0.4rem !important;
+                        width: 35px;
+                        height: 35px;
+                    }
+
                     .action-card h3 {
-                        font-size: 0.9rem !important;
-                    }
-                    .action-card p {
                         font-size: 0.75rem !important;
                     }
                 }
@@ -295,8 +345,10 @@
                         <p>سيتم عرض الأخبار المعتمدة من الإدارة هنا</p>
                     </div>
                 </div>
-                <div id="showMoreNews" class="show-more-news" style="display: none; text-align: center; margin-top: 1rem;">
-                    <a href="pages/news.html" class="btn btn-primary" data-page="news" onclick="navigateToPage('news'); return false;">عرض المزيد من الأخبار</a>
+                <div id="showMoreNews" class="show-more-news"
+                    style="display: none; text-align: center; margin-top: 1rem;">
+                    <a href="pages/news.html" class="btn btn-primary" data-page="news"
+                        onclick="navigateToPage('news'); return false;">عرض المزيد من الأخبار</a>
                 </div>
                 <style>
                     .news-item {
@@ -306,22 +358,26 @@
                         padding: 1rem;
                         background: var(--surface, #fff);
                         border-radius: 8px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                     }
+
                     .news-image {
                         width: 120px;
                         height: 120px;
                         object-fit: cover;
                         border-radius: 8px;
                     }
+
                     .news-content {
                         flex: 1;
                     }
+
                     .news-author {
                         font-size: 0.8rem;
                         color: var(--text-muted, #6c757d);
                         margin-top: 0.25rem;
                     }
+
                     .show-more-news .btn {
                         padding: 0.75rem 1.5rem;
                         font-size: 1rem;
@@ -339,119 +395,285 @@
         <div class="footer-content">
             <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
             <div class="footer-links">
-                <a href="#" onclick="showLoadingOverlay(); setTimeout(() => window.location.href='pages/admin.html', 100);">لوحة التحكم</a>
-                <a href="pages/add-service.html">أصحاب المحلات</a>
+                <a href="pages/admin.html" onclick="if(window.showLoadingOverlay) showLoadingOverlay();">لوحة
+                    التحكم</a>
+                <a href="#" onclick="showSuggestionModal(); return false;" class="suggestion-btn">
+                    <i class="fas fa-comment-dots"></i>
+                    اقتراح أو شكوى
+                </a>
             </div>
         </div>
     </footer>
 
-<script type="module" src="js/api-config-firebase.js"></script>
-<script type="module" src="js/script-firebase-fixed.js"></script>
+    <!-- Suggestion Modal -->
+    <div id="suggestionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-comment-alt"></i>
+                    تقديم اقتراح أو شكوى
+                </h3>
+                <button class="modal-close" onclick="closeSuggestionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="suggestionForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" id="sugName" class="form-input" required placeholder="أدخل اسمك الكريم">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="sugPhone" class="form-input" required placeholder="رقم الجوال للتواصل">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">نوع الطلب</label>
+                        <select id="sugType" class="form-select" required>
+                            <option value="اقتراح">اقتراح</option>
+                            <option value="شكوى">شكوى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الرسالة</label>
+                        <textarea id="sugMessage" class="form-textarea" required
+                            placeholder="اكتب تفاصيل اقتراحك أو شكواك هنا..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSuggestionModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="sugSubmitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>إرسال</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-<script>
-// Track page visits
-document.addEventListener('DOMContentLoaded', function() {
-    // Force cache refresh check
-    forceCacheRefresh();
-    
-    trackVisit();
-});
+    <script type="module" src="js/api-config-firebase.js"></script>
+    <script type="module" src="js/script-firebase-fixed.js"></script>
 
-function trackVisit() {
-    try {
-        // Get current visit count from localStorage
-        let visits = JSON.parse(localStorage.getItem('villageVisits') || '{"total": 0, "monthly": {}, "yearly": {}}');
-        
-        // Increment total visits
-        visits.total = (visits.total || 0) + 1;
-        
-        // Update monthly visits
-        const now = new Date();
-        const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-        visits.monthly[monthKey] = (visits.monthly[monthKey] || 0) + 1;
-        
-        // Update yearly visits
-        const yearKey = now.getFullYear().toString();
-        visits.yearly[yearKey] = (visits.yearly[yearKey] || 0) + 1;
-        
-        // Save to localStorage
-        localStorage.setItem('villageVisits', JSON.stringify(visits));
-        
-        // Also try to save to Firebase if available
-        if (window.saveData) {
-            window.saveData('visitStats', {
-                type: 'visit',
-                timestamp: new Date().toISOString(),
-                userAgent: navigator.userAgent,
-                referrer: document.referrer
-            }).catch(err => console.log('Could not save visit to Firebase:', err));
-        }
-        
-        console.log('Visit tracked successfully. Total visits:', visits.total);
-    } catch (error) {
-        console.error('Error tracking visit:', error);
-    }
-}
+    <script>
+        // Track page visits
+        document.addEventListener('DOMContentLoaded', function () {
+            // Force cache refresh check
+            forceCacheRefresh();
 
-// Force cache refresh function
-function forceCacheRefresh() {
-    console.log('Checking for cache refresh...');
-    
-    // Add random parameter to prevent caching
-    const url = new URL(window.location.href);
-    url.searchParams.set('v', Date.now());
-    
-    // Check if we need to force refresh
-    const lastRefresh = localStorage.getItem('lastCacheRefresh');
-    const now = Date.now();
-    
-    // Force refresh if more than 1 hour ago or first visit
-    if (!lastRefresh || (now - parseInt(lastRefresh)) > 3600000) {
-        console.log('Forcing cache refresh...');
-        localStorage.setItem('lastCacheRefresh', now.toString());
-        
-        // Update version in meta
-        const versionMeta = document.querySelector('meta[name="version"]');
-        if (versionMeta) {
-            versionMeta.content = '2.0.1.' + now;
+            trackVisit();
+        });
+
+        function trackVisit() {
+            try {
+                // Get current visit count from localStorage (for immediate feedback)
+                let visits = JSON.parse(localStorage.getItem('villageVisits') || '{"total": 0, "monthly": {}, "yearly": {}}');
+
+                // Increment total visits
+                visits.total = (visits.total || 0) + 1;
+
+                // Update monthly visits
+                const now = new Date();
+                const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+                visits.monthly[monthKey] = (visits.monthly[monthKey] || 0) + 1;
+
+                // Update yearly visits
+                const yearKey = now.getFullYear().toString();
+                visits.yearly[yearKey] = (visits.yearly[yearKey] || 0) + 1;
+
+                // Save to localStorage
+                localStorage.setItem('villageVisits', JSON.stringify(visits));
+
+                // Save to Firebase central counter (for Admin Panel)
+                const tryFirebaseTrack = () => {
+                    if (window.firebaseClient && window.firebaseClient.incrementVisitCount) {
+                        window.firebaseClient.incrementVisitCount()
+                            .then(() => console.log('Visit tracked in Firebase central counter'))
+                            .catch(err => console.error('Error tracking visit in Firebase:', err));
+                        return true;
+                    }
+                    return false;
+                };
+
+                if (!tryFirebaseTrack()) {
+                    // Try again every 500ms for up to 5 seconds if not ready
+                    let attempts = 0;
+                    const interval = setInterval(() => {
+                        attempts++;
+                        if (tryFirebaseTrack() || attempts > 10) {
+                            clearInterval(interval);
+                        }
+                    }, 500);
+                }
+
+                console.log('Visit tracked successfully. Total visits:', visits.total);
+            } catch (error) {
+                console.error('Error tracking visit:', error);
+            }
         }
-        
-        // Optional: Force reload if we detect old cache
-        if (performance.navigation.type === 1) {
-            // Page is being reloaded, don't force again
-            return;
-        }
-        
-        // Check if page is from cache
-        if (performance.getEntriesByType) {
-            const entries = performance.getEntriesByType('navigation');
-            if (entries.length > 0) {
-                const navigation = entries[0];
-                if (navigation.transferSize === 0 && navigation.decodedBodySize === 0) {
-                    console.log('Detected cached page, forcing refresh...');
-                    // Only force refresh if it's been more than 30 minutes
-                    if (!lastRefresh || (now - parseInt(lastRefresh)) > 1800000) {
-                        window.location.reload(true);
+
+        // Force cache refresh function
+        function forceCacheRefresh() {
+            console.log('Checking for cache refresh...');
+
+            // Add random parameter to prevent caching
+            const url = new URL(window.location.href);
+            url.searchParams.set('v', Date.now());
+
+            // Check if we need to force refresh
+            const lastRefresh = localStorage.getItem('lastCacheRefresh');
+            const now = Date.now();
+
+            // Force refresh if more than 1 hour ago or first visit
+            if (!lastRefresh || (now - parseInt(lastRefresh)) > 3600000) {
+                console.log('Forcing cache refresh...');
+                localStorage.setItem('lastCacheRefresh', now.toString());
+
+                // Update version in meta
+                const versionMeta = document.querySelector('meta[name="version"]');
+                if (versionMeta) {
+                    versionMeta.content = '2.0.1.' + now;
+                }
+
+                // Optional: Force reload if we detect old cache
+                if (performance.navigation.type === 1) {
+                    // Page is being reloaded, don't force again
+                    return;
+                }
+
+                // Check if page is from cache
+                if (performance.getEntriesByType) {
+                    const entries = performance.getEntriesByType('navigation');
+                    if (entries.length > 0) {
+                        const navigation = entries[0];
+                        if (navigation.transferSize === 0 && navigation.decodedBodySize === 0) {
+                            console.log('Detected cached page, forcing refresh...');
+                            // Only force refresh if it's been more than 30 minutes
+                            if (!lastRefresh || (now - parseInt(lastRefresh)) > 1800000) {
+                                window.location.reload(true);
+                            }
+                        }
                     }
                 }
             }
         }
-    }
-}
 
-// Add refresh button functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const refreshBtn = document.getElementById('refreshBtn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', function() {
-            console.log('Manual refresh triggered');
-            localStorage.setItem('lastCacheRefresh', '0');
-            window.location.reload(true);
+        // Add refresh button functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function () {
+                    console.log('Manual refresh triggered');
+                    localStorage.setItem('lastCacheRefresh', '0');
+                    window.location.reload(true);
+                });
+            }
+
+            // Apply System Settings
+            applySettings();
         });
-    }
-});
-</script>
+
+        async function applySettings() {
+            try {
+                // Wait for Firebase module to load if necessary
+                const tryLoadSettings = async () => {
+                    if (window.getData) {
+                        const config = await window.getData('settings');
+                        const siteConfig = config?.site_config;
+
+                        if (siteConfig) {
+                            console.log('Applying site settings...', siteConfig);
+
+                            // 1. Site Identity & SEO
+                            if (siteConfig.siteName) {
+                                document.title = siteConfig.siteName + ' - ' + (siteConfig.siteSlogan || 'خدمات القرية');
+                                const logoText = document.querySelector('.logo h1');
+                                if (logoText) logoText.textContent = siteConfig.siteName;
+                                const loadingTitle = document.querySelector('.loading-content h2');
+                                if (loadingTitle) loadingTitle.textContent = siteConfig.siteName;
+                                document.getElementById('metaAppTitle')?.setAttribute('content', siteConfig.siteName);
+                            }
+
+                            if (siteConfig.siteSlogan) {
+                                const heroTitle = document.querySelector('.hero-content h2');
+                                if (heroTitle) heroTitle.textContent = 'مرحباً بك في ' + siteConfig.siteName;
+                                const heroPara = document.querySelector('.hero-content p');
+                                if (heroPara) heroPara.textContent = siteConfig.siteSlogan;
+                            }
+
+                            if (siteConfig.seoDescription) {
+                                document.getElementById('metaDescription')?.setAttribute('content', siteConfig.seoDescription);
+                            }
+                            if (siteConfig.seoKeywords) {
+                                document.getElementById('metaKeywords')?.setAttribute('content', siteConfig.seoKeywords);
+                            }
+
+                            // 2. Visual Customization
+                            const root = document.documentElement;
+                            if (siteConfig.primaryColor) {
+                                root.style.setProperty('--primary-color', siteConfig.primaryColor);
+                            }
+                            if (siteConfig.accentColor) {
+                                root.style.setProperty('--accent-color', siteConfig.accentColor);
+                            }
+
+                            // 3. Global Banner
+                            const banner = document.getElementById('globalBanner');
+                            if (siteConfig.bannerActive && siteConfig.bannerText) {
+                                banner.style.display = 'block';
+                                banner.style.background = siteConfig.bannerBg || '#2563eb';
+                                document.getElementById('bannerText').textContent = siteConfig.bannerText;
+                            } else {
+                                banner.style.display = 'none';
+                            }
+
+                            // 4. Content Visibility (Navigation)
+                            const navLinks = {
+                                'doctors': siteConfig.showDoctors !== false,
+                                'shops': siteConfig.showShops !== false,
+                                'news': siteConfig.showNews !== false,
+                                'ads': siteConfig.showAds !== false
+                            };
+
+                            for (const [page, visible] of Object.entries(navLinks)) {
+                                const navItem = document.querySelector(`.nav-link[data-page="${page}"]`)?.parentElement;
+                                const actionCard = document.querySelector(`.action-card[data-page="${page}"]`);
+                                if (navItem) navItem.style.display = visible ? 'block' : 'none';
+                                if (actionCard) actionCard.style.display = visible ? 'flex' : 'none';
+                            }
+
+                            // 5. Maintenance Mode
+                            if (siteConfig.maintenanceMode) {
+                                const overlay = document.getElementById('maintenanceOverlay');
+                                if (overlay) {
+                                    overlay.style.display = 'flex';
+                                    document.getElementById('maintenanceMessage').textContent = siteConfig.maintenanceMessage || 'نحن نحدث الموقع حالياً...';
+                                    document.body.style.overflow = 'hidden'; // Block scrolling
+                                }
+                            }
+
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+
+                if (!await tryLoadSettings()) {
+                    let attempts = 0;
+                    const interval = setInterval(async () => {
+                        attempts++;
+                        if (await tryLoadSettings() || attempts > 15) {
+                            clearInterval(interval);
+                        }
+                    }, 500);
+                }
+
+            } catch (error) {
+                console.error('Error applying site settings:', error);
+            }
+        }
+    </script>
 
 
 </body>
+
 </html>
