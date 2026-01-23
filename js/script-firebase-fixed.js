@@ -2245,3 +2245,98 @@ window.closeSuggestionModal = closeSuggestionModal;
 window.logoutAdmin = logoutAdmin;
 window.showAddCraftsmanForm = showAddCraftsmanForm;
 window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;
+
+// =============================================================================
+// WEBVIEW LINK HANDLER - معالج الروابط للويب فيو
+// =============================================================================
+
+// Handle external links for WebView apps
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle all link clicks
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+
+        const href = link.href;
+        if (!href) return;
+
+        // WhatsApp links
+        if (href.includes('wa.me/') || href.includes('web.whatsapp.com')) {
+            e.preventDefault();
+            openExternalApp('whatsapp', href);
+            return;
+        }
+
+        // Google Maps links
+        if (href.includes('maps.google.com') || href.includes('google.com/maps')) {
+            e.preventDefault();
+            openExternalApp('maps', href);
+            return;
+        }
+
+        // Phone links (tel:)
+        if (href.startsWith('tel:')) {
+            e.preventDefault();
+            openExternalApp('phone', href);
+            return;
+        }
+
+        // Email links (mailto:)
+        if (href.startsWith('mailto:')) {
+            e.preventDefault();
+            openExternalApp('email', href);
+            return;
+        }
+
+        // External links (open in external browser)
+        if (href.startsWith('http') && !href.includes(window.location.hostname)) {
+            e.preventDefault();
+            openExternalApp('browser', href);
+            return;
+        }
+    });
+});
+
+// Function to open external apps
+function openExternalApp(type, url) {
+    try {
+        // For Android WebView interface
+        if (window.AndroidWebView && window.AndroidWebView.openExternalApp) {
+            window.AndroidWebView.openExternalApp(type, url);
+            return;
+        }
+
+        // For iOS WebView
+        if (window.webkit && window.webkit.messageHandlers.webView) {
+            window.webkit.messageHandlers.webView.postMessage({
+                type: 'openExternalApp',
+                appType: type,
+                url: url
+            });
+            return;
+        }
+
+        // Fallback for regular browsers
+        if (type === 'phone' || type === 'email') {
+            window.location.href = url;
+        } else {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+    } catch (error) {
+        console.error('Error opening external app:', error);
+        
+        // User-friendly error messages
+        const messages = {
+            'whatsapp': 'يرجى تثبيت تطبيق واتساب',
+            'maps': 'يرجى تثبيت تطبيق خرائط جوجل',
+            'phone': 'لا يمكن فتح رقم الهاتف',
+            'email': 'لا يمكن فتح تطبيق البريد',
+            'browser': 'لا يمكن فتح الرابط الخارجي'
+        };
+        
+        alert(messages[type] || 'لا يمكن فتح الرابط');
+    }
+}
+
+// Export the function
+window.openExternalApp = openExternalApp;
