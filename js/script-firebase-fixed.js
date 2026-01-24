@@ -1426,7 +1426,7 @@ async function loadAdsPage() {
                         actions.push(`<a href="tel:${ad.phone}" class="btn btn-primary" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-phone"></i> اتصال</a>`);
                     }
                     if (ad.whatsapp) {
-                        actions.push(`<a href="https://wa.me/${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fab fa-whatsapp"></i> واتساب</a>`);
+                        actions.push(`<a href="https://api.whatsapp.com/send?phone=${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fab fa-whatsapp"></i> واتساب</a>`);
                     }
                     if (ad.linkUrl) {
                         actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-info" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-external-link-alt"></i> رابط</a>`);
@@ -1477,7 +1477,7 @@ async function loadAdsPage() {
                                     </a>
                                 ` : ''}
                                 ${ad.whatsapp ? `
-                                    <a href="https://wa.me/${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})">
+                                    <a href="https://api.whatsapp.com/send?phone=${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})">
                                         <i class="fab fa-whatsapp"></i> واتساب
                                     </a>
                                 ` : ''}
@@ -1541,7 +1541,7 @@ function renderHomeAds(placement, sectionId, containerId) {
                 actions.push(`<a href="tel:${ad.phone}" class="btn btn-primary btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fas fa-phone\"></i> اتصال</a>`);
             }
             if (ad.whatsapp) {
-                actions.push(`<a href="https://wa.me/${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fab fa-whatsapp\"></i> واتساب</a>`);
+                actions.push(`<a href="https://api.whatsapp.com/send?phone=${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fab fa-whatsapp\"></i> واتساب</a>`);
             }
             if (ad.linkUrl) {
                 actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-info btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fas fa-external-link-alt\"></i> رابط</a>`);
