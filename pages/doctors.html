@@ -304,7 +304,7 @@
                         ${doctor.mapLink ? `
                             <div class="detail-item">
                                 <i class="fas fa-map"></i>
-                                <a href="${doctor.mapLink}" target="_blank" class="map-link">فتح في خرائط جوجل</a>
+                                <a href="https://maps.google.com/?q=${encodeURIComponent(doctor.mapLink)}" target="_blank" class="map-link">فتح في خرائط جوجل</a>
                             </div>
                         ` : ''}
                         <div class="detail-item">
