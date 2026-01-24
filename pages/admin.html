@@ -4053,6 +4053,14 @@
                         <input type="tel" id="adPhone" class="form-input" placeholder="أدخل رقم الهاتف">
                     </div>
                     <div class="form-group">
+                        <label class="form-label">رقم الواتساب (اختياري)</label>
+                        <input type="tel" id="adWhatsApp" class="form-input" placeholder="أدخل رقم الواتساب">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">صورة الإعلان (اختياري)</label>
+                        <input type="url" id="adImage" class="form-input" placeholder="أدخل رابط الصورة">
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">رابط (اختياري)</label>
                         <input type="url" id="adLinkUrl" class="form-input" placeholder="https://example.com">
                     </div>
@@ -4495,6 +4503,8 @@
             document.getElementById('adAdvertiser').value = ad.advertiser || '';
             document.getElementById('adType').value = ad.type || 'عام';
             document.getElementById('adPhone').value = ad.phone || '';
+            document.getElementById('adWhatsApp').value = ad.whatsapp || '';
+            document.getElementById('adImage').value = ad.image || '';
             document.getElementById('adLinkUrl').value = ad.linkUrl || '';
             document.getElementById('adSortOrder').value = String(Number(ad.sortOrder ?? 0));
             document.getElementById('adStartAt').value = toDateTimeLocalValue(ad.startAt);
@@ -4523,6 +4533,8 @@
                 advertiser: document.getElementById('adAdvertiser').value.trim(),
                 type: document.getElementById('adType').value,
                 phone: document.getElementById('adPhone').value.trim(),
+                whatsapp: document.getElementById('adWhatsApp').value.trim(),
+                image: document.getElementById('adImage').value.trim(),
                 linkUrl: document.getElementById('adLinkUrl').value.trim() || null,
                 sortOrder: Number(document.getElementById('adSortOrder').value || 0),
                 startAt: document.getElementById('adStartAt').value ? new Date(document.getElementById('adStartAt').value).toISOString() : null,

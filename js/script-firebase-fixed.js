@@ -1425,8 +1425,11 @@ async function loadAdsPage() {
                     if (ad.phone) {
                         actions.push(`<a href="tel:${ad.phone}" class="btn btn-primary" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-phone"></i> اتصال</a>`);
                     }
+                    if (ad.whatsapp) {
+                        actions.push(`<a href="https://wa.me/${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fab fa-whatsapp"></i> واتساب</a>`);
+                    }
                     if (ad.linkUrl) {
-                        actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-external-link-alt"></i> فتح الرابط</a>`);
+                        actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-info" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-external-link-alt"></i> رابط</a>`);
                     }
 
                     const style = {};
@@ -1456,6 +1459,7 @@ async function loadAdsPage() {
 
                     return `
                     <div class="ad-card ${animClass} ${speedClass} ${highlightedClass}" style="${styleStr}">
+                        ${ad.image ? `<div class="ad-image"><img src="${ad.image}" alt="${ad.title || 'إعلان'}" onerror="this.style.display='none'"></div>` : ''}
                         <div class="ad-header">
                             <h3>${ad.title || 'غير محدد'}</h3>
                             <span class="badge bg-info">${ad.type || 'عام'}</span>
@@ -1463,17 +1467,23 @@ async function loadAdsPage() {
                         <div class="ad-body">
                             <p>${ad.description ? ad.description.substring(0, 140) : 'لا يوجد محتوى'}</p>
                             ${ad.phone ? `<p><i class="fas fa-phone"></i> ${ad.phone}</p>` : ''}
+                            ${ad.whatsapp ? `<p><i class="fab fa-whatsapp"></i> ${ad.whatsapp}</p>` : ''}
                         </div>
-                        ${(ad.phone || ad.linkUrl) ? `
+                        ${(ad.phone || ad.whatsapp || ad.linkUrl) ? `
                             <div class="ad-footer">
                                 ${ad.phone ? `
                                     <a href="tel:${ad.phone}" class="btn btn-primary" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})">
                                         <i class="fas fa-phone"></i> اتصال
                                     </a>
                                 ` : ''}
+                                ${ad.whatsapp ? `
+                                    <a href="https://wa.me/${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})">
+                                        <i class="fab fa-whatsapp"></i> واتساب
+                                    </a>
+                                ` : ''}
                                 ${ad.linkUrl ? `
-                                    <a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})">
-                                        <i class="fas fa-external-link-alt"></i> فتح الرابط
+                                    <a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-info" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})">
+                                        <i class="fas fa-external-link-alt"></i> رابط
                                     </a>
                                 ` : ''}
                             </div>
@@ -1530,8 +1540,11 @@ function renderHomeAds(placement, sectionId, containerId) {
             if (ad.phone) {
                 actions.push(`<a href="tel:${ad.phone}" class="btn btn-primary btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fas fa-phone\"></i> اتصال</a>`);
             }
+            if (ad.whatsapp) {
+                actions.push(`<a href="https://wa.me/${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fab fa-whatsapp\"></i> واتساب</a>`);
+            }
             if (ad.linkUrl) {
-                actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fas fa-external-link-alt\"></i> فتح</a>`);
+                actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-info btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fas fa-external-link-alt\"></i> رابط</a>`);
             }
 
             const style = {};
@@ -1561,6 +1574,7 @@ function renderHomeAds(placement, sectionId, containerId) {
 
             return `
                 <div class="home-ad-card ${animClass} ${speedClass} ${highlightedClass}" style="${styleStr}">
+                    ${ad.image ? `<div class="home-ad-image"><img src="${ad.image}" alt="${ad.title || 'إعلان'}" onerror="this.style.display='none'"></div>` : ''}
                     <h4>${ad.title || 'إعلان'}</h4>
                     <p>${ad.description ? ad.description.substring(0, 140) : ''}</p>
                     ${actions.length ? `<div class="home-ad-actions">${actions.join('')}</div>` : ''}
@@ -1614,12 +1628,14 @@ function renderFullWidthBanner() {
 
 async function recordAdClick(adId, currentClicks) {
     try {
+        const newClicks = (Number(currentClicks) || 0) + 1;
         await window.updateData('ads', adId, {
-            clicks: (Number(currentClicks) || 0) + 1,
+            clicks: newClicks,
             updatedAt: new Date().toISOString()
         });
-    } catch (err) {
-        console.error('Failed to record ad click:', err);
+        console.log('Ad click recorded successfully');
+    } catch (error) {
+        console.error('Error recording ad click:', error);
     }
 }
 
