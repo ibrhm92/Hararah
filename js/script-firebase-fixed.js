@@ -1409,7 +1409,7 @@ async function loadOffersPage() {
 // Load ads page - تحميل صفحة الإعلانات
 async function loadAdsPage() {
     const ads = await getData('ads');
-    const approvedAds = ads.filter(ad => ad.approved !== false);
+    const approvedAds = getAdsForPlacement(ads, 'classifieds');
     const pageContent = document.getElementById('pageContent');
 
     if (!pageContent) return;
@@ -1420,26 +1420,207 @@ async function loadAdsPage() {
                 <h2><i class="fas fa-bullhorn"></i> الإعلانات المحلية</h2>
             </div>
             <div class="ads-grid">
-                ${approvedAds.map(ad => `
-                    <div class="ad-card">
+                ${approvedAds.map(ad => {
+                    const actions = [];
+                    if (ad.phone) {
+                        actions.push(`<a href="tel:${ad.phone}" class="btn btn-primary" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-phone"></i> اتصال</a>`);
+                    }
+                    if (ad.linkUrl) {
+                        actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-external-link-alt"></i> فتح الرابط</a>`);
+                    }
+
+                    const style = {};
+                    if (ad.bgColor) style.backgroundColor = ad.bgColor;
+                    if (ad.textColor) style.color = ad.textColor;
+                    const styleStr = Object.entries(style).map(([k, v]) => `${k}: ${v}`).join('; ');
+
+                    const animClass = ad.animation ? `ad-${ad.animation}` : '';
+                    const speedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
+                    const highlightedClass = ad.isHighlighted ? 'ad-highlighted' : '';
+
+                    // Check if this is a banner ad
+                    if (ad.displayMode === 'banner') {
+                        const bannerAnimClass = ad.animation ? `ad-${ad.animation}` : '';
+                        const bannerSpeedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
+                        
+                        return `
+                        <div class="banner-ad ${bannerAnimClass} ${bannerSpeedClass}" style="${styleStr}">
+                            <div class="banner-ad-content">
+                                <h4>${ad.title || 'إعلان'}</h4>
+                                <p>${ad.description ? ad.description.substring(0, 300) : 'لا يوجد محتوى'}</p>
+                                ${actions.length ? `<div class="banner-ad-actions">${actions.join('')}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    }
+
+                    return `
+                    <div class="ad-card ${animClass} ${speedClass} ${highlightedClass}" style="${styleStr}">
                         <div class="ad-header">
                             <h3>${ad.title || 'غير محدد'}</h3>
                             <span class="badge bg-info">${ad.type || 'عام'}</span>
                         </div>
                         <div class="ad-body">
-                            <p>${ad.description ? ad.description.substring(0, 100) + '...' : 'لا يوجد وصف'}</p>
-                            <p><i class="fas fa-phone"></i> ${ad.phone || 'لا يوجد'}</p>
+                            <p>${ad.description ? ad.description.substring(0, 140) : 'لا يوجد محتوى'}</p>
+                            ${ad.phone ? `<p><i class="fas fa-phone"></i> ${ad.phone}</p>` : ''}
                         </div>
-                        <div class="ad-footer">
-                            <a href="tel:${ad.phone}" class="btn btn-primary">
-                                <i class="fas fa-phone"></i> اتصال
-                            </a>
-                        </div>
+                        ${(ad.phone || ad.linkUrl) ? `
+                            <div class="ad-footer">
+                                ${ad.phone ? `
+                                    <a href="tel:${ad.phone}" class="btn btn-primary" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})">
+                                        <i class="fas fa-phone"></i> اتصال
+                                    </a>
+                                ` : ''}
+                                ${ad.linkUrl ? `
+                                    <a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})">
+                                        <i class="fas fa-external-link-alt"></i> فتح الرابط
+                                    </a>
+                                ` : ''}
+                            </div>
+                        ` : ''}
                     </div>
-                `).join('')}
+                `;
+                }).join('')}
             </div>
         </div>
     `;
+}
+
+function isAdWithinSchedule(ad, now = new Date()) {
+    const startAt = ad.startAt ? new Date(ad.startAt) : null;
+    const endAt = ad.endAt ? new Date(ad.endAt) : null;
+    if (startAt && !Number.isNaN(startAt.getTime()) && now < startAt) return false;
+    if (endAt && !Number.isNaN(endAt.getTime()) && now > endAt) return false;
+    return true;
+}
+
+function getAdsForPlacement(allAds, placement) {
+    const now = new Date();
+    return (allAds || [])
+        .filter(ad => (ad.placement || 'classifieds') === placement)
+        .filter(ad => ad.approved !== false)
+        .filter(ad => ad.isActive !== false)
+        .filter(ad => isAdWithinSchedule(ad, now))
+        .sort((a, b) => {
+            const ao = Number(a.sortOrder ?? 0);
+            const bo = Number(b.sortOrder ?? 0);
+            if (ao !== bo) return ao - bo;
+            const at = new Date(a.updatedAt || a.createdAt || 0).getTime();
+            const bt = new Date(b.updatedAt || b.createdAt || 0).getTime();
+            return bt - at;
+        });
+}
+
+function renderHomeAds(placement, sectionId, containerId) {
+    const container = document.getElementById(containerId);
+    const section = document.getElementById(sectionId);
+    if (!container || !section) return;
+
+    getData('ads').then(allAds => {
+        const ads = getAdsForPlacement(allAds, placement);
+        if (!ads || ads.length === 0) {
+            section.style.display = 'none';
+            container.innerHTML = '';
+            return;
+        }
+
+        section.style.display = 'block';
+        container.innerHTML = ads.slice(0, 6).map(ad => {
+            const actions = [];
+            if (ad.phone) {
+                actions.push(`<a href="tel:${ad.phone}" class="btn btn-primary btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fas fa-phone\"></i> اتصال</a>`);
+            }
+            if (ad.linkUrl) {
+                actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class=\"fas fa-external-link-alt\"></i> فتح</a>`);
+            }
+
+            const style = {};
+            if (ad.bgColor) style.backgroundColor = ad.bgColor;
+            if (ad.textColor) style.color = ad.textColor;
+            const styleStr = Object.entries(style).map(([k, v]) => `${k}: ${v}`).join('; ');
+
+            const animClass = ad.animation ? `ad-${ad.animation}` : '';
+            const speedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
+            const highlightedClass = ad.isHighlighted ? 'ad-highlighted' : '';
+
+            // Check if this is a banner ad
+            if (ad.displayMode === 'banner') {
+                const bannerAnimClass = ad.animation ? `ad-${ad.animation}` : '';
+                const bannerSpeedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
+                
+                return `
+                    <div class="home-banner-ad ${bannerAnimClass} ${bannerSpeedClass}" style="${styleStr}">
+                        <div class="home-banner-ad-content">
+                            <h4>${ad.title || 'إعلان'}</h4>
+                            <p>${ad.description ? ad.description.substring(0, 200) : ''}</p>
+                            ${actions.length ? `<div class="home-banner-ad-actions">${actions.join('')}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="home-ad-card ${animClass} ${speedClass} ${highlightedClass}" style="${styleStr}">
+                    <h4>${ad.title || 'إعلان'}</h4>
+                    <p>${ad.description ? ad.description.substring(0, 140) : ''}</p>
+                    ${actions.length ? `<div class="home-ad-actions">${actions.join('')}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    }).catch(err => {
+        console.error('Error loading home ads:', err);
+        section.style.display = 'none';
+    });
+}
+
+// Render full width banner ads
+function renderFullWidthBanner() {
+    const container = document.getElementById('homeFullBanner');
+    const section = document.getElementById('homeFullBannerSection');
+    if (!container || !section) return;
+
+    getData('ads').then(allAds => {
+        const ads = getAdsForPlacement(allAds, 'home_full_banner');
+        if (!ads || ads.length === 0) {
+            section.style.display = 'none';
+            container.innerHTML = '';
+            return;
+        }
+
+        section.style.display = 'block';
+        container.innerHTML = ads.slice(0, 3).map(ad => {
+            const style = {};
+            if (ad.bgColor) style.backgroundColor = ad.bgColor;
+            if (ad.textColor) style.color = ad.textColor;
+            const styleStr = Object.entries(style).map(([k, v]) => `${k}: ${v}`).join('; ');
+
+            const animClass = ad.animation ? `ad-${ad.animation}` : '';
+            const speedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
+
+            return `
+                <div class="full-width-banner ${animClass} ${speedClass}" style="${styleStr}">
+                    <div class="full-width-banner-content">
+                        <h4>${ad.title || 'إعلان'}</h4>
+                        <p>${ad.description ? ad.description.substring(0, 300) : ''}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }).catch(err => {
+        console.error('Error loading full width banner ads:', err);
+        section.style.display = 'none';
+    });
+}
+
+async function recordAdClick(adId, currentClicks) {
+    try {
+        await window.updateData('ads', adId, {
+            clicks: (Number(currentClicks) || 0) + 1,
+            updatedAt: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error('Failed to record ad click:', err);
+    }
 }
 
 // Load news page - تحميل صفحة الأخبار
@@ -1827,6 +2008,12 @@ async function loadInitialData() {
                 showMoreBtn.style.display = 'none';
             }
         }
+
+        // Load home page ads
+        renderHomeAds('home_top', 'homeAdsTopSection', 'homeAdsTop');
+        renderHomeAds('home_middle', 'homeAdsMiddleSection', 'homeAdsMiddle');
+        renderHomeAds('home_bottom', 'homeAdsBottomSection', 'homeAdsBottom');
+        renderFullWidthBanner();
     } catch (error) {
         console.error('Error loading initial data:', error);
         // Don't block UI - لا تمنع الواجهة

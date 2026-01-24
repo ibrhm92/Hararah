@@ -1746,15 +1746,19 @@
                 <thead>
                     <tr>
                         <th>عنوان الإعلان</th>
-                        <th>المحتوى</th>
+                        <th>المكان</th>
+                        <th>نمط العرض</th>
+                        <th>الحالة</th>
+                        <th>الترتيب</th>
                         <th>المعلن</th>
                         <th>رقم الهاتف</th>
+                        <th>النقرات</th>
                         <th>الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="adsTableBody">
                     <tr>
-                        <td colspan="5" style="text-align: center; padding: 2rem;">جاري التحميل...</td>
+                        <td colspan="9" style="text-align: center; padding: 2rem;">جاري التحميل...</td>
                     </tr>
                 </tbody>
             </table>
@@ -2649,7 +2653,9 @@
                 const matchesSearch = service.name.toLowerCase().includes(searchTerm) ||
                     service.specialty.toLowerCase().includes(searchTerm) ||
                     (service.phone && service.phone.includes(searchTerm));
+
                 const matchesSpecialty = !specialtyFilter || service.specialty === specialtyFilter;
+
                 const matchesStatus = !statusFilter || service.status === statusFilter;
 
                 return matchesSearch && matchesSpecialty && matchesStatus;
@@ -2719,7 +2725,7 @@
                 background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)'};
                 color: white;
                 padding: 1rem 2rem;
-                border-radius: var(--radius);
+                border-radius var(--radius);
                 box-shadow: var(--shadow-lg);
                 z-index: 9999;
                 display: flex;
@@ -2769,9 +2775,7 @@
                     // Edit existing service
                     await window.updateData('craftsmen', currentEditId, formData);
                     const index = services.findIndex(s => s.id === currentEditId);
-                    if (index !== -1) {
-                        services[index] = { ...services[index], ...formData };
-                    }
+                    services[index] = { ...services[index], ...formData };
                     showNotification('تم تحديث الخدمة بنجاح', 'success');
                 } else {
                     // Add new service
@@ -2888,11 +2892,14 @@
             if (!item) return;
             currentEmergencyId = id;
             document.getElementById('emergencyModalTitle').textContent = 'تعديل رقم طوارئ';
+
+            // Fill form with emergency data
             document.getElementById('emergencyName').value = item.name || '';
             document.getElementById('emergencyPhone').value = item.phone || '';
             document.getElementById('emergencyAddress').value = item.address || '';
             document.getElementById('emergencyIcon').value = item.icon || 'phone-alt';
             document.getElementById('emergencyNotes').value = item.notes || '';
+
             document.getElementById('emergencyModal').style.display = 'flex';
         }
 
@@ -3387,6 +3394,7 @@
                                 <input type="checkbox" id="set_showShops" checked> المحلات
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; padding: 8px; background: var(--surface-alt); border-radius: 6px;">
+                                <label class="form-label">إظهار/إخفاء الأقسام:</label>
                                 <input type="checkbox" id="set_showNews" checked> الأخبار
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; padding: 8px; background: var(--surface-alt); border-radius: 6px;">
@@ -4000,9 +4008,27 @@
                 <div class="modal-body">
                     <input type="hidden" id="adId">
                     <div class="form-group">
+                        <label class="form-label">مكان الإعلان *</label>
+                        <select id="adPlacement" class="form-select" required>
+                            <option value="classifieds">صفحة الإعلانات المحلية</option>
+                            <option value="home_top">الرئيسية - أعلى الصفحة</option>
+                            <option value="home_middle">الرئيسية - منتصف الصفحة</option>
+                            <option value="home_bottom">الرئيسية - أسفل الصفحة</option>
+                            <option value="home_full_banner">الرئيسية - شريطي بعرض الصفحة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">نمط العرض</label>
+                        <select id="adDisplayMode" class="form-select">
+                            <option value="text_only">كتابي فقط</option>
+                            <option value="banner">شريطي متحرك</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">عنوان الإعلان *</label>
                         <input type="text" id="adTitle" class="form-input" required placeholder="أدخل عنوان الإعلان">
                     </div>
+
                     <div class="form-group">
                         <label class="form-label">محتوى الإعلان *</label>
                         <textarea id="adContent" class="form-textarea" required
@@ -4023,8 +4049,59 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">رقم الهاتف *</label>
-                        <input type="tel" id="adPhone" class="form-input" required placeholder="أدخل رقم الهاتف">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="adPhone" class="form-input" placeholder="أدخل رقم الهاتف">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رابط (اختياري)</label>
+                        <input type="url" id="adLinkUrl" class="form-input" placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الترتيب</label>
+                        <input type="number" id="adSortOrder" class="form-input" value="0" min="0" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تاريخ البداية (اختياري)</label>
+                        <input type="datetime-local" id="adStartAt" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تاريخ النهاية (اختياري)</label>
+                        <input type="datetime-local" id="adEndAt" class="form-input">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="adIsActive" checked>
+                        <label class="form-label" style="margin: 0;">تفعيل الإعلان</label>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="adIsHighlighted">
+                        <label class="form-label" style="margin: 0;">إعلان مميز/حيوي</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">لون الخلفية (اختياري)</label>
+                        <input type="color" id="adBgColor" class="form-input" style="height: 40px; width: 100%; border: 1px solid var(--border-color, #e0e0e0); border-radius: 8px; background: var(--surface, #fff);">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">لون النص (اختياري)</label>
+                        <input type="color" id="adTextColor" class="form-input" style="height: 40px; width: 100%; border: 1px solid var(--border-color, #e0e0e0); border-radius: 8px; background: var(--surface, #fff);">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">نوع الحركة (اختياري)</label>
+                        <select id="adAnimation" class="form-select">
+                            <option value="">بدون حركة</option>
+                            <option value="pulse">نبضة</option>
+                            <option value="shake">اهتزاز</option>
+                            <option value="flash">وميض</option>
+                            <option value="bounce">ارتداد</option>
+                            <option value="glow">توهج</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">سرعة الحركة (اختياري)</label>
+                        <select id="adAnimationSpeed" class="form-select">
+                            <option value="slow">بطيئة</option>
+                            <option value="normal" selected>عادية</option>
+                            <option value="fast">سريعة</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -4092,8 +4169,6 @@
 
 
     <script>
-        // ==================== SHOPS MANAGEMENT ====================
-
         // ==================== SHOPS MANAGEMENT ====================
         async function loadShops() {
             try {
@@ -4313,9 +4388,37 @@
             try {
                 ads = await window.getData('ads') || [];
                 renderAds();
+                console.error('Error loading ads:', error);
             } catch (error) {
                 console.error('Error loading ads:', error);
             }
+        }
+
+        function getAdPlacementLabel(value) {
+            const map = {
+                classifieds: 'صفحة الإعلانات المحلية',
+                home_top: 'الرئيسية - أعلى',
+                home_middle: 'الرئيسية - منتصف',
+                home_bottom: 'الرئيسية - أسفل',
+                home_full_banner: 'الرئيسية - شريطي بعرض الصفحة'
+            };
+            return map[value] || (value || '-');
+        }
+
+        function getAdDisplayModeLabel(value) {
+            const map = {
+                text_only: 'كتابي فقط',
+                banner: 'شريطي متحرك'
+            };
+            return map[value] || (value || '-');
+        }
+
+        function toDateTimeLocalValue(value) {
+            if (!value) return '';
+            const d = value?.toDate ? value.toDate() : new Date(value);
+            if (Number.isNaN(d.getTime())) return '';
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
         }
 
         function renderAds(filteredAds = null) {
@@ -4323,27 +4426,60 @@
             if (!tbody) return;
             const dataToRender = filteredAds || ads;
             if (dataToRender.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">لا توجد إعلانات مسجلة</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem;">لا توجد إعلانات مسجلة</td></tr>';
                 return;
             }
-            tbody.innerHTML = dataToRender.map(ad => `
+            const sorted = [...dataToRender].sort((a, b) => {
+                const ao = Number(a.sortOrder ?? 0);
+                const bo = Number(b.sortOrder ?? 0);
+                if (ao !== bo) return ao - bo;
+                const at = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                const bt = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                return bt - at;
+            });
+            tbody.innerHTML = sorted.map(ad => {
+                const placement = ad.placement || 'classifieds';
+                const displayMode = ad.displayMode || 'text_only';
+                const isActive = ad.isActive !== false;
+                const sortOrder = Number(ad.sortOrder ?? 0);
+                const clicks = Number(ad.clicks ?? 0);
+                const isHighlighted = ad.isHighlighted === true;
+                return `
                 <tr>
                     <td>${ad.title || '-'}</td>
-                    <td>${ad.description ? ad.description.substring(0, 50) + '...' : '-'}</td>
-                    <td>${ad.type || 'عام'}</td>
+                    <td>${getAdPlacementLabel(placement)}</td>
+                    <td>${getAdDisplayModeLabel(displayMode)}</td>
+                    <td><span class="badge ${isActive ? 'badge-success' : 'badge-danger'}">${isActive ? 'مفعل' : 'موقوف'}</span></td>
+                    <td>${sortOrder}</td>
+                    <td>${ad.advertiser || '-'}</td>
                     <td>${ad.phone || '-'}</td>
+                    <td><span class="badge ${isHighlighted ? 'badge-warning' : 'badge-secondary'}">${clicks}</span></td>
                     <td class="actions">
                         <button class="btn btn-sm btn-primary" onclick="editAd('${ad.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-warning" onclick="toggleAdActive('${ad.id}')"><i class="fas fa-power-off"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="deleteAd('${ad.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function showAddAdModal() {
             currentAdId = null;
             document.getElementById('adModalTitle').textContent = 'إضافة إعلان جديد';
             document.getElementById('adForm').reset();
+            document.getElementById('adPlacement').value = 'classifieds';
+            document.getElementById('adDisplayMode').value = 'text_only';
+            document.getElementById('adIsActive').checked = true;
+            document.getElementById('adIsHighlighted').checked = false;
+            document.getElementById('adBgColor').value = '#ffffff';
+            document.getElementById('adTextColor').value = '#333333';
+            document.getElementById('adAnimation').value = '';
+            document.getElementById('adAnimationSpeed').value = 'normal';
+            document.getElementById('adSortOrder').value = '0';
+            document.getElementById('adStartAt').value = '';
+            document.getElementById('adEndAt').value = '';
+            document.getElementById('adLinkUrl').value = '';
             document.getElementById('adModal').style.display = 'flex';
         }
 
@@ -4352,11 +4488,23 @@
             if (!ad) return;
             currentAdId = id;
             document.getElementById('adModalTitle').textContent = 'تعديل إعلان';
+            document.getElementById('adPlacement').value = ad.placement || 'classifieds';
+            document.getElementById('adDisplayMode').value = ad.displayMode || 'text_only';
             document.getElementById('adTitle').value = ad.title || '';
             document.getElementById('adContent').value = ad.description || '';
             document.getElementById('adAdvertiser').value = ad.advertiser || '';
             document.getElementById('adType').value = ad.type || 'عام';
             document.getElementById('adPhone').value = ad.phone || '';
+            document.getElementById('adLinkUrl').value = ad.linkUrl || '';
+            document.getElementById('adSortOrder').value = String(Number(ad.sortOrder ?? 0));
+            document.getElementById('adStartAt').value = toDateTimeLocalValue(ad.startAt);
+            document.getElementById('adEndAt').value = toDateTimeLocalValue(ad.endAt);
+            document.getElementById('adIsActive').checked = ad.isActive !== false;
+            document.getElementById('adIsHighlighted').checked = ad.isHighlighted === true;
+            document.getElementById('adBgColor').value = ad.bgColor || '#ffffff';
+            document.getElementById('adTextColor').value = ad.textColor || '#333333';
+            document.getElementById('adAnimation').value = ad.animation || '';
+            document.getElementById('adAnimationSpeed').value = ad.animationSpeed || 'normal';
             document.getElementById('adModal').style.display = 'flex';
         }
 
@@ -4366,12 +4514,26 @@
 
         document.getElementById('adForm')?.addEventListener('submit', async function (e) {
             e.preventDefault();
+            const placement = document.getElementById('adPlacement').value;
             const formData = {
+                placement,
+                displayMode: document.getElementById('adDisplayMode').value,
                 title: document.getElementById('adTitle').value.trim(),
                 description: document.getElementById('adContent').value.trim(),
                 advertiser: document.getElementById('adAdvertiser').value.trim(),
                 type: document.getElementById('adType').value,
                 phone: document.getElementById('adPhone').value.trim(),
+                linkUrl: document.getElementById('adLinkUrl').value.trim() || null,
+                sortOrder: Number(document.getElementById('adSortOrder').value || 0),
+                startAt: document.getElementById('adStartAt').value ? new Date(document.getElementById('adStartAt').value).toISOString() : null,
+                endAt: document.getElementById('adEndAt').value ? new Date(document.getElementById('adEndAt').value).toISOString() : null,
+                isActive: document.getElementById('adIsActive').checked,
+                isHighlighted: document.getElementById('adIsHighlighted').checked,
+                bgColor: document.getElementById('adBgColor').value,
+                textColor: document.getElementById('adTextColor').value,
+                animation: document.getElementById('adAnimation').value,
+                animationSpeed: document.getElementById('adAnimationSpeed').value,
+                clicks: currentAdId ? (ads.find(a => a.id === currentAdId)?.clicks ?? 0) : 0,
                 updatedAt: new Date().toISOString()
             };
             try {
@@ -4389,6 +4551,22 @@
             }
         });
 
+        async function toggleAdActive(id) {
+            const ad = ads.find(a => a.id === id);
+            if (!ad) return;
+            try {
+                await window.updateData('ads', id, {
+                    isActive: ad.isActive === false,
+                    updatedAt: new Date().toISOString()
+                });
+                loadAds();
+                showNotification('تم تحديث حالة الإعلان', 'success');
+            } catch (error) {
+                console.error('Error toggling ad active:', error);
+                showNotification('حدث خطأ أثناء تحديث حالة الإعلان', 'error');
+            }
+        }
+
         async function deleteAd(id) {
             if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return;
             try {
@@ -4402,11 +4580,16 @@
 
         function filterAds() {
             const searchTerm = document.getElementById('adsSearch').value.toLowerCase();
-            const filtered = ads.filter(a =>
-                a.title.toLowerCase().includes(searchTerm) || a.content.toLowerCase().includes(searchTerm) || a.advertiser.toLowerCase().includes(searchTerm)
-            );
+            const filtered = ads.filter(a => {
+                const title = (a.title || '').toLowerCase();
+                const desc = (a.description || '').toLowerCase();
+                const adv = (a.advertiser || '').toLowerCase();
+                const placement = (a.placement || '').toLowerCase();
+                return title.includes(searchTerm) || desc.includes(searchTerm) || adv.includes(searchTerm) || placement.includes(searchTerm);
+            });
             renderAds(filtered);
         }
+
 
         // ==================== MACHINES MANAGEMENT ====================
         async function loadMachines() {

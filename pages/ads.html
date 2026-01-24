@@ -155,7 +155,26 @@
         async function loadAds() {
             try {
                 const allAds = await window.getData('ads');
-                ads = allAds.filter(ad => ad.approved !== false);
+                const now = new Date();
+                ads = (allAds || [])
+                    .filter(ad => (ad.placement || 'classifieds') === 'classifieds')
+                    .filter(ad => ad.approved !== false)
+                    .filter(ad => ad.isActive !== false)
+                    .filter(ad => {
+                        const startAt = ad.startAt ? new Date(ad.startAt) : null;
+                        const endAt = ad.endAt ? new Date(ad.endAt) : null;
+                        if (startAt && !Number.isNaN(startAt.getTime()) && now < startAt) return false;
+                        if (endAt && !Number.isNaN(endAt.getTime()) && now > endAt) return false;
+                        return true;
+                    })
+                    .sort((a, b) => {
+                        const ao = Number(a.sortOrder ?? 0);
+                        const bo = Number(b.sortOrder ?? 0);
+                        if (ao !== bo) return ao - bo;
+                        const at = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                        const bt = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                        return bt - at;
+                    });
                 if (!ads || ads.length === 0) {
                     ads = [];
                 }
@@ -184,13 +203,22 @@
                     </div>
                     <div class="ad-body">
                         <p>${ad.description ? ad.description.substring(0, 100) + '...' : 'لا يوجد وصف'}</p>
-                        <p><i class="fas fa-phone"></i> ${ad.phone || 'لا يوجد'}</p>
+                        ${ad.phone ? `<p><i class="fas fa-phone"></i> ${ad.phone}</p>` : ''}
                     </div>
-                    <div class="ad-footer">
-                        <a href="tel:${ad.phone}" class="btn btn-primary">
-                            <i class="fas fa-phone"></i> اتصال
-                        </a>
-                    </div>
+                    ${(ad.phone || ad.linkUrl) ? `
+                        <div class="ad-footer">
+                            ${ad.phone ? `
+                                <a href="tel:${ad.phone}" class="btn btn-primary">
+                                    <i class="fas fa-phone"></i> اتصال
+                                </a>
+                            ` : ''}
+                            ${ad.linkUrl ? `
+                                <a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                                    <i class="fas fa-external-link-alt"></i> فتح الرابط
+                                </a>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                 </div>
             `).join('');
 
