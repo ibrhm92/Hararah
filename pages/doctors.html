@@ -277,7 +277,7 @@
             detailsContainer.innerHTML = `
                 <div class="doctor-detail-card">
                     <div class="detail-header">
-                        <h3>${doctor.name}</h3>
+                        <h3>دكتور ${doctorname} </h3>
                         <span class="specialty-badge">${doctor.specialty}</span>
                     </div>
                     <div class="detail-body">
@@ -304,7 +304,7 @@
                         ${doctor.mapLink ? `
                             <div class="detail-item">
                                 <i class="fas fa-map"></i>
-                                <a href="${doctor.mapLink}" target="_blank" class="map-link">فتح في خرائط جوجل</a>
+                                <a href="https://maps.google.com/?q=${encodeURIComponent(doctor.mapLink)}" target="_blank" class="map-link">فتح في خرائط جوجل</a>
                             </div>
                         ` : ''}
                         <div class="detail-item">
@@ -323,7 +323,7 @@
                             <i class="fas fa-phone"></i> اتصل الآن
                         </a>
                         ${doctor.whatsapp ? `
-                            <a href="https://wa.me/${window.formatEgyptianWhatsApp ? window.formatEgyptianWhatsApp(doctor.whatsapp) : doctor.whatsapp}" target="_blank" class="btn btn-success">
+                            <a href="whatsapp://send?phone=${doctor.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-success">
                                 <i class="fab fa-whatsapp"></i> واتساب
                             </a>
                         ` : ''}
