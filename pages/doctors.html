@@ -254,7 +254,7 @@
                             <i class="fas fa-phone"></i> اتصل
                         </a>
                         ${doctor.whatsapp ? `
-                            <a href="https://wa.me/${window.formatEgyptianWhatsApp ? window.formatEgyptianWhatsApp(doctor.whatsapp) : doctor.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-success btn-sm">
+                            <a href="https://api.whatsapp.com/send?phone=${window.formatEgyptianWhatsApp ? window.formatEgyptianWhatsApp(doctor.whatsapp) : doctor.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-success btn-sm">
                                 <i class="fab fa-whatsapp"></i> واتساب
                             </a>
                         ` : ''}
@@ -277,7 +277,7 @@
             detailsContainer.innerHTML = `
                 <div class="doctor-detail-card">
                     <div class="detail-header">
-                        <h3>دكتور ${doctorname} </h3>
+                        <h3>دكتور ${doctor.name} </h3>
                         <span class="specialty-badge">${doctor.specialty}</span>
                     </div>
                     <div class="detail-body">
@@ -323,7 +323,7 @@
                             <i class="fas fa-phone"></i> اتصل الآن
                         </a>
                         ${doctor.whatsapp ? `
-                            <a href="whatsapp://send?phone=${doctor.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-success">
+                            <a href="https://api.whatsapp.com/send?phone=${doctor.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-success">
                                 <i class="fab fa-whatsapp"></i> واتساب
                             </a>
                         ` : ''}
@@ -517,7 +517,7 @@
 
         .doctors-list {
             display: grid;
-            gap: 1.5rem;
+            gap: 2rem;
             padding: 1.5rem;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
         }
@@ -757,7 +757,7 @@
             .doctors-list {
                 padding: 1rem;
                 grid-template-columns: 1fr;
-                gap: 1rem;
+                gap: 1.5rem;
             }
 
             .doctor-card {
