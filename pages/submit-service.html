@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقديم طلب خدمة - قرية حرارة</title>
+    <meta name="description" content="قدم طلب إضافة خدمتك في قرية حرارة">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="قرية حرارة">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="../manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-file-alt"></i>
+            <h2 style='border-bottom: none;'>تقديم طلب خدمة</h2>
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="../index.html" class="logo-link">
+                    <i class="fas fa-mosque"></i>
+                    <h1>قرية حرارة</h1>
+                </a>
+            </div>
+            <div class="header-actions">
+                <button id="backBtn" class="btn-icon" title="الرئيسية" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button id="refreshBtn" class="btn-icon" title="تحديث" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="menuBtn" class="btn-icon" title="القائمة" onclick="toggleMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1><i class="fas fa-file-alt"></i> تقديم طلب خدمة</h1>
+                <p>قدم طلب إضافة خدمتك وسيتم مراجعته ونشره بعد الموافقة</p>
+            </div>
+
+            <!-- Service Type Selection -->
+            <div class="service-type-section" id="serviceTypeSection">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> اختر نوع الخدمة</h2>
+                    <p>اختر النوع الذي يناسب خدمتك لبدء تقديم الطلب</p>
+                </div>
+                <div class="service-type-grid">
+                    <div class="service-type-card" onclick="selectServiceType('doctor')">
+                        <div class="card-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>عيادة طبية</h3>
+                            <p>تسجيل عيادة أو طبيب</p>
+                        </div>
+                    </div>
+                    <div class="service-type-card" onclick="selectServiceType('shop')">
+                        <div class="card-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>محل تجاري</h3>
+                            <p>تسجيل محل أو منشأة تجارية</p>
+                        </div>
+                    </div>
+                    <div class="service-type-card" onclick="selectServiceType('craftsman')">
+                        <div class="card-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>صنايعي</h3>
+                            <p>تسجيل صنايعي أو حرفي</p>
+                        </div>
+                    </div>
+                    <div class="service-type-card" onclick="selectServiceType('machine')">
+                        <div class="card-icon">
+                            <i class="fas fa-tractor"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>آلة زراعية</h3>
+                            <p>تسجيل آلة أو معدات زراعية</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Section -->
+            <div class="form-section" id="formSection" style="display: none;">
+                <div class="form-header">
+                    <button class="back-btn" onclick="backToServiceTypes()">
+                        <i class="fas fa-arrow-right"></i>
+                        العودة لاختيار الخدمة
+                    </button>
+                    <h2 id="formTitle">تقديم الطلب</h2>
+                </div>
+
+                <form id="serviceForm" class="service-form">
+                    <!-- Submiter Information -->
+                    <div class="form-section-title">
+                        <h3><i class="fas fa-user"></i> بيانات مقدم الطلب</h3>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">الاسم الكامل *</label>
+                            <input type="text" id="submitterName" class="form-input" required placeholder="أدخل اسمك الكامل">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف *</label>
+                            <input type="tel" id="submitterPhone" class="form-input" required placeholder="01xxxxxxxxx">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">البريد الإلكتروني (اختياري)</label>
+                        <input type="email" id="submitterEmail" class="form-input" placeholder="example@email.com">
+                    </div>
+
+                    <!-- Service Information -->
+                    <div class="form-section-title">
+                        <h3><i class="fas fa-info-circle"></i> بيانات الخدمة</h3>
+                    </div>
+
+                    <!-- Dynamic form fields will be inserted here -->
+                    <div id="dynamicFields"></div>
+
+                    <!-- Additional Information -->
+                    <div class="form-section-title">
+                        <h3><i class="fas fa-comment"></i> معلومات إضافية</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">ملاحظات إضافية (اختياري)</label>
+                        <textarea id="additionalNotes" class="form-textarea" rows="4" placeholder="أي معلومات إضافية تود إضافتها..."></textarea>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" required>
+                            <span class="checkmark"></span>
+                            أوافق على الشروط والأحكام وأقر بصحة البيانات المدخلة
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>تقديم الطلب</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Success Message -->
+            <div class="success-section" id="successSection" style="display: none;">
+                <div class="success-card">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h2>تم تقديم الطلب بنجاح!</h2>
+                    <p id="successMessage">شكراً لك على تقديم الطلب. سيتم مراجعته من قبل الإدارة وإشعارك بالنتيجة.</p>
+                    <div class="success-actions">
+                        <button class="btn btn-primary" onclick="resetForm()">تقديم طلب آخر</button>
+                        <a href="../index.html" class="btn btn-secondary">العودة للرئيسية</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
+            <div class="footer-links">
+                <a href="../pages/admin.html">لوحة التحكم</a>
+                <a href="../index.html">الرئيسية</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="../js/api-config-firebase.js"></script>
+    <script type="module" src="../js/script-firebase-fixed.js"></script>
+    <script type="module" src="../js/submit-service.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary-color: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            background-color: var(--background);
+            font-family: 'Tajawal', sans-serif;
+            color: var(--text-primary);
+        }
+
+        /* Service Type Section */
+        .service-type-section {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-header h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .service-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .service-type-card {
+            background: var(--surface);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-type-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .service-type-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .service-type-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .service-type-card:hover .card-icon {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(44, 62, 80, 0.3);
+        }
+
+        .card-icon i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .card-content h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .card-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Form Section */
+        .form-section {
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .back-btn {
+            background: var(--surface-alt);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateX(-3px);
+        }
+
+        .form-header h2 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .form-section-title {
+            margin: 2.5rem 0 1.5rem 0;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+            border-radius: 12px;
+            color: white;
+        }
+
+        .form-section-title h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .service-form {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .service-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--surface-alt);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            padding: 1rem;
+            background: var(--surface-alt);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-label:hover {
+            background: var(--primary-light-rgba);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: 2.5rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--surface-alt);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Success Section */
+        .success-section {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .success-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--success);
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--success), #10b981);
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 1.5rem;
+            animation: successPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .success-card h2 {
+            color: var(--success);
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .success-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Error Notification */
+        .error-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--error);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+            border-right: 4px solid #dc2626;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .service-type-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .form-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .success-actions {
+                flex-direction: column;
+            }
+            
+            .service-type-card {
+                padding: 1.5rem;
+            }
+            
+            .card-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .card-icon i {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</body>
+</html>

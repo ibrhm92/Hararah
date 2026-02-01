@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -1296,6 +1296,16 @@
                         <p class="action-description">مراجعة ونشر الإعلانات المحلية المعتمدة</p>
                     </div>
 
+                    <div class="action-card" onclick="managePendingRequests()">
+                        <div class="action-header">
+                            <div class="action-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h3 class="action-title">الطلبات المعلقة</h3>
+                        </div>
+                        <p class="action-description">مراجعة وموافقة على طلبات إضافة الخدمات الجديدة</p>
+                    </div>
+
                     <div class="action-card" onclick="manageSettings()">
                         <div class="action-header">
                             <div class="action-icon">
@@ -1534,6 +1544,78 @@
                 <i class="fas fa-comment-slash"></i>
                 <h3>لا توجد اقتراحات حالياً</h3>
                 <p>لم يتم إرسال أي شكاوى أو اقتراحات بعد</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Management Section -->
+    <div id="pendingRequestsManagement" class="pending-requests-management management-section" style="display: none;">
+        <div class="management-header">
+            <div class="section-title-container">
+                <i class="fas fa-clock"></i>
+                <h2>إدارة الطلبات المعلقة</h2>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="backToDashboard()">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>العودة للوحة التحكم</span>
+                </button>
+                <button class="btn btn-secondary" onclick="backToHome()">
+                    <i class="fas fa-home"></i>
+                    <span>العودة للرئيسية</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="services-filters">
+            <div class="filter-group">
+                <label class="filter-label">البحث</label>
+                <input type="text" id="pendingRequestsSearch" class="filter-input" placeholder="ابحث عن طلب..."
+                    onkeyup="filterPendingRequests()">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">نوع الخدمة</label>
+                <select id="pendingRequestsTypeFilter" class="filter-input" onchange="filterPendingRequests()">
+                    <option value="">جميع الأنواع</option>
+                    <option value="doctor">عيادة طبية</option>
+                    <option value="shop">محل تجاري</option>
+                    <option value="craftsman">صنايعي</option>
+                    <option value="machine">آلة زراعية</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">الحالة</label>
+                <select id="pendingRequestsStatusFilter" class="filter-input" onchange="filterPendingRequests()">
+                    <option value="">جميع الحالات</option>
+                    <option value="pending">معلق</option>
+                    <option value="approved">مقبول</option>
+                    <option value="rejected">مرفوض</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="services-table-container">
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>مقدم الطلب</th>
+                        <th>نوع الخدمة</th>
+                        <th>اسم الخدمة</th>
+                        <th>الهاتف</th>
+                        <th>تاريخ التقديم</th>
+                        <th>الحالة</th>
+                        <th>ملاحظات الإدارة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingRequestsTableBody">
+                    <!-- Pending requests will be loaded here -->
+                </tbody>
+            </table>
+            <div id="pendingRequestsEmptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-clock"></i>
+                <h3>لا توجد طلبات معلقة حالياً</h3>
+                <p>جميع الطلبات تمت معالجتها</p>
             </div>
         </div>
     </div>
@@ -2236,11 +2318,32 @@
         // Load doctors
         async function loadDoctors() {
             try {
-                doctors = await window.getData('doctors') || [];
+                // Clear existing data to prevent duplication
+                doctors = [];
+
+                // Load only main doctors collection
+                const data = await window.getData('doctors') || [];
+
+                // Filter out ANY items that don't have proper approval metadata
+                // Only show items that were approved through the admin panel
+                const approvedDoctors = data.filter(doctor => {
+                    // Must have approvedAt and approvedBy fields (from approveRequest function)
+                    // OR must be manually added by admin (has createdAt but no originalRequestId)
+                    return (doctor.approvedAt && doctor.approvedBy) || 
+                           (!doctor.originalRequestId && doctor.status === 'active');
+                });
+
+                // Remove duplicates
+                const uniqueDoctors = approvedDoctors.filter((doctor, index, self) =>
+                    index === self.findIndex((d) => d.id === doctor.id)
+                );
+
+                doctors = uniqueDoctors;
                 renderDoctors();
             } catch (error) {
                 console.error('Error loading doctors:', error);
-                showNotification('حدث خطأ في تحميل الأطباء', 'error');
+                doctors = [];
+                renderDoctors();
             }
         }
 
@@ -2270,13 +2373,19 @@
             }
 
             emptyState.style.display = 'none';
-            container.innerHTML = filteredDoctors.map(doctor => `
-                <tr>
+            container.innerHTML = filteredDoctors.map(doctor => {
+                // Check if this is a pending request
+                const isPending = doctor.status === 'pending' && doctor.requestType === 'new_service';
+                const statusBadge = isPending ? '<span class="badge badge-warning">معلق</span>' : '';
+
+                return `
+                <tr class="${isPending ? 'pending-request' : ''}">
                     <td>${doctor.name}</td>
                     <td><span class="badge badge-primary">${doctor.specialty}</span></td>
                     <td>${doctor.phone}</td>
                     <td>${doctor.address}</td>
                     <td>${doctor.workingHours || 'غير محدد'}</td>
+                    <td>${statusBadge}</td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn-sm btn-edit" onclick="editDoctor('${doctor.id}')">
@@ -2290,7 +2399,8 @@
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         // Show add doctor modal
@@ -2581,16 +2691,30 @@
 
         async function loadServices() {
             try {
-                // Load services from Firebase database
-                services = await window.getData('craftsmen');
-                if (!services || services.length === 0) {
-                    // If no data in database, show empty state
-                    services = [];
-                }
+                // Clear existing data to prevent duplication
+                services = [];
+
+                // Load only main services collection
+                let allServices = await window.getData('craftsmen') || [];
+
+                // Filter out ANY items that don't have proper approval metadata
+                // Only show items that were approved through the admin panel
+                const approvedServices = allServices.filter(service => {
+                    // Must have approvedAt and approvedBy fields (from approveRequest function)
+                    // OR must be manually added by admin (has createdAt but no originalRequestId)
+                    return (service.approvedAt && service.approvedBy) || 
+                           (!service.originalRequestId && service.status === 'active');
+                });
+
+                // Remove duplicates
+                const uniqueServices = approvedServices.filter((service, index, self) =>
+                    index === self.findIndex((s) => s.id === service.id)
+                );
+
+                services = uniqueServices;
                 renderServices();
             } catch (error) {
                 console.error('Error loading services:', error);
-                showNotification('حدث خطأ في تحميل البيانات', 'error');
                 services = [];
                 renderServices();
             }
@@ -2608,16 +2732,20 @@
             }
 
             emptyState.style.display = 'none';
-            tbody.innerHTML = servicesToRender.map(service => `
-                <tr>
+            tbody.innerHTML = servicesToRender.map(service => {
+                // Check if this is a pending request
+                const isPending = service.status === 'pending';
+                const statusBadge = isPending ? '<span class="badge badge-warning">معلق</span>' :
+                    `<span class="badge ${getStatusBadgeClass(service.status)}">${service.status}</span>`;
+
+                return `
+                <tr class="${isPending ? 'pending-request' : ''}">
                     <td>${service.name}</td>
                     <td><span class="badge badge-primary">${service.specialty}</span></td>
                     <td>${service.phone}</td>
                     <td>${service.address || 'غير محدد'}</td>
                     <td>
-                        <span class="badge ${getStatusBadgeClass(service.status)}">
-                            ${service.status}
-                        </span>
+                        ${statusBadge}
                     </td>
                     <td>
                         <div class="action-buttons">
@@ -2632,7 +2760,8 @@
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function getStatusBadgeClass(status) {
@@ -2837,7 +2966,422 @@
             await loadNews();
         }
 
-        // ==================== EMERGENCY MANAGEMENT ====================
+        async function managePendingRequests() {
+            hideAllSections();
+            const pendingMgmt = document.getElementById('pendingRequestsManagement');
+            if (pendingMgmt) {
+                pendingMgmt.style.display = 'block';
+            }
+            await loadPendingRequests();
+        }
+        let pendingRequestsData = [];
+        let currentRequestId = null;
+
+        async function loadPendingRequests() {
+            try {
+                // Clear existing data to prevent duplication
+                pendingRequestsData = [];
+                
+                // Load fresh data from server
+                const data = await window.getData('pending_requests') || [];
+                console.log('Raw data from DB:', data.length, 'requests');
+                data.forEach((req, i) => {
+                    console.log(`Request ${i+1}:`, {
+                        id: req.id,
+                        name: req.name,
+                        type: req.type,
+                        status: req.status
+                    });
+                });
+                
+                // Fix old data: convert all old types and statuses (only once)
+                const fixedData = data.map(request => {
+                    let fixedRequest = { ...request };
+                    
+                    // Fix shop types
+                    if (request.type === 'مطعم' || request.type === 'مخبز' || 
+                        request.type === 'بقالة' || request.type === 'صيدلية') {
+                        fixedRequest.type = 'shop';
+                        fixedRequest.shopType = request.type;
+                        fixedRequest.status = 'pending';
+                    }
+                    
+                    // Fix machine types
+                    if (request.type === 'جرار' || request.type === 'حفار' || 
+                        request.type === 'مقطورة' || request.type === 'درارة' ||
+                        request.type === 'حصادة' || request.type === 'رشاشة') {
+                        fixedRequest.type = 'machine';
+                        fixedRequest.machineType = request.type;
+                        fixedRequest.status = 'pending';
+                    }
+                    
+                    // Fix statuses for all types
+                    if (request.status === 'مفتوح' || request.status === 'مغلق' ||
+                        request.status === 'متاحة' || request.status === 'مشغولة' ||
+                        request.status === 'غير متاحة') {
+                        fixedRequest.status = 'pending';
+                    }
+                    
+                    return fixedRequest;
+                });
+                
+                // Filter out any duplicates and keep only unique requests
+                const uniqueRequests = fixedData.filter((request, index, self) => 
+                    index === self.findIndex((r) => r.id === request.id)
+                );
+                
+                console.log('After deduplication:', uniqueRequests.length, 'unique requests');
+                console.log('All statuses:', uniqueRequests.map(r => ({id: r.id, name: r.name, status: r.status})));
+                console.log('Pending requests only:', uniqueRequests.filter(r => r.status === 'pending').length);
+                
+                // Save fixed data back to database (only for requests that need fixing)
+                for (const request of uniqueRequests) {
+                    const originalRequest = data.find(r => r.id === request.id);
+                    if (originalRequest && (
+                        originalRequest.type === 'مطعم' || 
+                        originalRequest.type === 'مخبز' || 
+                        originalRequest.type === 'بقالة' || 
+                        originalRequest.type === 'صيدلية' ||
+                        originalRequest.type === 'جرار' || 
+                        originalRequest.type === 'حفار' || 
+                        originalRequest.type === 'مقطورة' || 
+                        originalRequest.type === 'درارة' ||
+                        originalRequest.status === 'مفتوح' || 
+                        originalRequest.status === 'مغلق' ||
+                        originalRequest.status === 'متاحة' || 
+                        originalRequest.status === 'مشغولة' ||
+                        originalRequest.status === 'غير متاحة'
+                    )) {
+                        try {
+                            const updateData = {
+                                type: request.type,
+                                status: request.status
+                            };
+                            
+                            if (request.shopType) updateData.shopType = request.shopType;
+                            if (request.machineType) updateData.machineType = request.machineType;
+                            
+                            await window.updateData('pending_requests', request.id, updateData);
+                        } catch (error) {
+                            console.log('Request might not exist, skipping:', request.id);
+                        }
+                    }
+                }
+                
+                pendingRequestsData = uniqueRequests;
+                renderPendingRequests();
+            } catch (error) {
+                console.error('Error loading pending requests:', error);
+                pendingRequestsData = [];
+                renderPendingRequests();
+            }
+        }
+
+        function renderPendingRequests() {
+            const tbody = document.getElementById('pendingRequestsTableBody');
+            if (!tbody) return;
+
+            // Filter to show only pending requests
+            const pendingOnly = pendingRequestsData.filter(request => request.status === 'pending');
+            
+            console.log('Rendering pending requests:', pendingOnly.length);
+            console.log('Pending requests details:', pendingOnly.map(r => ({id: r.id, name: r.name, type: r.type})));
+
+            if (pendingOnly.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">لا توجد طلبات معلقة</td></tr>';
+                return;
+            }
+
+            // Check for duplicates in rendering
+            const uniqueIds = new Set();
+            const filteredPending = pendingOnly.filter(request => {
+                if (uniqueIds.has(request.id)) {
+                    console.warn('Duplicate request found:', request.id);
+                    return false;
+                }
+                uniqueIds.add(request.id);
+                return true;
+            });
+
+            console.log('After duplicate filtering:', filteredPending.length);
+
+            tbody.innerHTML = filteredPending.map(request => {
+                const typeLabels = {
+                    doctor: 'عيادة طبية',
+                    shop: 'محل تجاري',
+                    craftsman: 'صنايعي',
+                    machine: 'آلة زراعية'
+                };
+
+                const statusClass = request.status === 'pending' ? 'badge-warning' :
+                    request.status === 'approved' ? 'badge-success' : 'badge-danger';
+
+                return `
+                    <tr>
+                        <td>${request.submittedBy?.name || 'غير محدد'}</td>
+                        <td><span class="badge badge-primary">${typeLabels[request.type] || 'غير محدد'}</span></td>
+                        <td>${request.name || 'غير محدد'}</td>
+                        <td>${request.phone || 'غير محدد'}</td>
+                        <td>${request.submittedAt ? new Date(request.submittedAt).toLocaleDateString('ar-SA') : 'غير محدد'}</td>
+                        <td><span class="badge ${statusClass}">${request.status || 'pending'}</span></td>
+                        <td>${request.adminNotes || '-'}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-info" onclick="viewRequestDetails('${request.id}')">
+                                <i class="fas fa-eye"></i> عرض
+                            </button>
+                            ${request.status === 'pending' ? `
+                                <button class="btn btn-sm btn-success" onclick="handleApproveRequest('${request.id}')">
+                                    <i class="fas fa-check"></i> قبول
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="handleRejectRequest('${request.id}')">
+                                    <i class="fas fa-times"></i> رفض
+                                </button>
+                            ` : request.status === 'approved' ? `
+                                <button class="btn btn-sm btn-success" disabled>
+                                    <i class="fas fa-check"></i> تم القبول
+                                </button>
+                            ` : request.status === 'rejected' ? `
+                                <button class="btn btn-sm btn-danger" disabled>
+                                    <i class="fas fa-times"></i> تم الرفض
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-sm btn-danger" onclick="deleteRequest('${request.id}')">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function viewRequestDetails(requestId) {
+            const request = pendingRequestsData.find(r => r.id === requestId);
+            if (!request) return;
+
+            const typeLabels = {
+                doctor: 'عيادة طبية',
+                shop: 'محل تجاري',
+                craftsman: 'صنايعي',
+                machine: 'آلة زراعية'
+            };
+
+            const detailsHtml = `
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <h4>تفاصيل الطلب</h4>
+                    <p><strong>النوع:</strong> ${typeLabels[request.type] || 'غير محدد'}</p>
+                    <p><strong>اسم مقدم الطلب:</strong> ${request.submittedBy?.name || 'غير محدد'}</p>
+                    <p><strong>هاتف مقدم الطلب:</strong> ${request.submittedBy?.phone || 'غير محدد'}</p>
+                    <p><strong>البريد الإلكتروني:</strong> ${request.submittedBy?.email || 'غير محدد'}</p>
+                    <p><strong>تاريخ التقديم:</strong> ${request.submittedAt ? new Date(request.submittedAt).toLocaleString('ar-SA') : 'غير محدد'}</p>
+                    <hr>
+                    <h5>بيانات الخدمة:</h5>
+                    ${Object.entries(request).filter(([key]) =>
+                !['type', 'status', 'submittedBy', 'submittedAt', 'additionalNotes', 'adminNotes', 'requestType', 'reviewed', 'id'].includes(key)
+            ).map(([key, value]) => {
+                const labels = {
+                    name: 'الاسم',
+                    specialty: 'التخصص',
+                    craft: 'الحرفة',
+                    type: 'النوع',
+                    address: 'العنوان',
+                    phone: 'الهاتف',
+                    whatsapp: 'الواتساب',
+                    workingHours: 'ساعات العمل',
+                    experience: 'الخبرة',
+                    area: 'المنطقة',
+                    owner: 'المالك',
+                    notes: 'ملاحظات'
+                };
+                return `<p><strong>${labels[key] || key}:</strong> ${value || 'غير محدد'}</p>`;
+            }).join('')}
+                    ${request.additionalNotes ? `<p><strong>ملاحظات إضافية:</strong> ${request.additionalNotes}</p>` : ''}
+                    ${request.adminNotes ? `<p><strong>ملاحظات الإدارة:</strong> ${request.adminNotes}</p>` : ''}
+                </div>
+            `;
+
+            showModal('تفاصيل الطلب', detailsHtml);
+        }
+
+        async function approveRequest(requestId) {
+            const request = pendingRequestsData.find(r => r.id === requestId);
+            if (!request) return;
+
+            // Check if already processed
+            if (request.status !== 'pending') {
+                showNotification('هذا الطلب تم معالجته بالفعل', 'warning');
+                await loadPendingRequests();
+                return;
+            }
+
+            const reason = prompt('أدخل ملاحظات للموافقة (اختياري):');
+            if (reason === null) return;
+
+            try {
+                // Update status in pending_requests to approved
+                await window.updateData('pending_requests', requestId, {
+                    status: 'approved',
+                    adminNotes: reason || '',
+                    reviewedBy: 'admin',
+                    reviewedAt: new Date().toISOString()
+                });
+
+                // Prepare data for main collection
+                const collectionMap = {
+                    doctor: 'doctors',
+                    shop: 'shops',
+                    craftsman: 'craftsmen',
+                    machine: 'machines'
+                };
+
+                const collection = collectionMap[request.type];
+                
+                // Create clean data object for main collection
+                const approvedData = {
+                    name: request.name,
+                    phone: request.phone,
+                    address: request.address || '',
+                    specialty: request.specialty || request.craft || '',
+                    status: 'active',
+                    approvedAt: new Date().toISOString(),
+                    approvedBy: 'admin',
+                    adminNotes: reason || '',
+                    originalRequestId: requestId // Keep reference to original request
+                };
+
+                // Add type-specific fields
+                if (request.type === 'doctor') {
+                    approvedData.experience = request.experience || '';
+                    approvedData.workingHours = request.workingHours || '';
+                } else if (request.type === 'shop') {
+                    approvedData.type = request.shopType || 'عام';
+                    approvedData.hours = request.workingHours || '';
+                    approvedData.status = request.status || 'مفتوح';
+                } else if (request.type === 'craftsman') {
+                    approvedData.craft = request.craft || '';
+                    approvedData.area = request.area || '';
+                } else if (request.type === 'machine') {
+                    approvedData.machineType = request.machineType || '';
+                    approvedData.available = true;
+                    approvedData.owner = request.owner || '';
+                }
+
+                // Save to main collection
+                await window.saveData(collection, approvedData);
+
+                showNotification('تم قبول الطلب ونقله إلى القائمة الرئيسية بنجاح', 'success');
+                
+                // Remove from local pending data and refresh
+                pendingRequestsData = pendingRequestsData.filter(r => r.id !== requestId);
+                renderPendingRequests();
+                
+                // Reload the main collection to show the new item
+                if (request.type === 'doctor') await loadDoctors();
+                else if (request.type === 'shop') await loadShops();
+                else if (request.type === 'craftsman') await loadServices();
+                else if (request.type === 'machine') await loadMachines();
+            } catch (error) {
+                console.error('Error approving request:', error);
+                showNotification('حدث خطأ في قبول الطلب', 'error');
+                await loadPendingRequests();
+            }
+        }
+
+        async function rejectRequest(requestId) {
+            const request = pendingRequestsData.find(r => r.id === requestId);
+            if (!request) return;
+
+            // Check if already processed
+            if (request.status !== 'pending') {
+                showNotification('هذا الطلب تم معالجته بالفعل', 'warning');
+                await loadPendingRequests(); // Refresh to show current state
+                return;
+            }
+
+            const reason = prompt('أدخل سبب الرفض (مطلوب):');
+            if (!reason) return;
+
+            try {
+                // Update in pending_requests
+                await window.updateData('pending_requests', requestId, {
+                    status: 'rejected',
+                    adminNotes: reason,
+                    reviewedBy: 'admin',
+                    reviewedAt: new Date().toISOString()
+                });
+
+                // Don't add to main collection if rejected, just update pending status
+                showNotification('تم رفض الطلب بنجاح', 'success');
+
+                // Remove from local data immediately
+                pendingRequestsData = pendingRequestsData.filter(r => r.id !== requestId);
+                renderPendingRequests();
+
+                // Then refresh from server to ensure sync
+                await loadPendingRequests();
+
+                // Reload main collections to remove the rejected item
+                if (request.type === 'doctor') await loadDoctors();
+                else if (request.type === 'shop') await loadShops();
+                else if (request.type === 'machine') await loadMachines();
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                showNotification('حدث خطأ في رفض الطلب', 'error');
+                await loadPendingRequests(); // Refresh even on error
+            }
+        }
+
+        // Wrapper functions for onclick handlers
+        async function handleApproveRequest(requestId) {
+            await approveRequest(requestId);
+        }
+
+        async function handleRejectRequest(requestId) {
+            await rejectRequest(requestId);
+        }
+
+        async function deleteRequest(requestId) {
+            if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
+
+            try {
+                const request = pendingRequestsData.find(r => r.id === requestId);
+                if (!request) return;
+
+                // Delete from pending_requests only
+                await window.deleteData('pending_requests', requestId);
+
+                // Remove from local data immediately
+                pendingRequestsData = pendingRequestsData.filter(r => r.id !== requestId);
+                renderPendingRequests();
+
+                showNotification('تم حذف الطلب بنجاح', 'success');
+            } catch (error) {
+                console.error('Error deleting request:', error);
+                showNotification('حدث خطأ في حذف الطلب', 'error');
+                await loadPendingRequests(); // Refresh on error
+            }
+        }
+
+        function showModal(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">${title}</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        ${content}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">إغلاق</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
         let emergencyData = [];
         let currentEmergencyId = null;
 
@@ -4057,6 +4601,12 @@
                         <input type="url" id="adLinkUrl" class="form-input" placeholder="https://example.com">
                     </div>
                     <div class="form-group">
+                        <label class="form-label">رابط الصورة (اختياري)</label>
+                        <input type="url" id="adImageUrl" class="form-input"
+                            placeholder="https://example.com/image.jpg">
+                        <small class="form-help">أدخل رابط صورة الإعلان لعرضها في الرئيسية</small>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">الترتيب</label>
                         <input type="number" id="adSortOrder" class="form-input" value="0" min="0" step="1">
                     </div>
@@ -4078,11 +4628,13 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">لون الخلفية (اختياري)</label>
-                        <input type="color" id="adBgColor" class="form-input" style="height: 40px; width: 100%; border: 1px solid var(--border-color, #e0e0e0); border-radius: 8px; background: var(--surface, #fff);">
+                        <input type="color" id="adBgColor" class="form-input"
+                            style="height: 40px; width: 100%; border: 1px solid var(--border-color, #e0e0e0); border-radius: 8px; background: var(--surface, #fff);">
                     </div>
                     <div class="form-group">
                         <label class="form-label">لون النص (اختياري)</label>
-                        <input type="color" id="adTextColor" class="form-input" style="height: 40px; width: 100%; border: 1px solid var(--border-color, #e0e0e0); border-radius: 8px; background: var(--surface, #fff);">
+                        <input type="color" id="adTextColor" class="form-input"
+                            style="height: 40px; width: 100%; border: 1px solid var(--border-color, #e0e0e0); border-radius: 8px; background: var(--surface, #fff);">
                     </div>
                     <div class="form-group">
                         <label class="form-label">نوع الحركة (اختياري)</label>
@@ -4172,11 +4724,32 @@
         // ==================== SHOPS MANAGEMENT ====================
         async function loadShops() {
             try {
-                shops = await window.getData('shops') || [];
+                // Clear existing data to prevent duplication
+                shops = [];
+
+                // Load only main shops collection
+                const data = await window.getData('shops') || [];
+
+                // Filter out ANY items that don't have proper approval metadata
+                // Only show items that were approved through the admin panel
+                const approvedShops = data.filter(shop => {
+                    // Must have approvedAt and approvedBy fields (from approveRequest function)
+                    // OR must be manually added by admin (has createdAt but no originalRequestId)
+                    return (shop.approvedAt && shop.approvedBy) || 
+                           (!shop.originalRequestId && shop.status === 'active');
+                });
+
+                // Remove duplicates
+                const uniqueShops = approvedShops.filter((shop, index, self) =>
+                    index === self.findIndex((s) => s.id === shop.id)
+                );
+
+                shops = uniqueShops;
                 renderShops();
             } catch (error) {
                 console.error('Error loading shops:', error);
-                showNotification('حدث خطأ في تحميل المحلات', 'error');
+                shops = [];
+                renderShops();
             }
         }
 
@@ -4191,20 +4764,27 @@
                 return;
             }
 
-            tbody.innerHTML = dataToRender.map(shop => `
-                <tr>
+            tbody.innerHTML = dataToRender.map(shop => {
+                const isPending = shop.status === 'pending';
+
+                return `
+                <tr class="${isPending ? 'pending-request' : ''}">
                     <td>${shop.name || 'بدون اسم'}</td>
                     <td><span class="badge badge-primary">${shop.type || 'عام'}</span></td>
                     <td>${shop.phone || '-'}</td>
                     <td>${shop.address || '-'}</td>
                     <td>${shop.hours || '-'}</td>
-                    <td><span class="badge ${shop.status === 'مفتوح' ? 'badge-success' : 'badge-danger'}">${shop.status || 'مغلق'}</span></td>
+                    <td>
+                        ${isPending ? '<span class="badge badge-warning">معلق</span>' :
+                        `<span class="badge ${shop.status === 'مفتوح' ? 'badge-success' : 'badge-danger'}">${shop.status || 'مغلق'}</span>`}
+                    </td>
                     <td class="actions">
                         <button class="btn btn-sm btn-primary" onclick="editShop('${shop.id}')"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="deleteShop('${shop.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function showAddShopModal() {
@@ -4496,6 +5076,7 @@
             document.getElementById('adType').value = ad.type || 'عام';
             document.getElementById('adPhone').value = ad.phone || '';
             document.getElementById('adLinkUrl').value = ad.linkUrl || '';
+            document.getElementById('adImageUrl').value = ad.imageUrl || '';
             document.getElementById('adSortOrder').value = String(Number(ad.sortOrder ?? 0));
             document.getElementById('adStartAt').value = toDateTimeLocalValue(ad.startAt);
             document.getElementById('adEndAt').value = toDateTimeLocalValue(ad.endAt);
@@ -4524,6 +5105,7 @@
                 type: document.getElementById('adType').value,
                 phone: document.getElementById('adPhone').value.trim(),
                 linkUrl: document.getElementById('adLinkUrl').value.trim() || null,
+                imageUrl: document.getElementById('adImageUrl').value.trim() || null,
                 sortOrder: Number(document.getElementById('adSortOrder').value || 0),
                 startAt: document.getElementById('adStartAt').value ? new Date(document.getElementById('adStartAt').value).toISOString() : null,
                 endAt: document.getElementById('adEndAt').value ? new Date(document.getElementById('adEndAt').value).toISOString() : null,
@@ -4594,10 +5176,32 @@
         // ==================== MACHINES MANAGEMENT ====================
         async function loadMachines() {
             try {
-                machines = await window.getData('machines') || [];
+                // Clear existing data to prevent duplication
+                machines = [];
+
+                // Load only main machines collection
+                let allMachines = await window.getData('machines') || [];
+
+                // Filter out ANY items that don't have proper approval metadata
+                // Only show items that were approved through the admin panel
+                const approvedMachines = allMachines.filter(machine => {
+                    // Must have approvedAt and approvedBy fields (from approveRequest function)
+                    // OR must be manually added by admin (has createdAt but no originalRequestId)
+                    return (machine.approvedAt && machine.approvedBy) || 
+                           (!machine.originalRequestId && machine.status === 'active');
+                });
+
+                // Remove duplicates
+                const uniqueMachines = approvedMachines.filter((machine, index, self) =>
+                    index === self.findIndex((m) => m.id === machine.id)
+                );
+
+                machines = uniqueMachines;
                 renderMachines();
             } catch (error) {
                 console.error('Error loading machines:', error);
+                machines = [];
+                renderMachines();
             }
         }
 
@@ -4609,19 +5213,26 @@
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">لا توجد آلات مسجلة</td></tr>';
                 return;
             }
-            tbody.innerHTML = dataToRender.map(machine => `
-                <tr>
+            tbody.innerHTML = dataToRender.map(machine => {
+                const isPending = machine.status === 'pending';
+
+                return `
+                <tr class="${isPending ? 'pending-request' : ''}">
                     <td>${machine.name || 'غير محدد'}</td>
                     <td><span class="badge badge-info">${machine.type || 'غير محدد'}</span></td>
                     <td>${machine.phone || 'غير محدد'}</td>
-                    <td><span class="badge ${machine.available ? 'badge-success' : 'badge-danger'}">${machine.available ? 'متاحة' : 'غير متاحة'}</span></td>
+                    <td>
+                        ${isPending ? '<span class="badge badge-warning">معلق</span>' :
+                        `<span class="badge ${machine.available ? 'badge-success' : 'badge-danger'}">${machine.available ? 'متاحة' : 'غير متاحة'}</span>`}
+                    </td>
                     <td>${machine.notes || '-'}</td>
                     <td class="actions">
                         <button class="btn btn-sm btn-primary" onclick="editMachine('${machine.id}')"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="deleteMachine('${machine.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function showAddMachineModal() {
@@ -4695,6 +5306,46 @@
             renderMachines(filtered);
         }
     </script>
+
+    <style>
+        /* Pending requests styling */
+        .pending-request {
+            background-color: #fff3cd !important;
+            border-right: 4px solid #ffc107 !important;
+        }
+
+        .pending-request:hover {
+            background-color: #ffeaa7 !important;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Add animation for pending requests */
+        @keyframes pulse-warning {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .pending-request {
+            animation: pulse-warning 2s infinite;
+        }
+    </style>
 </body>
 
 </html>

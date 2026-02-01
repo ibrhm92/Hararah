@@ -1308,6 +1308,248 @@ main {
     border-color: var(--info);
 }
 
+/* Ad Images - صور الإعلانات */
+.home-ad-image {
+    width: 100%;
+    height: 120px;
+    overflow: hidden;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.home-ad-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+}
+
+.home-ad-image:hover img {
+    transform: scale(1.05);
+}
+
+/* Home Ad Cards - بطاقات الإعلانات الرئيسية */
+.home-ad-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.home-ad-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.home-ad-card h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.home-ad-card p {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.home-ad-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.home-ad-actions .btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.home-ad-actions .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Responsive for ad images */
+@media (max-width: 768px) {
+    .home-ad-image {
+        height: 100px;
+        margin-bottom: 0.4rem;
+    }
+    
+    .home-ad-card {
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .home-ad-card h4 {
+        font-size: 0.95rem;
+    }
+    
+    .home-ad-card p {
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .home-ad-actions .btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .home-ad-image {
+        height: 80px;
+        margin-bottom: 0.3rem;
+    }
+    
+    .home-ad-card {
+        padding: 0.6rem;
+        margin-bottom: 0.6rem;
+    }
+    
+    .home-ad-card h4 {
+        font-size: 0.9rem;
+    }
+    
+    .home-ad-card p {
+        font-size: 0.8rem;
+        margin-bottom: 0.6rem;
+    }
+}
+
+/* Ad Images - صور الإعلانات */
+.home-ad-image {
+    width: 100%;
+    height: 120px;
+    overflow: hidden;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.home-ad-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+}
+
+.home-ad-image:hover img {
+    transform: scale(1.05);
+}
+
+/* Home Ad Cards - بطاقات الإعلانات الرئيسية */
+.home-ad-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.home-ad-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.home-ad-card h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.home-ad-card p {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.home-ad-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.home-ad-actions .btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.home-ad-actions .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Responsive for ad images */
+@media (max-width: 768px) {
+    .home-ad-image {
+        height: 100px;
+        margin-bottom: 0.4rem;
+    }
+    
+    .home-ad-card {
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .home-ad-card h4 {
+        font-size: 0.95rem;
+    }
+    
+    .home-ad-card p {
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .home-ad-actions .btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .home-ad-image {
+        height: 80px;
+        margin-bottom: 0.3rem;
+    }
+    
+    .home-ad-card {
+        padding: 0.6rem;
+        margin-bottom: 0.6rem;
+    }
+    
+    .home-ad-card h4 {
+        font-size: 0.9rem;
+    }
+    
+    .home-ad-card p {
+        font-size: 0.8rem;
+        margin-bottom: 0.6rem;
+    }
+}
+
 /* Full Width Banner Ads - الشريطي بعرض الصفحة */
 .full-width-banner {
     width: 100%;
@@ -3428,4 +3670,57 @@ textarea.form-control {
 .modal .form-textarea {
     min-height: 120px;
     resize: vertical;
+}
+
+/* Ad Image Styles - صور الإعلانات */
+.ad-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+}
+
+.ad-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.home-ad-card:hover .ad-image img {
+    transform: scale(1.05);
+}
+
+/* Highlighted Ads - الإعلانات المميزة */
+.ad-card.highlighted {
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    position: relative;
+}
+
+.ad-card.highlighted::before {
+    content: "مميز";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--accent-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 1;
+}
+
+/* Disabled buttons for processed requests */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }

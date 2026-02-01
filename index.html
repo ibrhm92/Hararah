@@ -14,12 +14,13 @@
     <meta http-equiv="Expires" content="0">
 
     <!-- Force Update -->
-    <meta name="version" content="2.0.1">
+    <meta name="version" content="2.0.2">
 
     <title>قرية حرارة - خدمات القرية الذكية</title>
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" id="metaAppTitle" content="قرية حرارة">
@@ -53,7 +54,7 @@
     <script>
         // Check for version updates
         (function () {
-            const currentVersion = '2.0.1';
+            const currentVersion = '2.0.2';
             const storedVersion = localStorage.getItem('appVersion');
             const lastVersionCheck = localStorage.getItem('lastVersionCheck');
             const now = Date.now();
@@ -186,6 +187,10 @@
                     <i class="fas fa-user-md"></i>
                     <span>العيادات</span>
                 </a></li>
+            <li><a href="pages/submit-service.html" class="nav-link" data-page="submit-service">
+                    <i class="fas fa-file-alt"></i>
+                    <span>تقديم طلب خدمة</span>
+                </a></li>
             <li><a href="pages/news.html" class="nav-link" data-page="news">
                     <i class="fas fa-newspaper"></i>
                     <span>الأخبار والتنبيهات</span>
@@ -257,12 +262,13 @@
                     <p>الأطباء والعيادات</p>
                 </a>
 
-            </div>
+                <a href="pages/submit-service.html" class="action-card" data-page="submit-service">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>تقديم طلب خدمة</h3>
+                    <p>أضف خدمتك</p>
+                </a>
 
-            <section class="home-ads-section" id="homeAdsTopSection" style="display: none;">
-                <h3><i class="fas fa-bullhorn"></i> إعلانات</h3>
-                <div id="homeAdsTop" class="home-ads-container"></div>
-            </section>
+            </div>
 
             <style>
                 .actions-grid {

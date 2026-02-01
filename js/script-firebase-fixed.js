@@ -2,6 +2,17 @@
 // Import Firebase client - استيراد عميل Firebase
 import { firebaseClient } from './api-config-firebase.js';
 
+// SAFETY: Global error handler to ensure loading screen is hidden if script fails
+window.addEventListener('error', function (e) {
+    console.error('Global script error:', e.error);
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen && loadingScreen.style.display !== 'none') {
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+        }, 3000);
+    }
+});
+
 // Global variables - متغيرات عالمية
 let currentPage = 'home';
 let isLoading = false;
@@ -845,6 +856,10 @@ async function loadPage(page) {
             case 'doctors':
                 await loadDoctorsData();
                 break;
+            case 'submit-service':
+                // Redirect to submit service page - التوجيه لصفحة تقديم طلب خدمة
+                window.location.href = 'pages/submit-service.html';
+                return;
             default:
                 pageContent.innerHTML = '<div class="text-center"><h3>الصفحة غير موجودة</h3></div>';
         }
@@ -888,6 +903,9 @@ function initializePageFunctionality(page) {
             break;
         case 'doctors':
             initializeDoctorsPage();
+            break;
+        case 'submit-service':
+            // Submit service page is a separate HTML file - صفحة تقديم طلب خدمة هي ملف HTML منفصل
             break;
     }
 }
@@ -958,9 +976,10 @@ function initializeAddServicePage() {
     setupAddServiceForm();
 }
 
-// Load craftsmen page - تحميل صفحة الصنايعية
+// Load craftsmen page - تحميل صفحة الصنايعية (UPDATED VERSION WITH APPROVAL FILTER)
 async function loadCraftsmenPage() {
     const craftsmen = await getData('craftsmen');
+    const approvedCraftsmen = getApprovedServices(craftsmen);
     const pageContent = document.getElementById('pageContent');
 
     if (!pageContent) return;
@@ -969,298 +988,37 @@ async function loadCraftsmenPage() {
         <div class="page craftsmen-page active">
             <div class="page-header">
                 <h2><i class="fas fa-tools"></i> الصنايعية والخدمات</h2>
-                <div class="page-actions">
-                    <input type="text" id="craftsmenSearch" placeholder="بحث عن صنايعي..." class="form-control">
-                    <select id="craftsmenFilter" class="form-control">
-                        <option value="">جميع التخصصات</option>
-                        <option value="نجار">نجار</option>
-                        <option value="كهربائي">كهربائي</option>
-                        <option value="سباك">سباك</option>
-                        <option value="حداد">حداد</option>
-                        <option value="ميكانيكي">ميكانيكي</option>
-                        <option value="نقاش">نقاش</option>
-                        <option value="مبلط">مبلط</option>
-                        <option value="سباكة">سباكة</option>
-                        <option value="تكييف">تكييف</option>
-                        <option value="أخرى">أخرى</option>
-                    </select>
-                </div>
             </div>
             <div class="craftsmen-list">
-                ${craftsmen.length > 0 ? craftsmen.map(craftsman => `
+                ${approvedCraftsmen.map(craftsman => `
                     <div class="craftsman-card">
-                        <div class="craftsman-header">
+                        <div class="craftsman-info">
                             <h3>${craftsman.name || 'غير محدد'}</h3>
-                            <span class="status-badge status-${(craftsman.status || 'متاح').toLowerCase().replace(' ', '-')}">
-                                ${craftsman.status || 'متاح'}
-                            </span>
-                        </div>
-                        <div class="craftsman-details">
-                            <div class="detail-item">
-                                <i class="fas fa-tools"></i>
-                                <span>${craftsman.specialty || 'بدون تخصص'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-phone"></i>
-                                <span>${craftsman.phone || 'لا يوجد'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>${craftsman.address || 'لا يوجد'}</span>
-                            </div>
-                            ${craftsman.notes ? `
-                            <div class="detail-item">
-                                <i class="fas fa-sticky-note"></i>
-                                <span>${craftsman.notes}</span>
-                            </div>
-                            ` : ''}
+                            <span class="craft-badge">${craftsman.craft || 'عام'}</span>
+                            <p><i class="fas fa-phone"></i> ${craftsman.phone || 'لا يوجد هاتف'}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${craftsman.address || 'لا يوجد عنوان'}</p>
+                            ${craftsman.notes ? `<p><i class="fas fa-info-circle"></i> ${craftsman.notes}</p>` : ''}
                         </div>
                         <div class="craftsman-actions">
-                            <a href="tel:${craftsman.phone}" class="btn btn-primary">
-                                <i class="fas fa-phone"></i> اتصال
+                            <a href="tel:${craftsman.phone}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-phone"></i> اتصل
                             </a>
-                            <a href="https://wa.me/${formatEgyptianWhatsApp(craftsman.phone)}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
-                                <i class="fab fa-whatsapp"></i> واتس
-                            </a>
+                            ${craftsman.whatsapp ? `
+                                <a href="https://wa.me/${craftsman.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="fab fa-whatsapp"></i> واتساب
+                                </a>
+                            ` : ''}
                         </div>
                     </div>
-                `).join('') : '<div class="empty-state"><i class="fas fa-tools"></i><h3>لا توجد صنايعية حالياً</h3><p>سيتم إضافة الصنايعية قريباً</p></div>'}
-            </div>
+                `).join('')}
         </div>
     `;
-
-    // Add CSS for mobile responsiveness
-    const style = document.createElement('style');
-    style.textContent = `
-        .craftsmen-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1rem;
-            padding: 1rem;
-        }
-
-        .craftsman-card {
-            background: var(--surface, #fff);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 1px solid var(--border-color, #e0e0e0);
-        }
-
-        .craftsman-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
-        }
-
-        .craftsman-header {
-            background: linear-gradient(135deg, var(--primary-color, #2c3e50), var(--primary-dark, #1a252f));
-            color: white;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .craftsman-header h3 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .status-badge {
-            padding: 0.375rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-متاح { background: #28a745; color: white; }
-        .status-مشغول { background: #ffc107; color: #000; }
-        .status-غير-متاح { background: #dc3545; color: white; }
-
-        .craftsman-details {
-            padding: 1rem;
-        }
-
-        .detail-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            color: var(--text-primary, #333);
-            font-size: 0.95rem;
-        }
-
-        .detail-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .detail-item i {
-            width: 18px;
-            color: var(--primary-color, #2c3e50);
-            opacity: 0.8;
-        }
-
-        .craftsman-actions {
-            padding: 1rem;
-            border-top: 1px solid var(--border-color, #e0e0e0);
-            background: var(--surface-alt, #f8f9fa);
-        }
-
-        .craftsman-actions .btn {
-            width: 100%;
-            text-align: center;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-        }
-
-        .craftsman-actions .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--text-muted, #6c757d);
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary, #495057);
-        }
-
-        .empty-state p {
-            font-size: 1rem;
-            margin: 0;
-        }
-
-        @media (max-width: 768px) {
-            .craftsmen-list {
-                grid-template-columns: 1fr;
-                padding: 0.5rem;
-                gap: 0.75rem;
-            }
-
-            .craftsman-card {
-                border-radius: 8px;
-            }
-
-            .craftsman-header {
-                padding: 0.875rem;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-
-            .craftsman-header h3 {
-                font-size: 1.1rem;
-            }
-
-            .status-badge {
-                font-size: 0.8rem;
-                padding: 0.25rem 0.5rem;
-            }
-
-            .craftsman-details {
-                padding: 0.875rem;
-            }
-
-            .detail-item {
-                font-size: 0.9rem;
-                gap: 0.5rem;
-            }
-
-            .craftsman-actions {
-                padding: 0.875rem;
-            }
-
-            .empty-state {
-                padding: 2rem 1rem;
-            }
-
-            .empty-state i {
-                font-size: 3rem;
-            }
-
-            .empty-state h3 {
-                font-size: 1.25rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .craftsmen-list {
-                padding: 0.25rem;
-            }
-
-            .craftsman-header {
-                padding: 0.75rem;
-            }
-
-            .craftsman-details {
-                padding: 0.75rem;
-            }
-
-            .craftsman-actions {
-                padding: 0.75rem;
-            }
-        }
-    `;
-
-    // Add search and filter functionality
-    const searchInput = document.getElementById('craftsmenSearch');
-    const filterSelect = document.getElementById('craftsmenFilter');
-
-    function filterCraftsmen() {
-        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-        const filterValue = filterSelect ? filterSelect.value : '';
-        const cards = document.querySelectorAll('.craftsman-card');
-
-        cards.forEach(card => {
-            const name = card.querySelector('h3').textContent.toLowerCase();
-            const specialtyElement = card.querySelector('.detail-item i.fa-tools');
-            const specialty = specialtyElement ? specialtyElement.nextElementSibling.textContent.toLowerCase() : '';
-
-            const matchesSearch = name.includes(searchTerm) || specialty.includes(searchTerm);
-            const matchesFilter = !filterValue || specialty.includes(filterValue.toLowerCase());
-
-            card.style.display = matchesSearch && matchesFilter ? 'block' : 'none';
-        });
-    }
-
-    if (searchInput) {
-        searchInput.addEventListener('input', filterCraftsmen);
-    }
-
-    if (filterSelect) {
-        filterSelect.addEventListener('change', filterCraftsmen);
-    }
-
-    document.head.appendChild(style);
 }
 
-// Load machines page - تحميل صفحة الآلات
+// Load machines page - تحميل صفحة الآلات (UPDATED VERSION WITH APPROVAL FILTER)
 async function loadMachinesPage() {
     const machines = await getData('machines');
+    const approvedMachines = getApprovedServices(machines);
     const pageContent = document.getElementById('pageContent');
 
     if (!pageContent) return;
@@ -1269,141 +1027,129 @@ async function loadMachinesPage() {
         <div class="page machines-page active">
             <div class="page-header">
                 <h2><i class="fas fa-tractor"></i> أصحاب الآلات الزراعية</h2>
-                <div class="page-actions">
-                    <input type="text" id="machinesSearch" placeholder="بحث عن آلة..." class="form-control">
-                    <select id="machinesFilter" class="form-control">
-                        <option value="">جميع الأنواع</option>
-                        <option value="حفار">حفار</option>
-                        <option value="رافعة">رافعة</option>
-                        <option value="خلاطة">خلاطة</option>
-                        <option value="جرار">جرار</option>
-                    </select>
-                </div>
             </div>
-            <div class="data-table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>الاسم</th>
-                            <th>النوع</th>
-                            <th>الحالة</th>
-                            <th>رقم الهاتف</th>
-                            <th>الملاحظات</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${machines.map(machine => `
-                            <tr>
-                                <td>${machine.name || 'غير محدد'}</td>
-                                <td><i class="fas fa-cogs"></i> ${machine.type || 'غير محدد'}</td>
-                                <td><span class="badge bg-${machine.available ? 'success' : 'danger'}">${machine.available ? 'متاحة' : 'غير متاحة'}</span></td>
-                                <td>${machine.phone || 'لا يوجد'}</td>
-                                <td>${machine.notes || 'لا توجد ملاحظات'}</td>
-                                <td>
-                                    <a href="tel:${machine.phone}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-phone"></i> اتصال
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-// Load shops page - تحميل صفحة المحلات
-async function loadShopsPage() {
-    const shops = await getData('shops');
-    const pageContent = document.getElementById('pageContent');
-
-    if (!pageContent) return;
-
-    pageContent.innerHTML = `
-        <div class="page shops-page active">
-            <div class="page-header">
-                <h2><i class="fas fa-store"></i> المحلات التجارية</h2>
-                <div class="page-actions">
-                    <input type="text" id="shopsSearch" placeholder="بحث عن محل..." class="form-control">
-                    <select id="shopsFilter" class="form-control">
-                        <option value="">جميع الأنواع</option>
-                        <option value="مخبز">مخبز</option>
-                        <option value="بقالة">بقالة</option>
-                        <option value="صيدلية">صيدلية</option>
-                        <option value="مطعم">مطعم</option>
-                    </select>
-                </div>
-            </div>
-            <div class="data-table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>اسم المحل</th>
-                            <th>النوع</th>
-                            <th>رقم الهاتف</th>
-                            <th>العنوان</th>
-                            <th>ساعات العمل</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${shops.map(shop => `
-                            <tr>
-                                <td>${shop.name || 'غير محدد'}</td>
-                                <td><span class="badge bg-primary">${shop.type || 'بدون نوع'}</span></td>
-                                <td>${shop.phone || 'لا يوجد'}</td>
-                                <td><i class="fas fa-map-marker-alt"></i> ${shop.address || 'لا يوجد'}</td>
-                                <td><i class="fas fa-clock"></i> ${shop.hours || 'لا يوجد'}</td>
-                                <td>
-                                    <a href="tel:${shop.phone}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-phone"></i> اتصال
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-// Load offers page - تحميل صفحة العروض
-async function loadOffersPage() {
-    const offers = await getData('offers');
-    const approvedOffers = offers.filter(offer => offer.approved !== false);
-    const pageContent = document.getElementById('pageContent');
-
-    if (!pageContent) return;
-
-    pageContent.innerHTML = `
-        <div class="page offers-page active">
-            <div class="page-header">
-                <h2><i class="fas fa-tags"></i> العروض والتخفيضات</h2>
-            </div>
-            <div class="offers-grid">
-                ${approvedOffers.map(offer => `
-                    <div class="offer-card">
-                        <div class="offer-header">
-                            <h3>${offer.shop_name || 'غير محدد'}</h3>
-                            <span class="badge bg-danger">${offer.discount || 'بدون خصم'}</span>
+            <div class="machines-list">
+                ${approvedMachines.map(machine => `
+                    <div class="machine-card">
+                        <div class="machine-info">
+                            <h3>${machine.name || 'غير محدد'}</h3>
+                            <span class="machine-type-badge">${machine.type || 'عام'}</span>
+                            <p><i class="fas fa-phone"></i> ${machine.phone || 'لا يوجد هاتف'}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${machine.area || 'لا يوجد منطقة'}</p>
+                            ${machine.owner ? `<p><i class="fas fa-user"></i> المالك: ${machine.owner}</p>` : ''}
+                            ${machine.notes ? `<p><i class="fas fa-info-circle"></i> ${machine.notes}</p>` : ''}
                         </div>
-                        <div class="offer-body">
-                            <p>${offer.description || 'لا يوجد وصف'}</p>
-                            <p><i class="fas fa-phone"></i> ${offer.phone || 'لا يوجد'}</p>
-                        </div>
-                        <div class="offer-footer">
-                            <a href="tel:${offer.phone}" class="btn btn-primary">
-                                <i class="fas fa-phone"></i> اتصال
+                        <div class="machine-actions">
+                            <a href="tel:${machine.phone}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-phone"></i> اتصل
                             </a>
+                            ${machine.whatsapp ? `
+                                <a href="https://wa.me/${machine.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="fab fa-whatsapp"></i> واتساب
+                                </a>
+                            ` : ''}
                         </div>
                     </div>
                 `).join('')}
             </div>
         </div>
     `;
+}
+
+// Load shops page - تحميل صفحة المحلات (UPDATED VERSION WITH APPROVAL FILTER)
+async function loadShopsPage() {
+    const shops = await getData('shops');
+    const approvedShops = getApprovedServices(shops);
+    const pageContent = document.getElementById('pageContent');
+
+    pageContent.innerHTML = `
+        <div class="page shops-page active">
+            <div class="page-header">
+                <h2><i class="fas fa-store"></i> المحلات التجارية</h2>
+            </div>
+            <div class="shops-list">
+                ${approvedShops.map(shop => `
+                    <div class="shop-card">
+                        <div class="shop-info">
+                            <h3>${shop.name || 'غير محدد'}</h3>
+                            <span class="shop-type-badge">${shop.type || 'عام'}</span>
+                            <p><i class="fas fa-phone"></i> ${shop.phone || 'لا يوجد هاتف'}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${shop.address || 'لا يوجد عنوان'}</p>
+                            ${shop.hours ? `<p><i class="fas fa-clock"></i> ${shop.hours}</p>` : ''}
+                            ${shop.notes ? `<p><i class="fas fa-info-circle"></i> ${shop.notes}</p>` : ''}
+                        </div>
+                        <div class="shop-actions">
+                            <a href="tel:${shop.phone}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-phone"></i> اتصل
+                            </a>
+                            ${shop.whatsapp ? `
+                                <a href="https://wa.me/${shop.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="fab fa-whatsapp"></i> واتساب
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Load doctors page - تحميل صفحة الأطباء (UPDATED VERSION WITH APPROVAL FILTER)
+async function loadDoctorsData() {
+    const doctors = await getData('doctors');
+    const approvedDoctors = getApprovedServices(doctors);
+    const pageContent = document.getElementById('pageContent');
+
+    if (!pageContent) return;
+
+    pageContent.innerHTML = `
+        <div class="page doctors-page active">
+            <div class="page-header">
+                <h2><i class="fas fa-user-md"></i> الأطباء والعيادات</h2>
+            </div>
+            <div class="doctors-list">
+                ${approvedDoctors.map(doctor => {
+        const whatsappLink = doctor.whatsapp ?
+            `https://wa.me/${doctor.whatsapp.replace(/[^0-9]/g, '')}` : '';
+
+        return `
+                    <div class="doctor-card">
+                        <div class="doctor-info">
+                            <h3>${doctor.name || 'غير محدد'}</h3>
+                            <span class="specialty-badge">${doctor.specialty || 'غير محدد'}</span>
+                            <p><i class="fas fa-map-marker-alt"></i> ${doctor.address || 'لا يوجد عنوان'}</p>
+                            <p><i class="fas fa-phone"></i> ${doctor.phone || 'لا يوجد هاتف'}</p>
+                            ${doctor.workingHours ? `<p><i class="fas fa-clock"></i> ${doctor.workingHours}</p>` : ''}
+                            ${doctor.notes ? `<p><i class="fas fa-info-circle"></i> ${doctor.notes}</p>` : ''}
+                        </div>
+                        <div class="doctor-actions">
+                            <a href="tel:${doctor.phone}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-phone"></i> اتصل
+                            </a>
+                            ${doctor.whatsapp ? `
+                                <a href="${whatsappLink}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="fab fa-whatsapp"></i> واتساب
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+    }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Helper function to get approved services only
+function getApprovedServices(services) {
+    return (services || [])
+        .filter(service => service.status === 'approved' || service.status === undefined)
+        .sort((a, b) => {
+            const aTime = new Date(a.submittedAt || a.createdAt || 0).getTime();
+            const bTime = new Date(b.submittedAt || b.createdAt || 0).getTime();
+            return bTime - aTime;
+        });
 }
 
 // Load ads page - تحميل صفحة الإعلانات
@@ -1421,32 +1167,32 @@ async function loadAdsPage() {
             </div>
             <div class="ads-grid">
                 ${approvedAds.map(ad => {
-                    const actions = [];
-                    if (ad.phone) {
-                        actions.push(`<a href="tel:${ad.phone}" class="btn btn-primary" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-phone"></i> اتصال</a>`);
-                    }
-                    if (ad.whatsapp) {
-                        actions.push(`<a href="https://wa.me/${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fab fa-whatsapp"></i> واتساب</a>`);
-                    }
-                    if (ad.linkUrl) {
-                        actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-info" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-external-link-alt"></i> رابط</a>`);
-                    }
+        const actions = [];
+        if (ad.phone) {
+            actions.push(`<a href="tel:${ad.phone}" class="btn btn-primary" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-phone"></i> اتصال</a>`);
+        }
+        if (ad.whatsapp) {
+            actions.push(`<a href="https://wa.me/${ad.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-success" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fab fa-whatsapp"></i> واتساب</a>`);
+        }
+        if (ad.linkUrl) {
+            actions.push(`<a href="${ad.linkUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-info" onclick="recordAdClick('${ad.id}', ${ad.clicks || 0})"><i class="fas fa-external-link-alt"></i> رابط</a>`);
+        }
 
-                    const style = {};
-                    if (ad.bgColor) style.backgroundColor = ad.bgColor;
-                    if (ad.textColor) style.color = ad.textColor;
-                    const styleStr = Object.entries(style).map(([k, v]) => `${k}: ${v}`).join('; ');
+        const style = {};
+        if (ad.bgColor) style.backgroundColor = ad.bgColor;
+        if (ad.textColor) style.color = ad.textColor;
+        const styleStr = Object.entries(style).map(([k, v]) => `${k}: ${v}`).join('; ');
 
-                    const animClass = ad.animation ? `ad-${ad.animation}` : '';
-                    const speedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
-                    const highlightedClass = ad.isHighlighted ? 'ad-highlighted' : '';
+        const animClass = ad.animation ? `ad-${ad.animation}` : '';
+        const speedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
+        const highlightedClass = ad.isHighlighted ? 'ad-highlighted' : '';
 
-                    // Check if this is a banner ad
-                    if (ad.displayMode === 'banner') {
-                        const bannerAnimClass = ad.animation ? `ad-${ad.animation}` : '';
-                        const bannerSpeedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
-                        
-                        return `
+        // Check if this is a banner ad
+        if (ad.displayMode === 'banner') {
+            const bannerAnimClass = ad.animation ? `ad-${ad.animation}` : '';
+            const bannerSpeedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
+
+            return `
                         <div class="banner-ad ${bannerAnimClass} ${bannerSpeedClass}" style="${styleStr}">
                             <div class="banner-ad-content">
                                 <h4>${ad.title || 'إعلان'}</h4>
@@ -1455,9 +1201,9 @@ async function loadAdsPage() {
                             </div>
                         </div>
                     `;
-                    }
+        }
 
-                    return `
+        return `
                     <div class="ad-card ${animClass} ${speedClass} ${highlightedClass}" style="${styleStr}">
                         ${ad.image ? `<div class="ad-image"><img src="${ad.image}" alt="${ad.title || 'إعلان'}" onerror="this.style.display='none'"></div>` : ''}
                         <div class="ad-header">
@@ -1490,35 +1236,71 @@ async function loadAdsPage() {
                         ` : ''}
                     </div>
                 `;
-                }).join('')}
+    }).join('')}
             </div>
         </div>
     `;
 }
 
+// Debugging helper for Ads
 function isAdWithinSchedule(ad, now = new Date()) {
-    const startAt = ad.startAt ? new Date(ad.startAt) : null;
-    const endAt = ad.endAt ? new Date(ad.endAt) : null;
-    if (startAt && !Number.isNaN(startAt.getTime()) && now < startAt) return false;
-    if (endAt && !Number.isNaN(endAt.getTime()) && now > endAt) return false;
-    return true;
+    try {
+        const startAt = ad.startAt ? new Date(ad.startAt) : null;
+        const endAt = ad.endAt ? new Date(ad.endAt) : null;
+
+        if (startAt && !Number.isNaN(startAt.getTime()) && now < startAt) {
+            // console.log(`Ad ${ad.id} hidden: startAt ${startAt} is in future`);
+            return false;
+        }
+        if (endAt && !Number.isNaN(endAt.getTime()) && now > endAt) {
+            // console.log(`Ad ${ad.id} hidden: endAt ${endAt} is in past`);
+            return false;
+        }
+        return true;
+    } catch (e) {
+        console.warn('Error checking ad schedule:', e);
+        return true; // Fail safe: show ad if date check fails
+    }
 }
 
 function getAdsForPlacement(allAds, placement) {
     const now = new Date();
-    return (allAds || [])
-        .filter(ad => (ad.placement || 'classifieds') === placement)
-        .filter(ad => ad.approved !== false)
-        .filter(ad => ad.isActive !== false)
+    // console.log(`Filtering ads for placement: ${placement}, Total before filter: ${allAds?.length}`);
+
+    if (!allAds) return [];
+
+    const filtered = allAds
+        .filter(ad => {
+            // Relaxed placement check: if ad has no placement, assume it goes to 'classifieds'
+            // If ad has placement, it must match.
+            const adPlacement = ad.placement || 'classifieds';
+            const match = adPlacement === placement;
+            // if (!match) console.log(`Ad ${ad.id} skipped: placement mismatch (${adPlacement} vs ${placement})`);
+            return match;
+        })
+        .filter(ad => {
+            const approved = ad.approved !== false; // Default to true if undefined
+            // if (!approved) console.log(`Ad ${ad.id} skipped: not approved`);
+            return approved;
+        })
+        .filter(ad => {
+            const active = ad.isActive !== false; // Default to true if undefined
+            // if (!active) console.log(`Ad ${ad.id} skipped: not active`);
+            return active;
+        })
         .filter(ad => isAdWithinSchedule(ad, now))
         .sort((a, b) => {
             const ao = Number(a.sortOrder ?? 0);
             const bo = Number(b.sortOrder ?? 0);
             if (ao !== bo) return ao - bo;
+            // Fallback to updated/created date
             const at = new Date(a.updatedAt || a.createdAt || 0).getTime();
             const bt = new Date(b.updatedAt || b.createdAt || 0).getTime();
             return bt - at;
         });
+
+    // console.log(`Ads for ${placement}: ${filtered.length} after filtering`);
+    return filtered;
 }
 
 function renderHomeAds(placement, sectionId, containerId) {
@@ -1560,7 +1342,7 @@ function renderHomeAds(placement, sectionId, containerId) {
             if (ad.displayMode === 'banner') {
                 const bannerAnimClass = ad.animation ? `ad-${ad.animation}` : '';
                 const bannerSpeedClass = ad.animationSpeed ? `ad-animation-${ad.animationSpeed}` : '';
-                
+
                 return `
                     <div class="home-banner-ad ${bannerAnimClass} ${bannerSpeedClass}" style="${styleStr}">
                         <div class="home-banner-ad-content">
@@ -1887,30 +1669,40 @@ if ('serviceWorker' in navigator) {
 }
 
 // Initialize app - تهيئة التطبيق
+// Initialize app - تهيئة التطبيق
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Harara Village App initialized with Firebase');
 
-    // Check admin login status - التحقق من حالة تسجيل دخول الإدارة
-    checkAdminLoginStatus();
+    try {
+        // Check admin login status - التحقق من حالة تسجيل دخول الإدارة
+        checkAdminLoginStatus();
 
-    // Initialize navigation - تهيئة التنقل
-    initializeNavigation();
+        // Initialize navigation - تهيئة التنقل
+        initializeNavigation();
 
-    // Load initial data - تحميل البيانات الأولية
-    loadInitialData();
+        // Setup loading handlers
+        setupGlobalLoadingHandlers();
 
-    // Test connection in background - اختبار الاتصال في الخلفية
-    setTimeout(() => {
-        testConnection();
-    }, 2000);
+        // Load initial data - تحميل البيانات الأولية
+        loadInitialData();
 
-    // Hide loading screen after 5 seconds - إخفاء شاشة التحميل بعد 5 ثواني
-    setTimeout(() => {
-        const loadingScreen = document.getElementById('loadingScreen');
-        if (loadingScreen) {
-            loadingScreen.style.display = 'none';
-        }
-    }, 2500);
+        // Test connection in background - اختبار الاتصال في الخلفية
+        setTimeout(() => {
+            testConnection();
+        }, 2000);
+
+    } catch (error) {
+        console.error('Error during app initialization:', error);
+    } finally {
+        // CORRECTION: Always hide loading screen after a timeout, regardless of errors
+        // Hide loading screen after 2.5 seconds - إخفاء شاشة التحميل بعد 2.5 ثواني
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+        }, 2500);
+    }
 });
 
 // Test connection - اختبار الاتصال
@@ -2194,7 +1986,7 @@ function displayOffers(offers) {
                     <h4>${offer.title}</h4>
                     <p><i class="fas fa-store"></i> ${offer.shop}</p>
                     <p><i class="fas fa-tag"></i> ${offer.description}</p>
-                    <p><i class="fas fa-calendar"></i> ${offer.date}</p>
+                    <p><i class="fas fa-calendar"></i> ${formatDate(offer.date)}</p>
                 </div>
                 <div class="offer-actions">
                     <a href="tel:${offer.phone}" class="btn btn-primary">
@@ -2209,18 +2001,31 @@ function displayOffers(offers) {
 function displayAds(ads) {
     const container = document.getElementById('adsList');
     if (container) {
-        container.innerHTML = ads.map(ad => `
-            <div class="ad-card">
+        // Filter active ads and sort by sortOrder
+        const activeAds = ads.filter(ad => ad.isActive !== false);
+        const sortedAds = activeAds.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+        
+        container.innerHTML = sortedAds.map(ad => `
+            <div class="ad-card ${ad.isHighlighted ? 'highlighted' : ''}" style="
+                ${ad.bgColor ? `background-color: ${ad.bgColor};` : ''}
+                ${ad.textColor ? `color: ${ad.textColor};` : ''}
+                ${ad.animation ? `animation: ${ad.animation} ${ad.animationSpeed || 'normal'} infinite;` : ''}
+            ">
+                ${ad.imageUrl ? `<div class="ad-image"><img src="${ad.imageUrl}" alt="${ad.title}" onerror="this.style.display='none'"></div>` : ''}
                 <div class="ad-info">
                     <h4>${ad.title}</h4>
                     <p>${ad.description}</p>
-                    <p><i class="fas fa-user"></i> ${ad.contact}</p>
-                    <p><i class="fas fa-calendar"></i> ${ad.date}</p>
+                    <p><i class="fas fa-user"></i> ${ad.advertiser || ad.contact}</p>
+                    ${ad.phone ? `<p><i class="fas fa-phone"></i> ${ad.phone}</p>` : ''}
+                    <p><i class="fas fa-calendar"></i> ${formatDate(ad.createdAt || ad.date)}</p>
                 </div>
                 <div class="ad-actions">
-                    <a href="tel:${ad.phone}" class="btn btn-primary">
+                    ${ad.phone ? `<a href="tel:${ad.phone}" class="btn btn-primary">
                         <i class="fas fa-phone"></i> اتصل
-                    </a>
+                    </a>` : ''}
+                    ${ad.linkUrl ? `<a href="${ad.linkUrl}" target="_blank" class="btn btn-secondary">
+                        <i class="fas fa-external-link-alt"></i> رابط
+                    </a>` : ''}
                 </div>
             </div>
         `).join('');
@@ -2454,9 +2259,9 @@ window.formatEgyptianWhatsApp = formatEgyptianWhatsApp;
 // =============================================================================
 
 // Handle external links for WebView apps
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Handle all link clicks
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const link = e.target.closest('a');
         if (!link) return;
 
@@ -2527,7 +2332,7 @@ function openExternalApp(type, url) {
         }
     } catch (error) {
         console.error('Error opening external app:', error);
-        
+
         // User-friendly error messages
         const messages = {
             'whatsapp': 'يرجى تثبيت تطبيق واتساب',
@@ -2536,10 +2341,7 @@ function openExternalApp(type, url) {
             'email': 'لا يمكن فتح تطبيق البريد',
             'browser': 'لا يمكن فتح الرابط الخارجي'
         };
-        
+
         alert(messages[type] || 'لا يمكن فتح الرابط');
     }
 }
-
-// Export the function
-window.openExternalApp = openExternalApp;

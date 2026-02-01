@@ -82,8 +82,8 @@ class FirebaseApiClient {
 
             querySnapshot.forEach((doc) => {
                 documents.push({
-                    id: doc.id,
-                    ...doc.data()
+                    ...doc.data(),
+                    id: doc.id
                 });
             });
 
@@ -102,8 +102,8 @@ class FirebaseApiClient {
 
             if (docSnapshot.exists()) {
                 return {
-                    id: docSnapshot.id,
-                    ...docSnapshot.data()
+                    ...docSnapshot.data(),
+                    id: docSnapshot.id
                 };
             } else {
                 throw new Error('Document not found');
@@ -214,8 +214,8 @@ class FirebaseApiClient {
 
             querySnapshot.forEach((doc) => {
                 documents.push({
-                    id: doc.id,
-                    ...doc.data()
+                    ...doc.data(),
+                    id: doc.id
                 });
             });
 
@@ -235,8 +235,8 @@ class FirebaseApiClient {
 
             querySnapshot.forEach((doc) => {
                 const docData = {
-                    id: doc.id,
-                    ...doc.data()
+                    ...doc.data(),
+                    id: doc.id
                 };
 
                 // Check if search term matches any field - التحقق من تطبيق مصطلح البحث مع أي حقل
