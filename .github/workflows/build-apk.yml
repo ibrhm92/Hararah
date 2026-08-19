@@ -25,7 +25,7 @@ on:
 
 jobs:
   build-apk:
-    name: 🔨 Build APK
+    name: 🔨 Build Native Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -49,11 +49,6 @@ jobs:
           else
             echo "Using default repository google-services.json"
           fi
-
-      - name: 📁 Sync Web Assets to Android
-        run: |
-          mkdir -p android/app/src/main/assets
-          cp -r index.html manifest.json css js images pages android/app/src/main/assets/
 
       - name: 🔐 Make Gradlew Executable
         run: |
