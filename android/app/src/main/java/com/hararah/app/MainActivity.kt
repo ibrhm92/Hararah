@@ -3,15 +3,13 @@ package com.hararah.app
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
 import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -19,12 +17,10 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var webView: WebView
-    private lateinit var swipeRefresh: SwipeRefreshLayout
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
     private var lastBackPress = 0L
 
@@ -32,10 +28,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        swipeRefresh = SwipeRefreshLayout(this).apply {
-            setOnRefreshListener { webView.reload() }
-        }
 
         webView = WebView(this).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -62,13 +54,7 @@ class MainActivity : ComponentActivity() {
             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
 
             webViewClient = object : WebViewClient() {
-                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                    swipeRefresh.isRefreshing = true
-                    super.onPageStarted(view, url, favicon)
-                }
-
                 override fun onPageFinished(view: WebView?, url: String?) {
-                    swipeRefresh.isRefreshing = false
                     super.onPageFinished(view, url)
                 }
 
@@ -90,9 +76,7 @@ class MainActivity : ComponentActivity() {
                 override fun shouldOverrideUrlLoading(
                     view: WebView,
                     request: WebResourceRequest
-                ): Boolean {
-                    return handleUrl(request.url)
-                }
+                ): Boolean = handleUrl(request.url)
             }
 
             webChromeClient = object : WebChromeClient() {
@@ -108,7 +92,10 @@ class MainActivity : ComponentActivity() {
                         type = "image/*"
                     }
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
-                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, params?.mode == FileChooserParams.MODE_OPEN_MULTIPLE)
+                    intent.putExtra(
+                        Intent.EXTRA_ALLOW_MULTIPLE,
+                        params?.mode == FileChooserParams.MODE_OPEN_MULTIPLE
+                    )
 
                     return try {
                         startActivityForResult(intent, FILE_CHOOSER_REQUEST)
@@ -122,8 +109,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        swipeRefresh.addView(webView)
-        setContentView(swipeRefresh)
+        setContentView(webView)
 
         if (savedInstanceState == null) {
             webView.loadUrl(Constants.BASE_URL)
@@ -158,7 +144,9 @@ class MainActivity : ComponentActivity() {
         val host = uri.host?.lowercase()
 
         if (scheme == "http" || scheme == "https") {
-            val allowed = Constants.ALLOWED_DOMAINS.any { host == it || host?.endsWith(".$it") == true }
+            val allowed = Constants.ALLOWED_DOMAINS.any {
+                host == it || host?.endsWith(".$it") == true
+            }
             if (allowed) return false
 
             return try {
