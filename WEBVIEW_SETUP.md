@@ -134,6 +134,18 @@ const val BASE_URL = "https://hararah-34d17.web.app"
 
 ## 📦 إنشاء ملف التثبيت النهائي (APK / AAB)
 
+### الطريقة 1: عبر GitHub Actions تلقائياً (بدون الحاجة لتثبيت Android Studio)
+تم إعداد Workflow جاهز في [`.github/workflows/build-apk.yml`](file:///.github/workflows/build-apk.yml):
+1. عند عمل **Push** لأي كود جديد على فرع `main` أو `master`، سيبدأ البناء تلقائياً.
+2. يمكنك أيضاً تشغيله يدوياً:
+   - اذهب إلى تبويب **Actions** في صفحة مستودع GitHub الخاص بك.
+   - اختر **Build Android APK** من القائمة اليسرى.
+   - اضغط على **Run workflow** واختر نوع النسخة (Debug أو Release أو All).
+3. بعد انتهاء البناء (يستغرق حوالي دقيقة إلى دقيقتين)، ستجد ملف الـ APK جاهزاً للتحميل باسم **Hararah-Village-APK** أسفل ملخص التشغيل في قسم **Artifacts**.
+
+---
+
+### الطريقة 2: عبر Android Studio يدوياً
 1. من القائمة العلوية في Android Studio، اختر:
    `Build` > `Generate Signed Bundle / APK...`
 2. اختر:
@@ -142,3 +154,4 @@ const val BASE_URL = "https://hararah-34d17.web.app"
 3. اختر مفتاح التوقيع (KeyStore) أو أنشئ مفتاحاً جديداً عبر `Create new...`.
 4. اختر وضع البناء **Release** واضغط على **Finish**.
 5. ستجد ملف الـ APK النهائي جاهزاً في مجلد `android/app/release/`.
+
