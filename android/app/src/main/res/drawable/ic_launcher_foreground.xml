@@ -9,16 +9,17 @@
         android:scaleY="0.6"
         android:translateX="21.6"
         android:translateY="21.6">
-        <!-- Mosque / Community Village Icon -->
+        <!-- Roof / Building -->
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M54,8 L16,40 L22,40 L22,96 L86,96 L86,40 L92,40 Z" />
+            android:pathData="M 54 8 L 16 40 L 22 40 L 22 96 L 86 96 L 86 40 L 92 40 Z" />
+        <!-- Door / Arch -->
         <path
             android:fillColor="#2563EB"
-            android:pathData="M42,60 C42,53.37 47.37,48 54,48 C60.63,48 66,53.37 66,60 L66,96 L42,96 Z" />
-        <!-- Crescent / Dome accent -->
+            android:pathData="M 42 60 C 42 53.37 47.37 48 54 48 C 60.63 48 66 53.37 66 60 L 66 96 L 42 96 Z" />
+        <!-- Top Dome -->
         <path
             android:fillColor="#F59E0B"
-            android:pathData="M54,16 A8,8 0 0,0 50,30 A10,10 0 1,1 54,16 Z" />
+            android:pathData="M 54 18 C 50 18 48 22 48 26 C 48 30 50 34 54 34 C 58 34 60 30 60 26 C 60 22 58 18 54 18 Z" />
     </group>
 </vector>
