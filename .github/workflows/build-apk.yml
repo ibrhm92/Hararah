@@ -38,9 +38,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 📱 Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
@@ -56,6 +53,10 @@ jobs:
       - name: 🔐 Make Gradlew Executable
         run: |
           chmod +x android/gradlew
+
+      - name: 📋 Accept Android Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: 🚀 Build Debug APK
         if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
