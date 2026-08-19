@@ -61,14 +61,15 @@ jobs:
       - name: 🚀 Build Debug APK
         if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
         run: |
+          mkdir -p /tmp/build_logs
           cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build_logs/debug_build.log || (echo "=== GRADLE ERROR ===" && tail -n 100 /tmp/build_logs/debug_build.log && exit 1)
 
       - name: 🚀 Build Release APK
         if: ${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/build_logs/release_build.log || (echo "=== GRADLE ERROR ===" && tail -n 100 /tmp/build_logs/release_build.log && exit 1)
 
       - name: 📦 Prepare APK Artifacts
         if: always()
@@ -78,15 +79,20 @@ jobs:
           # Copy all generated APKs
           find android/app/build/outputs/apk/ -type f -name "*.apk" -exec cp {} output-apks/ \; || true
 
-          echo "Generated APKs list:"
+          # Copy logs if any
+          if [ -d "/tmp/build_logs" ]; then
+            cp /tmp/build_logs/*.log output-apks/ || true
+          fi
+
+          echo "Generated Artifacts list:"
           ls -la output-apks/
 
-      - name: 📤 Upload APK Artifacts
+      - name: 📤 Upload Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Hararah-Village-APK
-          path: output-apks/*.apk
+          path: output-apks/*
           retention-days: 30
 
       - name: 🏷️ Create GitHub Release (On Tag)
