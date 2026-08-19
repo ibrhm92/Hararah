@@ -43,9 +43,6 @@ jobs:
 
       - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.6'
-          cache-disabled: false
 
       - name: 🔑 Configure google-services.json (Optional Secret)
         run: |
@@ -58,38 +55,28 @@ jobs:
 
       - name: 🔐 Make Gradlew Executable
         run: |
-          cd android
-          chmod +x gradlew || true
+          chmod +x android/gradlew
 
       - name: 🚀 Build Debug APK
         if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
         run: |
           cd android
-          gradle assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace
 
       - name: 🚀 Build Release APK
         if: ${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
         run: |
           cd android
-          gradle assembleRelease --stacktrace
+          ./gradlew assembleRelease --stacktrace
 
       - name: 📦 Prepare APK Artifacts
         run: |
           mkdir -p output-apks
           
-          # Copy Debug APK if generated
-          if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
-            cp android/app/build/outputs/apk/debug/app-debug.apk output-apks/Hararah-Village-Debug.apk
-          fi
+          # Copy all generated APKs
+          find android/app/build/outputs/apk/ -type f -name "*.apk" -exec cp {} output-apks/ \;
 
-          # Copy Release APK if generated
-          if [ -f "android/app/build/outputs/apk/release/app-release.apk" ]; then
-            cp android/app/build/outputs/apk/release/app-release.apk output-apks/Hararah-Village-Release.apk
-          elif [ -f "android/app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
-            cp android/app/build/outputs/apk/release/app-release-unsigned.apk output-apks/Hararah-Village-Release-unsigned.apk
-          fi
-
-          echo "Generated APKs:"
+          echo "Generated APKs list:"
           ls -la output-apks/
 
       - name: 📤 Upload APK Artifacts
