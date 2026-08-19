@@ -1,10 +1,8 @@
 package com.hararah.app.data.repository
 
-import android.content.Context
 import android.net.Uri
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.PersistentCacheSettings
 import com.google.firebase.storage.FirebaseStorage
 import com.hararah.app.data.model.*
 import kotlinx.coroutines.tasks.await
@@ -16,11 +14,11 @@ class HararahRepository {
         val db = FirebaseFirestore.getInstance()
         try {
             val settings = FirebaseFirestoreSettings.Builder()
-                .setLocalCacheSettings(PersistentCacheSettings.newBuilder().build())
+                .setPersistenceEnabled(true)
                 .build()
             db.firestoreSettings = settings
         } catch (e: Exception) {
-            // Settings already applied
+            // Settings already configured
         }
         db
     }

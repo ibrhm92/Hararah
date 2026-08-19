@@ -17,16 +17,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.hararah.app.data.model.Offer
 import com.hararah.app.data.model.VillageNews
-import com.hararah.app.ui.components.ContactActionButtons
 import com.hararah.app.ui.theme.*
 import com.hararah.app.utils.IntentUtils
 import com.hararah.app.viewmodel.HararahUiState
@@ -53,7 +50,7 @@ fun HomeScreen(
         QuickActionItem("العروض", "تخفيضات المحلات", Icons.Default.LocalOffer, Color(0xFF8B5CF6), "offers"),
         QuickActionItem("الإعلانات", "بيع وشراء ومحليات", Icons.Default.Campaign, Color(0xFFEC4899), "ads"),
         QuickActionItem("الأخبار", "أحدث أخبار القرية", Icons.Default.Newspaper, Color(0xFF0284C7), "news"),
-        QuickActionItem("الطوارئ", "أرقام هامة ومسؤولين", Icons.Default.Emergency, AccentRed, "emergency")
+        QuickActionItem("الطوارئ", "أرقام هامة ومسؤولين", Icons.Default.Warning, AccentRed, "emergency")
     )
 
     LazyColumn(
@@ -87,7 +84,7 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Mosque,
+                            imageVector = Icons.Default.LocationCity,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(48.dp)
