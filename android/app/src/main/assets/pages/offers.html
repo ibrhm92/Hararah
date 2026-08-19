@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>العروض والتخفيضات - قرية حرارة</title>
+    <meta name="description" content="العروض والتخفيضات المعتمدة في قرية حرارة">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="قرية حرارة">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-mosque"></i>
+            <h2 style='border-bottom: none;'>قرية حرارة</h2>
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+
+    <!-- Global Page Loading Indicator -->
+    <div id="pageLoadingOverlay" class="page-loading-overlay" style="display: none;">
+        <div class="page-loading-spinner">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="../index.html" class="logo-link">
+                    <i class="fas fa-mosque"></i>
+                    <h1>قرية حرارة</h1>
+                </a>
+            </div>
+            <div class="header-actions">
+                <button id="backBtn" class="btn-icon" title="الرئيسية" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button id="refreshBtn" class="btn-icon" title="تحديث">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="menuBtn" class="btn-icon" title="القائمة">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-header">
+            <h3>القائمة الرئيسية</h3>
+            <button id="closeNav" class="btn-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="nav-list">
+            <li><a href="craftsmen.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tools"></i>
+                    <span>الصنايعية والخدمات</span>
+                </a></li>
+            <li><a href="machines.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tractor"></i>
+                    <span>أصحاب الآلات الزراعية</span>
+                </a></li>
+            <li><a href="shops.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-store"></i>
+                    <span>المحلات التجارية</span>
+                </a></li>
+            <li><a href="offers.html" class="nav-link active">
+                    <i class="fas fa-tags"></i>
+                    <span>العروض والتخفيضات</span>
+                </a></li>
+            <li><a href="ads.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>الإعلانات المحلية</span>
+                </a></li>
+            <li><a href="emergency.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>أرقام الطوارئ</span>
+                </a></li>
+            <li><a href="news.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-newspaper"></i>
+                    <span>الأخبار والتنبيهات</span>
+                </a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h2 style='border-bottom: none;'><i class="fas fa-tags"></i> العروض والتخفيضات</h2>
+        </div>
+        <div class="offers-grid" id="offersGrid">
+            <div class="offer-card">
+                <div class="offer-header">
+                    <h3>جاري التحميل...</h3>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
+            <div class="footer-links">
+                <a href="admin.html">لوحة التحكم</a>
+                <a href="#" onclick="showSuggestionModal(); return false;" class="suggestion-btn">
+                    <i class="fas fa-comment-dots"></i>
+                    اقتراح أو شكوى
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="../js/api-config-firebase.js"></script>
+    <script type="module" src="../js/script-firebase-fixed.js"></script>
+
+    <script>
+        let offers = [];
+
+        async function loadOffers() {
+            try {
+                const allOffers = await window.getData('offers');
+                offers = allOffers.filter(offer => offer.approved !== false);
+                if (!offers || offers.length === 0) {
+                    offers = [];
+                }
+                renderOffers();
+            } catch (error) {
+                console.error('Error loading offers:', error);
+                showError('حدث خطأ في تحميل البيانات');
+                offers = [];
+                renderOffers();
+            }
+        }
+
+        function renderOffers() {
+            const grid = document.getElementById('offersGrid');
+
+            if (offers.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><i class="fas fa-tags"></i><h3>لا توجد عروض حالياً</h3><p>سيتم إضافة العروض قريباً</p></div>';
+                return;
+            }
+
+            grid.innerHTML = offers.map(offer => `
+                <div class="offer-card">
+                    <div class="offer-header">
+                        <h3>${offer.shop_name || 'غير محدد'}</h3>
+                        <span class="badge bg-danger">${offer.discount || 'بدون خصم'}</span>
+                    </div>
+                    <div class="offer-body">
+                        <p>${offer.description || 'لا يوجد وصف'}</p>
+                        <p><i class="fas fa-phone"></i> ${offer.phone || 'لا يوجد'}</p>
+                    </div>
+                    <div class="offer-footer">
+                        <a href="tel:${offer.phone}" class="btn btn-primary">
+                            <i class="fas fa-phone"></i> اتصال
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add CSS
+            const style = document.createElement('style');
+            style.textContent = `
+                .offers-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    gap: 1rem;
+                    padding: 1rem;
+                }
+
+                .offer-card {
+                    background: var(--surface, #fff);
+                    border-radius: 12px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                    border: 1px solid var(--border-color, #e0e0e0);
+                }
+
+                .offer-header {
+                    background: linear-gradient(135deg, var(--primary-color, #2c3e50), var(--primary-dark, #1a252f));
+                    color: white;
+                    padding: 1rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                }
+
+                .offer-header h3 {
+                    margin: 0;
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                }
+
+                .offer-body {
+                    padding: 1rem;
+                }
+
+                .offer-body p {
+                    margin: 0.5rem 0;
+                    color: var(--text-primary, #333);
+                }
+
+                .offer-footer {
+                    padding: 1rem;
+                    border-top: 1px solid var(--border-color, #e0e0e0);
+                    background: var(--surface-alt, #f8f9fa);
+                }
+
+                .offer-footer .btn {
+                    width: 100%;
+                    text-align: center;
+                    padding: 0.75rem 1rem;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    transition: all 0.2s;
+                }
+
+                .offer-footer .btn:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                }
+
+                .empty-state {
+                    text-align: center;
+                    padding: 3rem 1rem;
+                    color: var(--text-muted, #6c757d);
+                }
+
+                .empty-state i {
+                    font-size: 4rem;
+                    margin-bottom: 1rem;
+                    opacity: 0.5;
+                }
+
+                .empty-state h3 {
+                    font-size: 1.5rem;
+                    margin-bottom: 0.5rem;
+                    color: var(--text-secondary, #495057);
+                }
+
+                .empty-state p {
+                    font-size: 1rem;
+                    margin: 0;
+                }
+
+                @media (max-width: 768px) {
+                    .offers-grid {
+                        grid-template-columns: 1fr;
+                        padding: 0.5rem;
+                    }
+
+                    .offer-card {
+                        border-radius: 8px;
+                    }
+
+                    .offer-header {
+                        padding: 0.875rem;
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Navigation
+            const menuBtn = document.getElementById('menuBtn');
+            if (menuBtn) {
+                menuBtn.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.add('active');
+                });
+            }
+
+            const closeNav = document.getElementById('closeNav');
+            if (closeNav) {
+                closeNav.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.remove('active');
+                });
+            }
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    showLoadingOverlay();
+                    window.clearCache();
+                    loadOffers();
+                });
+            }
+
+            // Load data
+            loadOffers();
+
+            // Hide loading
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+            }, 1000);
+        });
+
+        window.showLoadingOverlay = function () {
+            const overlay = document.getElementById('pageLoadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('hide');
+                overlay.classList.add('show');
+                overlay.style.display = 'flex';
+            }
+        };
+
+        window.hideLoadingOverlay = function () {
+            const overlay = document.getElementById('pageLoadingOverlay');
+            if (overlay) {
+                overlay.classList.add('hide');
+                overlay.classList.remove('show');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 300);
+            }
+        };
+    </script>
+    <!-- Suggestion Modal -->
+    <div id="suggestionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-comment-alt"></i>
+                    تقديم اقتراح أو شكوى
+                </h3>
+                <button class="modal-close" onclick="closeSuggestionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="suggestionForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" id="sugName" class="form-input" required placeholder="أدخل اسمك الكريم">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="sugPhone" class="form-input" required placeholder="رقم الجوال للتواصل">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">نوع الطلب</label>
+                        <select id="sugType" class="form-select" required>
+                            <option value="اقتراح">اقتراح</option>
+                            <option value="شكوى">شكوى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الرسالة</label>
+                        <textarea id="sugMessage" class="form-textarea" required
+                            placeholder="اكتب تفاصيل اقتراحك أو شكواك هنا..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSuggestionModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="sugSubmitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>إرسال</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

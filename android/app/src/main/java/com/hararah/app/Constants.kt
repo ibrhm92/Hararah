@@ -2,19 +2,16 @@ package com.hararah.app
 
 object Constants {
     /**
-     * رابط الموقع الأساسي للتطبيق.
-     * يمكنك استخدام رابط الاستضافة (Firebase Hosting) أو الرابط المحلي للأصول.
-     * أمثلة:
-     * - "https://hararah-34d17.web.app"
-     * - "https://hararah-34d17.firebaseapp.com"
-     * - "file:///android_asset/index.html" (إذا كنت تريد تضمين الملفات داخل التطبيق)
+     * رابط تحميل التطبيق:
+     * نستخدم WebViewAssetLoader لتحميل صفحات وموارد الموقع المحلية مباشرة من داخل التطبيق (سريع، فوري، ولا يحتاج استضافة خارجية)
      */
-    const val BASE_URL = "https://hararah-34d17.web.app"
+    const val BASE_URL = "https://appassets.androidplatform.net/assets/index.html"
 
     /**
      * قائمة النطاقات الداخلية المسموح بتصفحها داخل الـ WebView.
      */
     val ALLOWED_DOMAINS = listOf(
+        "appassets.androidplatform.net",
         "hararah-34d17.web.app",
         "hararah-34d17.firebaseapp.com",
         "localhost"

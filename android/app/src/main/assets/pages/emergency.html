@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أرقام الطوارئ - قرية حرارة</title>
+    <meta name="description" content="أرقام الطوارئ في قرية حرارة ومصر">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="قرية حرارة">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/1000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-mosque"></i>
+            <h2 style='border-bottom: none;'>قرية حرارة</h2>
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+
+    <!-- Global Page Loading Indicator -->
+    <div id="pageLoadingOverlay" class="page-loading-overlay" style="display: none;">
+        <div class="page-loading-spinner">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="../index.html" class="logo-link">
+                    <i class="fas fa-mosque"></i>
+                    <h1>قرية حرارة</h1>
+                </a>
+            </div>
+            <div class="header-actions">
+                <button id="backBtn" class="btn-icon" title="الرئيسية" onclick="window.location.href='../index.html'">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button id="refreshBtn" class="btn-icon" title="تحديث">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="menuBtn" class="btn-icon" title="القائمة">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav" id="mainNav">
+        <div class="nav-header">
+            <h3>القائمة الرئيسية</h3>
+            <button id="closeNav" class="btn-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="nav-list">
+            <li><a href="craftsmen.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tools"></i>
+                    <span>الصنايعية والخدمات</span>
+                </a></li>
+            <li><a href="machines.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tractor"></i>
+                    <span>أصحاب الآلات الزراعية</span>
+                </a></li>
+            <li><a href="shops.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-store"></i>
+                    <span>المحلات التجارية</span>
+                </a></li>
+            <li><a href="offers.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-tags"></i>
+                    <span>العروض والتخفيضات</span>
+                </a></li>
+            <li><a href="ads.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>الإعلانات المحلية</span>
+                </a></li>
+            <li><a href="emergency.html" class="nav-link active">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>أرقام الطوارئ</span>
+                </a></li>
+            <li><a href="news.html" class="nav-link"
+                    onclick="document.getElementById('mainNav').classList.remove('active'); event.stopPropagation(); return true;">
+                    <i class="fas fa-newspaper"></i>
+                    <span>الأخبار والتنبيهات</span>
+                </a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h2 style='border-bottom: none;'><i class="fas fa-phone-alt"></i> أرقام الطوارئ</h2>
+        </div>
+        <div class="emergency-notice">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>في حالة الطوارئ، اتصل بالرقم المناسب فوراً</p>
+        </div>
+        <div class="emergency-grid" id="emergencyGrid">
+            <div class="emergency-card">
+                <div class="emergency-icon">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="emergency-info">
+                    <h3>جاري التحميل...</h3>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 قرية حرارة - جميع الحقوق محفوظة</p>
+            <div class="footer-links">
+                <a href="admin.html">لوحة التحكم</a>
+                <a href="#" onclick="showSuggestionModal(); return false;" class="suggestion-btn">
+                    <i class="fas fa-comment-dots"></i>
+                    اقتراح أو شكوى
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="../js/api-config-firebase.js"></script>
+    <script type="module" src="../js/script-firebase-fixed.js"></script>
+
+    <script>
+        let emergency = [];
+
+        async function loadEmergency() {
+            try {
+                const localEmergency = await window.getData('emergency');
+
+                // Government emergency numbers
+                const governmentEmergency = [
+                    { name: 'الشرطة', phone: '122', icon: 'shield-alt', address: 'طوارئ الشرطة', notes: 'للطوارئ الأمنية والجرائم' },
+                    { name: 'الإسعاف', phone: '123', icon: 'ambulance', address: 'طوارئ الإسعاف', notes: 'للحالات الطبية الطارئة' },
+                    { name: 'الحماية المدنية', phone: '180', icon: 'fire-extinguisher', address: 'إطفاء وحماية مدنية', notes: 'للحرائق والكوارث الطبيعية' },
+                    { name: 'الكهرباء', phone: '121', icon: 'bolt', address: 'شركة الكهرباء المصرية', notes: 'لأعطال الكهرباء والانقطاعات' },
+                    { name: 'الغاز الطبيعي', phone: '129', icon: 'fire', address: 'شركة الغاز الطبيعي', notes: 'لأعطال الغاز وتسربات' },
+                    { name: 'المياه', phone: '125', icon: 'tint', address: 'شركة مياه الشرب والصرف الصحي', notes: 'لأعطال المياه والصرف الصحي' },
+                    { name: 'التليفونات', phone: '144', icon: 'phone', address: 'الشركة المصرية للاتصالات', notes: 'لأعطال الهاتف الثابت' },
+                    { name: 'الطوارئ السياحية', phone: '126', icon: 'plane', address: 'غرفة عمليات السياحة', notes: 'للمساعدة السياحية' }
+                ];
+
+                emergency = [...governmentEmergency, ...localEmergency];
+                renderEmergency();
+            } catch (error) {
+                console.error('Error loading emergency:', error);
+                showError('حدث خطأ في تحميل البيانات');
+                // Show government numbers anyway
+                emergency = [
+                    { name: 'الشرطة', phone: '122', icon: 'shield-alt', address: 'طوارئ الشرطة', notes: 'للطوارئ الأمنية والجرائم' },
+                    { name: 'الإسعاف', phone: '123', icon: 'ambulance', address: 'طوارئ الإسعاف', notes: 'للحالات الطبية الطارئة' },
+                    { name: 'الحماية المدنية', phone: '180', icon: 'fire-extinguisher', address: 'إطفاء وحماية مدنية', notes: 'للحرائق والكوارث الطبيعية' }
+                ];
+                renderEmergency();
+            }
+        }
+
+        function renderEmergency() {
+            const grid = document.getElementById('emergencyGrid');
+
+            grid.innerHTML = emergency.map(item => `
+                <div class="emergency-card">
+                    <div class="emergency-icon">
+                        <i class="fas fa-${item.icon || 'phone-alt'}"></i>
+                    </div>
+                    <div class="emergency-info">
+                        <h3>${item.name || 'غير محدد'}</h3>
+                        <p>${item.address || 'لا يوجد عنوان'}</p>
+                        <p>${item.notes ? item.notes.substring(0, 50) + '...' : 'لا توجد ملاحظات'}</p>
+                    </div>
+                    <div class="emergency-action">
+                        <a href="tel:${item.phone}" class="btn btn-danger btn-lg">
+                            <i class="fas fa-phone"></i> ${item.phone || 'لا يوجد'}
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add CSS
+            const style = document.createElement('style');
+            style.textContent = `
+                .emergency-notice {
+                    background: linear-gradient(135deg, var(--warning-light, #fff3cd), var(--warning-lighter, #fefefe));
+                    border: 1px solid var(--warning, #ffc107);
+                    border-radius: var(--radius);
+                    padding: 1rem;
+                    margin: 1rem;
+                    text-align: center;
+                    color: var(--warning-dark, #856404);
+                }
+
+                .emergency-notice i {
+                    font-size: 1.25rem;
+                    margin-bottom: 0.5rem;
+                }
+
+                .emergency-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    gap: 1rem;
+                    padding: 1rem;
+                }
+
+                .emergency-card {
+                    background: var(--surface, #fff);
+                    border-radius: 12px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                    border: 1px solid var(--border-color, #e0e0e0);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+
+                .emergency-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+                }
+
+                .emergency-icon {
+                    background: var(--error-light, #f8d7da);
+                    color: var(--error, #dc3545);
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.5rem;
+                    margin: 1rem auto 0;
+                }
+
+                .emergency-info {
+                    padding: 1rem;
+                    text-align: center;
+                }
+
+                .emergency-info h3 {
+                    margin: 0 0 0.5rem 0;
+                    color: var(--text-primary, #333);
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                }
+
+                .emergency-info p {
+                    margin: 0.25rem 0;
+                    color: var(--text-secondary, #6c757d);
+                    font-size: 0.875rem;
+                    line-height: 1.4;
+                }
+
+                .emergency-action {
+                    padding: 1rem;
+                    background: var(--surface-alt, #f8f9fa);
+                }
+
+                .emergency-action .btn {
+                    width: 100%;
+                    text-align: center;
+                    padding: 0.875rem 1rem;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    font-size: 1.1rem;
+                    transition: all 0.2s;
+                }
+
+                .emergency-action .btn:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                }
+
+                @media (max-width: 768px) {
+                    .emergency-grid {
+                        grid-template-columns: 1fr;
+                        padding: 0.5rem;
+                        gap: 0.75rem;
+                    }
+
+                    .emergency-card {
+                        border-radius: 8px;
+                    }
+
+                    .emergency-icon {
+                        width: 50px;
+                        height: 50px;
+                        font-size: 1.25rem;
+                        margin: 0.875rem auto 0;
+                    }
+
+                    .emergency-info {
+                        padding: 0.875rem;
+                    }
+
+                    .emergency-info h3 {
+                        font-size: 1.1rem;
+                    }
+
+                    .emergency-action {
+                        padding: 0.875rem;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Navigation
+            const menuBtn = document.getElementById('menuBtn');
+            if (menuBtn) {
+                menuBtn.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.add('active');
+                });
+            }
+
+            const closeNav = document.getElementById('closeNav');
+            if (closeNav) {
+                closeNav.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.remove('active');
+                });
+            }
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    showLoadingOverlay();
+                    window.clearCache();
+                    loadEmergency();
+                });
+            }
+
+            // Load data
+            loadEmergency();
+
+            // Hide loading
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+            }, 1000);
+        });
+
+        window.showLoadingOverlay = function () {
+            const overlay = document.getElementById('pageLoadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('hide');
+                overlay.classList.add('show');
+                overlay.style.display = 'flex';
+            }
+        };
+
+        window.hideLoadingOverlay = function () {
+            const overlay = document.getElementById('pageLoadingOverlay');
+            if (overlay) {
+                overlay.classList.add('hide');
+                overlay.classList.remove('show');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 300);
+            }
+        };
+    </script>
+    <!-- Suggestion Modal -->
+    <div id="suggestionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-comment-alt"></i>
+                    تقديم اقتراح أو شكوى
+                </h3>
+                <button class="modal-close" onclick="closeSuggestionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="suggestionForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" id="sugName" class="form-input" required placeholder="أدخل اسمك الكريم">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="sugPhone" class="form-input" required placeholder="رقم الجوال للتواصل">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">نوع الطلب</label>
+                        <select id="sugType" class="form-select" required>
+                            <option value="اقتراح">اقتراح</option>
+                            <option value="شكوى">شكوى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الرسالة</label>
+                        <textarea id="sugMessage" class="form-textarea" required
+                            placeholder="اكتب تفاصيل اقتراحك أو شكواك هنا..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSuggestionModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="sugSubmitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>إرسال</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

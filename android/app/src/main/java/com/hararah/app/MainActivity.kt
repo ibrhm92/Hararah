@@ -22,6 +22,7 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -32,11 +33,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.lifecycleScope
+import androidx.webkit.WebViewAssetLoader
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.hararah.app.databinding.ActivityMainBinding
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -45,6 +44,7 @@ import java.util.Locale
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var assetLoader: WebViewAssetLoader
 
     // File Chooser & Camera Variables
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (!isGranted) {
-            // Permission denied - user can still use the app
+            // Permission denied
         }
     }
 
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // 1. Splash Screen
-        val splashScreen = installSplashScreen()
+        installSplashScreen()
 
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity() {
             return if (extraUrl.startsWith("http")) {
                 extraUrl
             } else {
-                "${Constants.BASE_URL}/${extraUrl.trimStart('/')}"
+                "https://appassets.androidplatform.net/assets/${extraUrl.trimStart('/')}"
             }
         }
 
@@ -169,6 +169,12 @@ class MainActivity : AppCompatActivity() {
      */
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
+        // Setup secure local AssetLoader (Serves html/css/js from assets/ folder)
+        assetLoader = WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+            .addPathHandler("/res/", WebViewAssetLoader.ResourcesPathHandler(this))
+            .build()
+
         val webSettings: WebSettings = binding.webView.settings
 
         // Enable JavaScript & Local Storage (Essential for Firebase and SPA)
@@ -187,17 +193,13 @@ class MainActivity : AppCompatActivity() {
         webSettings.allowFileAccess = true
         webSettings.allowContentAccess = true
 
-        // Mixed Content (HTTPS + HTTP Assets)
+        // Mixed Content
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         }
 
         // Caching Strategy
-        webSettings.cacheMode = if (NetworkUtils.isNetworkAvailable(this)) {
-            WebSettings.LOAD_DEFAULT
-        } else {
-            WebSettings.LOAD_CACHE_ELSE_NETWORK
-        }
+        webSettings.cacheMode = WebSettings.LOAD_DEFAULT
 
         // Custom User-Agent
         val defaultUserAgent = webSettings.userAgentString
@@ -217,6 +219,14 @@ class MainActivity : AppCompatActivity() {
 
         // Custom WebViewClient
         binding.webView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val uri = request?.url ?: return null
+                return assetLoader.shouldInterceptRequest(uri)
+            }
+
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
                 request: WebResourceRequest?
@@ -392,10 +402,13 @@ class MainActivity : AppCompatActivity() {
             // 5. Internal App Navigation (within allowed domains or local assets)
             val uri = Uri.parse(url)
             val host = uri.host
-            val isInternal = host != null && Constants.ALLOWED_DOMAINS.any { host.contains(it) }
-            val isAsset = url.startsWith("file:///android_asset")
+            val isInternal = (host != null && Constants.ALLOWED_DOMAINS.any { host.contains(it) }) ||
+                    url.startsWith("https://appassets.androidplatform.net") ||
+                    url.startsWith("file://") ||
+                    url.startsWith("#") ||
+                    url.startsWith("/")
 
-            if (isInternal || isAsset || url.startsWith("#") || url.startsWith("/")) {
+            if (isInternal) {
                 return false // Let WebView load it internally
             }
 
@@ -472,12 +485,7 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColor(this, R.color.primary)
         )
         binding.swipeRefreshLayout.setOnRefreshListener {
-            if (NetworkUtils.isNetworkAvailable(this)) {
-                binding.webView.reload()
-            } else {
-                binding.swipeRefreshLayout.isRefreshing = false
-                showErrorView()
-            }
+            binding.webView.reload()
         }
 
         // Disable swipe refresh when scrolling down inside webview
@@ -491,12 +499,8 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setupErrorView() {
         binding.errorView.btnRetry.setOnClickListener {
-            if (NetworkUtils.isNetworkAvailable(this)) {
-                binding.errorView.root.visibility = View.GONE
-                binding.webView.reload()
-            } else {
-                Toast.makeText(this, R.string.no_internet_title, Toast.LENGTH_SHORT).show()
-            }
+            binding.errorView.root.visibility = View.GONE
+            binding.webView.reload()
         }
     }
 
@@ -532,15 +536,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * تحميل الصفحة في الـ WebView مع فحص الاتصال
+     * تحميل الصفحة في الـ WebView
      */
     private fun loadPage(url: String) {
-        if (NetworkUtils.isNetworkAvailable(this) || url.startsWith("file:///")) {
-            binding.errorView.root.visibility = View.GONE
-            binding.webView.loadUrl(url)
-        } else {
-            showErrorView()
-        }
+        binding.errorView.root.visibility = View.GONE
+        binding.webView.loadUrl(url)
     }
 
     /**
@@ -573,7 +573,7 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             onNetworkLost = {
-                // Optional handling when network lost
+                // Optional handling
             }
         )
     }
