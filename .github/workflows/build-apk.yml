@@ -61,25 +61,27 @@ jobs:
         if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: 🚀 Build Release APK
         if: ${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
         run: |
           cd android
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: 📦 Prepare APK Artifacts
+        if: always()
         run: |
           mkdir -p output-apks
           
           # Copy all generated APKs
-          find android/app/build/outputs/apk/ -type f -name "*.apk" -exec cp {} output-apks/ \;
+          find android/app/build/outputs/apk/ -type f -name "*.apk" -exec cp {} output-apks/ \; || true
 
           echo "Generated APKs list:"
           ls -la output-apks/
 
       - name: 📤 Upload APK Artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Hararah-Village-APK
@@ -87,7 +89,7 @@ jobs:
           retention-days: 30
 
       - name: 🏷️ Create GitHub Release (On Tag)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && success()
         uses: softprops/action-gh-release@v2
         with:
           files: output-apks/*.apk
