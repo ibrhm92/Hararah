@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/errorContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="32dp"
+    android:visibility="gone">
+
+    <ImageView
+        android:id="@+id/ivErrorIcon"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:contentDescription="@string/no_internet_title"
+        android:src="@drawable/ic_no_internet"
+        app:tint="@color/text_secondary" />
+
+    <TextView
+        android:id="@+id/tvErrorTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/no_internet_title"
+        android:textAlignment="center"
+        android:textColor="@color/text_primary"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvErrorMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif"
+        android:lineSpacingMultiplier="1.2"
+        android:text="@string/no_internet_message"
+        android:textAlignment="center"
+        android:textColor="@color/text_secondary"
+        android:textSize="15sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnRetry"
+        android:layout_width="wrap_content"
+        android:layout_height="52dp"
+        android:layout_marginTop="28dp"
+        android:paddingHorizontal="32dp"
+        android:text="@string/retry_btn"
+        android:textColor="@color/surface"
+        android:textSize="16sp"
+        app:backgroundTint="@color/primary"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_refresh"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp" />
+
+</LinearLayout>

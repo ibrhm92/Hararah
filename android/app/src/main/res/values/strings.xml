@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">قرية حرارة</string>
+    <string name="app_description">خدمات القرية الذكية - دليل شامل للخدمات والمحلات</string>
+    
+    <!-- Offline & Error Screen -->
+    <string name="no_internet_title">لا يوجد اتصال بالإنترنت</string>
+    <string name="no_internet_message">يرجى التحقق من اتصالك بشبكة الواي فاي أو بيانات الهاتف والمحاولة مرة أخرى.</string>
+    <string name="retry_btn">إعادة المحاولة</string>
+    <string name="page_load_error_title">تعذر تحميل الصفحة</string>
+    <string name="page_load_error_message">حدث خطأ أثناء تحميل البيانات. يرجى المحاولة لاحقاً.</string>
+    
+    <!-- Exit Confirmation -->
+    <string name="press_again_to_exit">اضغط مرة أخرى للخروج من التطبيق</string>
+    
+    <!-- Permissions -->
+    <string name="camera_permission_needed">التطبيق بحاجة إلى إذن الكاميرا لالتقاط صورة للخدمة أو الإعلان</string>
+    <string name="storage_permission_needed">التطبيق بحاجة إلى إذن الوصول للصور لاختيار صورة من المعرض</string>
+    <string name="notification_permission_needed">يرجى السماح بالإشعارات لتلقي أحدث الأخبار والتنبيهات في القرية</string>
+    
+    <!-- Chooser -->
+    <string name="choose_image_source">اختر مصدر الصورة</string>
+    <string name="camera">الكاميرا</string>
+    <string name="gallery">المعرض</string>
+    
+    <!-- External Apps -->
+    <string name="whatsapp_not_installed">تطبيق واتساب غير مثبت على جهازك</string>
+    <string name="maps_not_installed">تطبيق الخرائط غير مثبت على جهازك</string>
+    <string name="app_not_available">لا يوجد تطبيق متوافق لفتح هذا الرابط</string>
+    
+    <!-- Notifications -->
+    <string name="default_notification_channel_id">hararah_village_channel</string>
+    <string name="default_notification_channel_name">تنبيهات وأخبار قرية حرارة</string>
+    <string name="default_notification_channel_description">إشعارات الخدمات، المحلات، العروض والأخبار الجديدة</string>
+</resources>
