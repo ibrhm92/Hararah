@@ -61,38 +61,45 @@ jobs:
       - name: 🚀 Build Debug APK
         if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
         run: |
-          mkdir -p /tmp/build_logs
           cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build_logs/debug_build.log || (echo "=== GRADLE ERROR ===" && tail -n 100 /tmp/build_logs/debug_build.log && exit 1)
+          ./gradlew :app:assembleDebug --stacktrace
 
       - name: 🚀 Build Release APK
         if: ${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'all' || github.event.inputs.build_type == null }}
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/build_logs/release_build.log || (echo "=== GRADLE ERROR ===" && tail -n 100 /tmp/build_logs/release_build.log && exit 1)
+          ./gradlew :app:assembleRelease --stacktrace
 
       - name: 📦 Prepare APK Artifacts
-        if: always()
         run: |
           mkdir -p output-apks
           
-          # Copy all generated APKs
-          find android/app/build/outputs/apk/ -type f -name "*.apk" -exec cp {} output-apks/ \; || true
-
-          # Copy logs if any
-          if [ -d "/tmp/build_logs" ]; then
-            cp /tmp/build_logs/*.log output-apks/ || true
+          # Copy Debug APK
+          if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
+            cp android/app/build/outputs/apk/debug/app-debug.apk output-apks/Hararah-Village-Debug.apk
           fi
 
-          echo "Generated Artifacts list:"
-          ls -la output-apks/
+          # Copy Release APK
+          if [ -f "android/app/build/outputs/apk/release/app-release.apk" ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk output-apks/Hararah-Village-Release.apk
+          elif [ -f "android/app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
+            cp android/app/build/outputs/apk/release/app-release-unsigned.apk output-apks/Hararah-Village-Release-unsigned.apk
+          fi
 
-      - name: 📤 Upload Artifacts
-        if: always()
+          # Verify APK exists
+          if [ $(find output-apks -name "*.apk" | wc -l) -eq 0 ]; then
+            echo "❌ Error: No APK files were generated!"
+            exit 1
+          fi
+
+          echo "✅ Generated APKs successfully:"
+          ls -lh output-apks/
+
+      - name: 📤 Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Hararah-Village-APK
-          path: output-apks/*
+          path: output-apks/*.apk
           retention-days: 30
 
       - name: 🏷️ Create GitHub Release (On Tag)
